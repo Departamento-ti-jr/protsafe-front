@@ -9,34 +9,30 @@ import { Textarea } from "@/components/ui/textarea"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
 import { Checkbox } from "@/components/ui/checkbox"
-import { ArrowLeft, Upload, FileText, Save } from "lucide-react"
+import { ArrowLeft, Upload, FileText, Save, Cloud, Calculator, FolderOpen } from "lucide-react"
 import Link from "next/link"
 
 export default function EditarDefesaPage({ params }: { params: { id: string } }) {
-  const [selectedMotivo, setSelectedMotivo] = useState("")
-  const [selectedPedido, setSelectedPedido] = useState("retificacao")
-  const [valorRetificacao, setValorRetificacao] = useState("846.13")
+  const [selectedTipo, setSelectedTipo] = useState("recurso")
+  const [selectedMotivo, setSelectedMotivo] = useState("16")
+  const [selectedPedido, setSelectedPedido] = useState("anulacao-identificacao")
   const [informarOutrosDocumentos, setInformarOutrosDocumentos] = useState(false)
 
   // Dados de exemplo baseados na imagem fornecida
   const atendimento = {
     id: params.id,
-    ordem: "0",
-    competencia: "02/2024",
-    tipo: "AIH",
-    dataInicial: "16-02-2024",
-    dataFinal: "18-02-2024",
+    status: "201158904222339",
+    competencia: "02/2023",
+    tipo: "APAC",
+    dataInicial: "01-02-2023",
+    dataFinal: "27-02-2023",
+    numero: "133",
+    abi: "97",
   }
-
-  const motivosImpugnacao = [
-    { value: "08", label: "08 - COPARTICIPAÇÃO - PRONTO SOCORRO" },
-    { value: "02", label: "02 - HOMONÍMIA" },
-    { value: "04", label: "04 - ÁREA DE ABRANGÊNCIA" },
-    { value: "06", label: "06 - QUANTIDADE DO PROCEDIMENTO NÃO COBERTA PELO PRODUTO" },
-  ]
 
   return (
     <div className="p-6 space-y-6">
+      {/* Header */}
       <div className="flex items-center gap-4">
         <Link href="/defesas">
           <Button variant="outline" size="icon" className="rounded-xl">
@@ -44,18 +40,20 @@ export default function EditarDefesaPage({ params }: { params: { id: string } })
           </Button>
         </Link>
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">Editar Defesa</h1>
-          <p className="text-gray-600">Defesa de uma "AIH"</p>
+          <h1 className="text-2xl font-bold tracking-tight">Editar Defesa</h1>
+          <p className="text-gray-600">Defesa de uma "APAC"</p>
         </div>
       </div>
 
-      <div className="space-y-2">
-        <p className="text-gray-700">
-          Você está realizando a defesa do atendimento <strong>"N° 1"</strong> da <strong>"ABI 101"</strong>
+      {/* Context Info */}
+      <div className="bg-gray-100 rounded-xl p-4">
+        <p className="text-sm text-gray-700">
+          Você está realizando a defesa do atendimento <strong>"N° {atendimento.numero}"</strong> da{" "}
+          <strong>"ABI {atendimento.abi}"</strong>
         </p>
       </div>
 
-      {/* Informações do Atendimento */}
+      {/* Atendimento Card */}
       <Card>
         <CardHeader>
           <CardTitle>Atendimento</CardTitle>
@@ -63,8 +61,8 @@ export default function EditarDefesaPage({ params }: { params: { id: string } })
         <CardContent>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             <div>
-              <Label className="text-sm font-medium text-gray-500">Ordem</Label>
-              <p className="font-medium">{atendimento.ordem}</p>
+              <Label className="text-sm font-medium text-gray-500">Status</Label>
+              <p className="font-medium">{atendimento.status}</p>
             </div>
             <div>
               <Label className="text-sm font-medium text-gray-500">Competência</Label>
@@ -75,7 +73,7 @@ export default function EditarDefesaPage({ params }: { params: { id: string } })
               <p className="font-medium">{atendimento.tipo}</p>
             </div>
             <div>
-              <Label className="text-sm font-medium text-gray-500">Data inicial</Label>
+              <Label className="text-sm font-medium text-gray-500">Data Inicial</Label>
               <p className="font-medium">{atendimento.dataInicial}</p>
             </div>
           </div>
@@ -92,56 +90,81 @@ export default function EditarDefesaPage({ params }: { params: { id: string } })
           <CardTitle>Formulário de impugnação/recurso</CardTitle>
         </CardHeader>
         <CardContent className="space-y-6">
+          {/* Tipo de Pedido */}
           <div className="space-y-2">
-            <Label>Impugnação</Label>
-            <Select value={selectedMotivo} onValueChange={setSelectedMotivo}>
+            <Label>Tipo de Pedido</Label>
+            <Select value={selectedTipo} onValueChange={setSelectedTipo}>
               <SelectTrigger>
-                <SelectValue placeholder="Selecione o(s) motivo(s) de impugnação/recurso..." />
+                <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                {motivosImpugnacao.map((motivo) => (
-                  <SelectItem key={motivo.value} value={motivo.value}>
-                    {motivo.label}
-                  </SelectItem>
-                ))}
+                <SelectItem value="recurso">Recurso</SelectItem>
+                <SelectItem value="impugnacao">Impugnação</SelectItem>
               </SelectContent>
             </Select>
           </div>
 
-          {selectedMotivo === "08" && (
-            <div className="space-y-4 p-4 bg-blue-50 rounded-lg">
-              <div className="space-y-2">
-                <Label className="text-sm text-blue-600">Detalhamento do Motivo</Label>
-                <Textarea
-                  value="A operadora não concorda com a presente cobrança em razão de CLÁUSULA DE FRANQUIA OU COPARTICIPAÇÃO.
-De fato, o (a) beneficiário (a) utilizou o produto _____ onde da coparticipação referente a consulta realizada em pronto socorro, uma vez que, o atendimento foi realizado em dia de urgência e, consequentemente, incidiu no pronto socorro, uma vez que o atendimento foi realizado em dia de urgência e, consequentemente, incidiu no pronto socorro, uma vez que, o atendimento foi realizado em dia de urgência e, consequentemente, incidiu no pronto socorro, uma vez que, o atendimento foi realizado em dia de urgência e, consequentemente, incidiu no pronto socorro, uma vez que, o atendimento foi realizado em dia de urgência e, consequentemente, incidiu no pronto socorro, uma vez que, o atendimento foi realizado em dia de urgência e, consequentemente, incidiu no pronto socorro, uma vez que, o atendimento foi realizado em dia de urgência e, consequentemente, incidiu no pronto socorro, uma vez que, o atendimento foi realizado em dia de urgência e, consequentemente, incidiu no pronto socorro, uma vez que, o atendimento foi realizado em dia de urgência e, consequentemente, incidiu no pronto socorro, uma vez que, o atendimento foi realizado em dia de urgência e, consequentemente, incidiu no pronto socorro, uma vez que, o atendimento foi realizado em dia de urgência e, consequentemente, incidiu no pronto socorro, uma vez que, o atendimento foi realizado em dia de urgência e, consequentemente, incidiu no pronto socorro, uma vez que, o atendimento foi realizado em dia de urgência e, consequentemente, incidiu no pronto socorro, uma vez que, o atendimento foi realizado em dia de urgência e, consequentemente, incidiu no pronto socorro, uma vez que, o atendimento foi realizado em dia de urgência e, consequentemente, incidiu no pronto socorro, uma vez que, o atendimento foi realizado em dia de urgência e, consequentemente, incidiu no pronto socorro, uma vez que, o atendimento foi realizado em dia de urgência e, consequentemente, incidiu no pronto socorro, uma vez que, o atendimento foi realizado em dia de urgência e, consequentemente, incidiu no pronto socorro, uma vez que, o atendimento foi realizado em dia de urgência e, consequentemente, incidiu no pronto socorro, uma vez que, o atendimento foi realizado em dia de urgência e, consequentemente, incidiu no pronto socorro, uma vez que, o atendimento foi realizado em dia de urgência e, consequentemente, incidiu no pronto socorro, uma vez que, o atendimento foi realizado em dia de urgência e, consequentemente, incidiu no pronto socorro, uma vez que, o atendimento foi realizado em dia de urgência e, consequentemente, incidiu no pronto socorro, uma vez que, o atendimento foi realizado em dia de urgência e, consequentemente, incidiu no pronto socorro, uma vez que, o atendimento foi realizado em dia de urgência e, consequentemente, incidiu no pronto socorro, uma vez que, o atendimento foi realizado em dia de urgência e, consequentemente, incidiu no pronto socorro, uma vez que, o atendimento foi realizado em dia de urgência e, consequentemente, incidiu no pronto socorro, uma vez que, o atendimento foi realizado em dia de urgência e, consequentemente, incidiu no pronto socorro, uma vez que, o atendimento foi realizado em dia de urgência e, consequentemente, incidiu no pronto socorro, uma vez que, o atendimento foi realizado em dia de urgência e, consequentemente, incidiu no pronto socorro, uma vez que, o atendimento foi realizado em dia de urgência e, consequentemente, incidiu no pronto socorro, uma vez que, o atendimento foi realizado em dia de urgência e, consequentemente, incidiu no pronto socorro, uma vez que, o atendimento foi realizado em dia de urgência e, consequentemente, incidiu no pronto socorro, uma vez que, o atendimento foi realizado em dia de urgência e, consequentemente, incidiu no pronto socorro, uma vez que, o atendimento foi realizado em dia de urgência e, consequentemente, incidiu no pronto socorro, uma vez que, o atendimento foi realizado em dia de urgência e, consequentemente, incidiu no pronto socorro, uma vez que, o atendimento foi realizado em dia de urgência e, consequentemente, incidiu no pronto socorro, uma vez que, o atendimento foi realizado em dia de urgência e, consequentemente, incidiu no pronto socorro, uma vez que, o atendimento foi realizado em dia de urgência e, consequentemente, incidiu no pronto socorro, uma vez que, o atendimento foi realizado em dia de urgência e, consequentemente, incidiu no pronto socorro, uma vez que, o atendimento foi realizado em dia de urgência e, consequentemente, incidiu no pronto socorro, uma vez que, o atendimento foi realizado em dia de urgência e, consequentemente, incidiu no pronto socorro, uma vez que, o atendimento foi realizado em dia de urgência e, consequentemente, incidiu no pronto socorro, uma vez que, o atendimento foi realizado em dia de urgência e, consequentemente, incidiu no pronto socorro, uma vez que, o atendimento foi realizado em dia de urgência e, consequentemente, incidiu no pronto socorro, uma vez que, o atendimento foi realizado em dia de urgência e, consequentemente, incidiu no pronto socorro, uma vez que, o atendimento foi realizado em dia de urgência e, consequentemente, incidiu no pronto socorro, uma vez que, o atendimento foi realizado em dia de urgência e, consequentemente, incidiu no pronto socorro, uma vez que, o atendimento foi realizado em dia de urgência e, consequentemente, incidiu no pronto socorro, uma vez que, o atendimento foi realizado em dia de urgência e, consequentemente, incidiu no pronto socorro, uma vez que, o atendimento foi realizado em dia de urgência e, consequentemente, incidiu no pronto socorro, uma vez que, o atendimento foi realizado em dia de urgência e, consequentemente, incidiu no pronto socorro, uma vez que, o atendimento foi realizado em dia de urgência e, consequentemente, incidiu no pronto socorro, uma vez que, o atendimento foi realizado em dia de urgência e, consequentemente, incidiu no pronto socorro, uma vez que, o atendimento foi realizado em dia de urgência e, consequentemente, incidiu no pronto socorro, uma vez que, o atendimento foi realizado em dia de urgência e, consequentemente, incidiu no pronto socorro, uma vez que, o atendimento foi realizado em dia de urgência e, consequentemente, incidiu no pronto socorro, uma vez que, o atendimento foi realizado em dia de urgência e, consequentemente, incidiu no pronto socorro, uma vez que, o atendimento foi realizado em dia de urgência e, consequentemente, incidiu no pronto socorro, uma vez que, o atendimento foi realizado em dia de urgência e, consequentemente, incidiu no pronto socorro, uma vez que, o atendimento foi realizado em dia de urgência e, consequentemente, incidiu no pronto socorro, uma vez que, o atendimento foi realizado em dia de urgência e, consequentemente, incidiu no pronto socorro, uma vez que, o atendimento foi realizado em dia de urgência e, consequentemente, incidiu no pronto socorro, uma vez que, o atendimento foi realizado em dia de urgência e, consequentemente, incidiu no pronto socorro, uma vez que, o atendimento foi realizado em dia de urgência e, consequentemente, incidiu no pronto socorro, uma vez que, o atendimento foi realizado em dia de urgência e, consequentemente, incidiu no pronto socorro, uma vez que, o atendimento foi realizado em dia de urgência e, consequentemente, incidiu no pronto socorro, uma vez que, o atendimento foi realizado em dia de urgência e, consequentemente, incidiu no pronto socorro, uma vez que, o atendimento foi realizado em dia de urgência e, consequentemente, incidiu no pronto socorro, uma vez que, o atendimento foi realizado em dia de urgência e, consequentemente, incidiu no pronto socorro, uma vez que, o atendimento foi realizado em dia de urgência e, consequentemente, incidiu no pronto socorro, uma vez que, o atendimento foi realizado em dia de urgência e, consequentemente, incidiu no pronto socorro, uma vez que, o atendimento foi realizado em dia de urgência e, consequentemente, incidiu no pronto socorro, uma vez que, o atendimento foi realizado em dia de urgência e, consequentemente, incidiu no pronto socorro, uma vez que, o atendimento foi realizado em dia de urgência e, consequentemente, incidiu no pronto socorro, uma vez que, o atendimento foi realizado em dia de urgência e, consequentemente, incidiu no pronto socorro, uma vez que, o atendimento foi realizado em dia de urgência e, consequentemente, incidiu no pronto socorro, uma vez que, o atendimento foi realizado em dia de urgência e, consequentemente, incidiu no pronto socorro, uma vez que, o atendimento foi realizado em dia de urgência e, consequentemente, incidiu no pronto socorro, uma vez que, o atendimento foi realizado em dia de urgência e, consequentemente, incidiu no pronto socorro, uma vez que, o atendimento foi realizado em dia de urgência e, consequentemente, incidiu no pronto socorro, uma vez que, o atendimento foi realizado em dia de urgência e, consequentemente, incidiu no pronto socorro, uma vez que, o atendimento foi realizado em dia de urgência e, consequentemente, incidiu no pronto socorro, uma vez que, o atendimento foi realizado em dia de urgência e, consequentemente, incidiu no pronto socorro, uma vez que, o atendimento foi realizado em dia de urgência e, consequentemente, incidiu no pronto socorro, uma vez que, o atendimento foi realizado em dia de urgência e, consequentemente, incidiu no pronto socorro, uma vez que, o atendimento foi realizado em dia de urgência e, consequentemente, incidiu no pronto socorro, uma vez que, o atendimento foi realizado em dia de urgência e, consequentemente, incidiu no pronto socorro, uma vez que, o atendimento foi realizado em dia de urgência e, consequentemente, incidiu no pronto socorro, uma vez que, o atendimento foi realizado em dia de urgência e, consequentemente, incidiu no pronto socorro, uma vez que, o atendimento foi realizado em dia de urgência e, consequentemente, incidiu no pronto socorro, uma vez que, o atendimento foi realizado em dia de urgência e, consequentemente, incidiu no pronto socorro, uma vez que, o atendimento foi realizado em dia de urgência e, consequentemente, incidiu no pronto socorro, uma vez que, o atendimento foi realizado em dia de urgência e, consequentemente, incidiu no pronto socorro, uma vez que, o atendimento foi realizado em dia de urgência e, consequentemente, incidiu no pronto socorro, uma vez que, o atendimento foi realizado em dia de urgência e, consequentemente, incidiu no pronto socorro, uma vez que, o atendimento foi realizado em dia de urgência e, consequentemente, incidiu no pronto socorro, uma vez que, o atendimento foi realizado em dia de urgência e, consequentemente, incidiu no pronto socorro, uma vez que, o atendimento foi realizado em dia de urgência e, consequentemente, incidiu no pronto socorro, uma vez que, o atendimento foi realizado em dia de urgência e, consequentemente, incidiu no pronto socorro, uma vez que, o atendimento foi realizado em dia de urgência e, consequentemente, incidiu no pronto socorro, uma vez que, o atendimento foi realizado em dia de urgência e, consequentemente, incidiu no pronto socorro, uma vez que, o atendimento foi realizado em dia de urgência e, consequentemente, incidiu no pronto socorro, uma vez que, o atendimento foi realizado em dia de urgência e, consequentemente, incidiu no pronto socorro, uma vez que, o atendimento foi realizado em dia de urgência e, consequentemente, incidiu no pronto socorro, uma vez que, o atendimento foi realizado em dia de urgência e, consequentemente, incidiu no pronto socorro, uma vez que, o atendimento foi realizado em dia de urgência e, consequentemente, incidiu no pronto socorro, uma vez que, o atendimento foi realizado em dia de urgência e, consequentemente, incidiu no pronto socorro, uma vez que, o atendimento foi realizado em dia de urgência e, consequentemente, incidiu no pronto socorro, uma vez que, o atendimento foi realizado em dia de urgência e, consequentemente, incidiu no pronto socorro, uma vez que, o atendimento foi realizado em dia de urgência e, consequentemente, incidiu no pronto socorro, uma vez que, o atendimento foi realizado em dia de urgência e, consequentemente, incidiu no pronto socorro, uma vez que, o atendimento foi realizado em dia de urgência e, consequentemente, incidiu no pronto socorro, uma vez que, o atendimento foi realizado em dia de urgência e, consequentemente, incidiu no pronto socorro, uma vez que, o atendimento foi realizado em dia de urgência e, consequentemente, incidiu no pronto socorro, uma vez que, o atendimento foi realizado em dia de urgência e, consequentemente, incidiu no pronto socorro, uma vez que, o atendimento foi realizado em dia de urgência e, consequentemente, incidiu no pronto socorro, uma vez que, o atendimento foi realizado em dia de urgência e, consequentemente, incidiu no pronto socorro, uma vez que, o atendimento foi realizado em dia de urgência e, consequentemente, incidiu no pronto socorro, uma vez que, o atendimento foi realizado em dia de urgência e, consequentemente, incidiu no pronto socorro, uma vez que, o atendimento foi realizado em dia de urgência e, consequentemente, incidiu no pronto socorro, uma vez que, o atendimento foi realizado em dia de urgência e, consequentemente, incidiu no pronto socorro, uma vez que, o atendimento foi realizado em dia de urgência e, consequentemente, incidiu no pronto socorro, uma vez que, o atendimento foi realizado em dia de urgência e, consequentemente, incidiu no pronto socorro, uma vez que, o atendimento foi realizado em dia de urgência e, consequentemente, incidiu no pronto socorro, uma vez que, o atendimento foi realizado em dia de urgência e, consequentemente, incidiu no pronto socorro, uma vez que, o atendimento foi realizado em dia de urgência e, consequentemente, incidiu no pronto socorro, uma vez que, o atendimento foi realizado em dia de urgência e, consequentemente, incidiu no pronto socorro, uma vez que, o atendimento foi realizado em dia de urgência e, consequentemente, incidiu no pronto socorro, uma vez que, o atendimento foi realizado em dia de urgência e, consequentemente, incidiu no pronto socorro, uma vez que, o atendimento foi realizado em dia de urgência e, consequentemente, incidiu no pronto socorro, uma vez que, o atendimento foi realizado em dia de urgência e, consequentemente, incidiu no pronto socorro, uma vez que, o atendimento foi realizado em dia de urgência e, consequentemente, incidiu no pronto socorro, uma vez que, o atendimento foi realizado em dia de urgência e, consequentemente, incidiu no pronto socorro, uma vez que, o atendimento foi realizado em dia de urgência e, consequentemente, incidiu no pronto socorro, uma vez que, o atendimento foi realizado em dia de urgência e, consequentemente, incidiu no pronto socorro, uma vez que, o atendimento foi realizado em dia de urgência e, consequentemente, incidiu no pronto socorro, uma vez que, o atendimento foi realizado em dia de urgência e, consequentemente, incidiu no pronto socorro, uma vez que, o atendimento foi realizado em dia de urgência e, consequentemente, incidiu no pronto socorro, uma vez que, o atendimento foi realizado em dia de urgência e, consequentemente, incidiu no pronto socorro, uma vez que, o atendimento foi realizado em dia de urgência e, consequentemente, incidiu no pronto socorro, uma vez que, o atendimento foi realizado em dia de urgência e, consequentemente, incidiu no pronto socorro, uma vez que, o atendimento foi realizado em dia de urgência e, consequentemente, incidiu no pronto socorro, uma vez que, o atendimento foi realizado em dia de urgência e, consequentemente, incidiu no pronto socorro, uma vez que, o atendimento foi realizado em dia de urgência e, consequentemente, incidiu no pronto socorro, uma vez que, o atendimento foi realizado em dia de urgência e, consequentemente, incidiu no pronto socorro, uma vez que, o atendimento foi realizado em dia de urgência e, consequentemente, incidiu no pronto socorro, uma vez que, o atendimento foi realizado em dia de urgência e, consequentemente, incidiu no pronto socorro, uma vez que, o atendimento foi realizado em dia de urgência e, consequentemente, incidiu no pronto socorro, uma vez que, o atendimento foi realizado em dia de urgência e, consequentemente, incidiu no pronto socorro, uma vez que, o atendimento foi realizado em dia de urgência e, consequentemente, incidiu no pronto socorro, uma vez que, o atendimento foi realizado em dia de urgência e, consequentemente, incidiu no pronto socorro, uma vez que, o atendimento foi realizado em dia de urgência e, consequentemente, incidiu no pronto socorro, uma vez que, o atendimento foi realizado em dia de urgência e, consequentemente, incidiu no pronto socorro, uma vez que, o atendimento foi realizado em dia de urgência e, consequentemente, incidiu no pronto socorro, uma vez que, o atendimento foi realizado em dia de urgência e, consequentemente, incidiu no pronto socorro, uma vez que, o atendimento foi realizado em dia de urgência e, consequentemente, incidiu no pronto socorro, uma vez que, o atendimento foi realizado em dia de urgência e, consequentemente, incidiu no pronto socorro, uma vez que, o atendimento foi realizado em dia de urgência e, consequentemente, incidiu no pronto socorro, uma vez que, o atendimento foi realizado em dia de urgência e, consequentemente, incidiu no pronto socorro, uma vez que, o atendimento foi realizado em dia de urgência e, consequentemente, incidiu no pronto socorro, uma vez que, o atendimento foi realizado em dia de urgência e, consequentemente, incidiu no pronto socorro, uma vez que, o atendimento foi realizado em dia de urgência e, consequentemente, incidiu no pronto socorro, uma vez que, o atendimento foi realizado em dia de urgência e, consequentemente, incidiu no pronto socorro, uma vez que, o atendimento foi realizado em dia de urgência e, consequentemente, incidiu no pronto socorro, uma vez que, o atendimento foi realizado em dia de urgência e, consequentemente, incidiu no pronto socorro, uma vez que, o atendimento foi realizado em dia de urgência e, consequentemente, incidiu no pronto socorro, uma vez que, o atendimento foi realizado em dia de urgência e, consequentemente, incidiu no pronto socorro, uma vez que, o atendimento foi realizado em dia de urgência e, consequentemente, incidiu no pronto socorro, uma vez que, o atendimento foi realizado em dia de urgência e, consequentemente, incidiu no pronto socorro, uma vez que, o atendimento foi realizado em dia de urgência e, consequentemente, incidiu no pronto socorro, uma vez que, o atendimento foi realizado em dia de urgência e, consequentemente, incidiu no pronto socorro, uma vez que, o atendimento foi realizado em dia de urgência e, consequentemente, incidiu no pronto socorro, uma vez que, o atendimento foi realizado em dia de urgência e, consequentemente, incidiu no pronto socorro, uma vez que, o atendimento foi realizado em dia de urgência e, consequentemente, incidiu no pronto socorro, uma vez que, o atendimento foi realizado em dia de urgência e, consequentemente, incidiu no pronto socorro, uma vez que, o atendimento foi realizado em dia de urgência e, consequentemente, incidiu no pronto socorro, uma vez que, o atendimento foi realizado em dia de urgência e, consequentemente, incidiu no pronto socorro, uma vez que, o atendimento foi realizado em dia de urgência e, consequentemente, incidiu no pronto socorro, uma vez que, o atendimento foi realizado em dia de urgência e, consequentemente, incidiu no pronto socorro, uma vez que, o atendimento foi realizado em dia de urgência e, consequentemente, incidiu no pronto socorro, uma vez que, o atendimento foi realizado em dia de urgência e, consequentemente, incidiu no pronto socorro, uma vez que, o atendimento foi realizado em dia de urgência e, consequentemente, incidiu no pronto socorro, uma vez que, o atendimento foi realizado em dia de urgência e, consequentemente, incidiu no pronto socorro, uma vez que, o atendimento foi realizado em dia de urgência e, consequentemente, incidiu no pronto socorro, uma vez que, o atendimento foi realizado em dia de urgência e, consequentemente, incidiu no pronto socorro, uma vez que, o atendimento foi realizado em dia de urgência e, consequentemente, incidiu no pronto socorro, uma vez que, o atendimento foi realizado em dia de urgência e, consequentemente, incidiu no pronto socorro, uma vez que, o atendimento foi realizado em dia de urgência e, consequentemente, incidiu no pronto socorro, uma vez que, o atendimento foi realizado em dia de urgência e, consequentemente, incidiu no pronto socorro, uma vez que, o atendimento foi realizado em dia de urgência e, consequentemente, incidiu no pronto socorro, uma vez que, o atendimento foi realizado em dia de urgência e, consequentemente, incidiu no pronto socorro, uma vez que, o atendimento foi realizado em dia de urgência e, consequentemente, incidiu no pronto socorro, uma vez que, o atendimento foi realizado em dia de urgência e, consequentemente, incidiu no pronto socorro, uma vez que, o atendimento foi realizado em dia de urgência e, consequentemente, incidiu no pronto socorro, uma vez que, o atendimento foi realizado em dia de urgência e, consequentemente, incidiu no pronto socorro, uma vez que, o atendimento foi realizado em dia de urgência e, consequentemente, incidiu no pronto socorro, uma vez que, o atendimento foi realizado em dia de urgência e, consequentemente, incidiu no pronto socorro, uma vez que, o atendimento foi realizado em dia de urgência e, consequentemente, incidiu no pronto socorro, uma vez que, o atendimento foi realizado em dia de urgência e, consequentemente, incidiu no pronto socorro, uma vez que, o atendimento foi realizado em dia de urgência e, consequentemente, incidiu no pronto socorro, uma vez que, o atendimento foi realizado em dia de urgência e, consequentemente, incidiu no pronto socorro, uma vez que, o atendimento foi realizado em dia de urgência e, consequentemente, incidiu no pronto socorro, uma vez que, o atendimento foi realizado em dia de urgência e, consequentemente, incidiu no pronto socorro, uma vez que, o atendimento foi realizado em dia de urgência e, consequentemente, incidiu no pronto socorro, uma vez que, o atendimento foi realizado em dia de urgência e, consequentemente, incidiu no pronto socorro, uma vez que, o atendimento foi realizado em dia de urgência e, consequentemente, incidiu no pronto socorro, uma vez que, o atendimento foi realizado em dia de urgência e, consequentemente, incidiu no pronto socorro, uma vez que, o atendimento foi realizado em dia de urgência e, consequentemente, incidiu no pronto socorro, uma vez que, o atendimento foi realizado em dia de urgência e, consequentemente, incidiu no pronto socorro, uma vez que, o atendimento foi realizado em dia de urgência e, consequentemente, incidiu no pronto socorro, uma vez que, o atendimento foi realizado em dia de urgência e, consequentemente, incidiu no pronto socorro, uma vez que, o atendimento foi realizado em dia de urgência e, consequentemente, incidiu no pronto socorro, uma vez que, o atendimento foi realizado em dia de urgência e, consequentemente, incidiu no pronto socorro, uma vez que, o atendimento foi realizado em dia de urgência e, consequentemente, incidiu no pronto socorro, uma vez que, o atendimento foi realizado em dia de urgência e, consequentemente, incidiu no pronto socorro, uma vez que, o atendimento foi realizado em dia de urgência e, consequentemente, incidiu no pronto socorro, uma vez que, o atendimento foi realizado em dia de urgência e, consequentemente, incidiu no pronto socorro, uma vez que, o atendimento foi realizado em dia de urgência e, consequentemente, incidiu no pronto socorro, uma vez que, o atendimento foi realizado em dia de urgência e, consequentemente, incidiu no pronto socorro, uma vez que, o atendimento foi realizado em dia de urgência e, consequentemente, incidiu no pronto socorro, uma vez que, o atendimento foi realizado em dia de urgência e, consequentemente, incidiu no pronto socorro, uma vez que, o atendimento foi realizado em dia de urgência e, consequentemente, incidiu no pronto socorro, uma vez que, o atendimento foi realizado em dia de urgência e, consequentemente, incidiu no pronto socorro, uma vez que, o atendimento foi realizado em dia de urgência e, consequentemente, incidiu no pronto socorro, uma vez que, o atendimento foi realizado em dia de urgência e, consequentemente, incidiu no pronto socorro, uma vez que, o atendimento foi realizado em dia de urgência e, consequentemente, incidiu no pronto socorro, uma vez que, o atendimento foi realizado em dia de urgência e, consequentemente, incidiu no pronto socorro, uma vez que, o atendimento foi realizado em dia de urgência e, consequentemente, incidiu no pronto socorro, uma vez que, o atendimento foi realizado em dia de urgência e, consequentemente, incidiu no pronto socorro, uma vez que, o atendimento foi realizado em dia de urgência e, consequentemente, incidiu no pronto socorro, uma vez que, o atendimento foi realizado em dia de urgência e, consequentemente, incidiu no pronto socorro, uma vez que, o atendimento foi realizado em dia de urgência e, consequentemente, incidiu no pronto socorro, uma vez que, o atendimento foi realizado em dia de urgência e, consequentemente, incidiu no pronto socorro, uma vez que, o atendimento foi realizado em dia de urgência e, consequentemente, incidiu no pronto socorro, uma vez que, o atendimento foi realizado em dia de urgência e, consequentemente, incidiu no pronto socorro, uma vez que, o atendimento foi realizado em dia de urgência e, consequentemente, incidiu no pronto socorro, uma vez que, o atendimento foi realizado em dia de urgência e, consequentemente, incidiu no pronto socorro, uma vez que, o atendimento foi realizado em dia de urgência e, consequentemente, incidiu no pronto socorro, uma vez que, o atendimento foi realizado em dia de urgência e, consequentemente, incidiu no pronto socorro, uma vez que, o atendimento foi realizado em dia de urgência e, consequentemente, incidiu no pronto socorro, uma vez que, o atendimento foi realizado em dia de urgência e, consequentemente, incidiu no pronto socorro, uma vez que, o atendimento foi realizado em dia de urgência e, consequentemente, incidiu no pronto socorro, uma vez que, o atendimento foi realizado em dia de urgência e, consequentemente, incidiu no pronto socorro, uma vez que, o atendimento foi realizado em dia de urgência e, consequentemente, incidiu no pronto socorro, uma vez que, o atendimento foi realizado em dia de urgência e, consequentemente, incidiu no pronto socorro, uma vez que, o atendimento foi realizado em dia de urgência e, consequentemente, incidiu no pronto socorro, uma vez que, o atendimento foi realizado em dia de urgência e, consequentemente, incidiu no pronto socorro, uma vez que, o atendimento foi realizado em dia de urgência e, consequentemente, incidiu no pronto socorro, uma vez que, o atendimento foi realizado em dia de urgência e, consequentemente, incidiu no pronto socorro, uma vez que, o atendimento foi realizado em dia de urgência e, consequentemente, incidiu no pronto socorro, uma vez que, o atendimento foi realizado em dia de urgência e, consequentemente, incidiu no pronto socorro, uma vez que, o atendimento foi realizado em dia de urgência e, consequentemente, incidiu no pronto socorro, uma vez que, o atendimento foi realizado em dia de urgência e, consequentemente, incidiu no pronto socorro, uma vez que, o atendimento foi realizado em dia de urgência e, consequentemente, incidiu no pronto socorro, uma vez que, o atendimento foi realizado em dia de urgência e, consequentemente, incidiu no pronto socorro, uma vez que, o atendimento foi realizado em dia de urgência e, consequentemente, incidiu no pronto socorro, uma vez que, o atendimento foi realizado em dia de urgência e, consequentemente, incidiu no pronto socorro, uma vez que, o atendimento foi realizado em dia de urgência e, consequentemente, incidiu no pronto socorro, uma vez que, o atendimento foi realizado em dia de urgência e, consequentemente, incidiu no pronto socorro, uma vez que, o atendimento foi realizado em dia de urgência e, consequentemente, incidiu no pronto socorro, uma vez que, o atendimento foi realizado em dia de urgência e, consequentemente, incidiu no pronto socorro, uma vez que, o atendimento foi realizado em dia de urgência e, consequentemente, incidiu no pronto socorro, uma vez que, o atendimento foi realizado em dia de urgência e, consequentemente, incidiu no pronto socorro, uma vez que, o atendimento foi realizado em dia de urgência e, consequentemente, incidiu no pronto socorro, uma vez que, o atendimento foi realizado em dia de urgência e, consequentemente, incidiu no pronto socorro, uma vez que, o atendimento foi realizado em dia de urgência e, consequentemente, incidiu no pronto socorro, uma vez que, o atendimento foi realizado em dia de urgência e, consequentemente, incidiu no pronto socorro, uma vez que, o atendimento foi realizado em dia de urgência e, consequentemente, incidiu no pronto socorro, uma vez que, o atendimento foi realizado em dia de urgência e, consequentemente, incidiu no pronto socorro, uma vez que, o atendimento foi realizado em dia de urgência e, consequentemente, incidiu no pronto socorro, uma vez que, o atendimento foi realizado em dia de urgência e, consequentemente, incidiu no pronto socorro, devendo ser descontado do valor do procedimento.
+          {/* Motivo de Impugnação */}
+          <div className="space-y-2">
+            <Label>Motivo de impugnação/recurso</Label>
+            <Select value={selectedMotivo} onValueChange={setSelectedMotivo}>
+              <SelectTrigger>
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="16">16 - COBERTURA PARCIAL TEMPORÁRIA PARA DOENÇA OU LESÃO PREEXISTENTE</SelectItem>
+                <SelectItem value="02">02 - HOMONÍMIA</SelectItem>
+                <SelectItem value="04">04 - ÁREA DE ABRANGÊNCIA</SelectItem>
+                <SelectItem value="06">06 - QUANTIDADE DO PROCEDIMENTO NÃO COBERTA PELO PRODUTO</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
 
-Desta forma, conclui-se que sobre o(s) procedimento(s) realizado(s), incide coparticipação no total de R$ 27,50, devendo ser descontado do valor do procedimento."
-                  className="min-h-[150px]"
+          {/* Detalhamento do Motivo */}
+          {selectedMotivo === "16" && (
+            <div className="space-y-4 p-4 bg-gray-50 rounded-lg border border-gray-200">
+              <div className="space-y-2">
+                <Label className="text-sm">Detalhamento do Motivo</Label>
+                <Textarea
+                  value="A operadora entende que a cobrança da presente AIH/APAC é indevida porque se trata de DOENÇA E/OU LESÃO PREEXISTENTE.
+
+No momento da contratação, o(a) beneficiário(a) declarou ter ciência ser portador(a) de CATARATA conforme item 21 da DLS em anexo.
+
+Em razão disso, contratou CPT de 24 meses, vencível em 31/05/2024, para a patologia declarada.
+
+O(a) beneficiário(a) utilizou os serviços do SUS em 02/2023 a 27/02/2023 para realizar o procedimento FACOEMULSIFICAÇÃO COM IMPLANTE DE LENTE INTRA-OCULAR DOBRÁVEL, relacionado à doença ou lesão declarada.
+
+Desta forma, conclui-se que no momento da utilização dos serviços do SUS o(a) beneficiário(a) ainda estava cumprindo o período de Cobertura Parcial Temporária.
+
+Conforme os documentos anexos, a adesão ao plano de saúde, na modalidade individual/familiar, ocorreu em 01/06/2022, data em que houve a efetiva assinatura do instrumento contratual. Portanto, ao contrário do que foi alegado, é desnecessária a comprovação do pagamento da primeira mensalidade, uma vez que, conforme já exposto, para fins de contagem de carência e de Cobertura Parcial Temporária (CPT), a operadora considerou, para evitar qualquer prejuízo ao(à) beneficiário(a), a data da assinatura contratual como marco inicial."
+                  className="min-h-[200px] resize-none"
                   readOnly
                 />
               </div>
 
-              <div className="grid grid-cols-3 gap-4">
+              {/* Bottom Section with 3 columns */}
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div className="space-y-2">
-                  <Label className="text-sm text-blue-600">Tempestividade e Outras Preliminares</Label>
-                  <div className="flex items-center space-x-2 text-sm text-gray-600">
-                    <div className="w-4 h-4 rounded-full bg-gray-300 flex items-center justify-center">
-                      <span className="text-xs">!</span>
-                    </div>
-                    <span>Informe a tempestividade ou outras preliminares</span>
-                  </div>
+                  <Label className="text-sm flex items-center gap-2">
+                    <FileText className="h-4 w-4 text-gray-500" />
+                    Tempestividade e Outras Preliminares
+                  </Label>
+                  <Input placeholder="Informe a tempestividade ou outras preliminares" />
                 </div>
 
                 <div className="space-y-2">
-                  <Label className="text-sm text-blue-600">Planilha de Cálculo</Label>
-                  <div className="flex items-center space-x-2 text-sm">
-                    <span className="font-mono">R$ 873,63 - 27,50 (consulta em pronto socorro) = 846,13</span>
-                  </div>
+                  <Label className="text-sm flex items-center gap-2">
+                    <Calculator className="h-4 w-4 text-gray-500" />
+                    Memória de Cálculo
+                  </Label>
+                  <Input placeholder="Se necessário, informe a memória de cálculo" />
                 </div>
 
                 <div className="space-y-2">
-                  <Label className="text-sm text-blue-600">Documentos Comprobatórios</Label>
+                  <Label className="text-sm flex items-center gap-2">
+                    <FolderOpen className="h-4 w-4 text-gray-500" />
+                    Documentos Comprobatórios
+                  </Label>
                   <Select>
                     <SelectTrigger>
                       <SelectValue placeholder="Selecione o(s) documento(s) comprobatório(s)..." />
@@ -155,7 +178,7 @@ Desta forma, conclui-se que sobre o(s) procedimento(s) realizado(s), incide copa
                 </div>
               </div>
 
-              <div className="flex items-center space-x-2">
+              <div className="flex items-center space-x-2 pt-2">
                 <Checkbox
                   id="outros-documentos"
                   checked={informarOutrosDocumentos}
@@ -176,36 +199,22 @@ Desta forma, conclui-se que sobre o(s) procedimento(s) realizado(s), incide copa
           <CardTitle>Pedidos</CardTitle>
         </CardHeader>
         <CardContent>
-          <RadioGroup value={selectedPedido} onValueChange={setSelectedPedido}>
-            <div className="flex items-center space-x-2">
+          <RadioGroup value={selectedPedido} onValueChange={setSelectedPedido} className="space-y-4">
+            <div className="flex items-center space-x-3">
               <RadioGroupItem value="anulacao-identificacao" id="anulacao-identificacao" />
               <Label htmlFor="anulacao-identificacao">Anulação da identificação do atendimento.</Label>
             </div>
-            <div className="flex items-center space-x-2">
+            <div className="flex items-center space-x-3">
               <RadioGroupItem value="retificacao" id="retificacao" />
               <Label htmlFor="retificacao">Retificação do valor a ser ressarcido.</Label>
             </div>
-            <div className="flex items-center space-x-2">
+            <div className="flex items-center space-x-3">
               <RadioGroupItem value="anulacao-subsidiaria" id="anulacao-subsidiaria" />
               <Label htmlFor="anulacao-subsidiaria">
                 Anulação da identificação do atendimento ou, subsidiariamente, retificação do valor a ser ressarcido.
               </Label>
             </div>
           </RadioGroup>
-
-          {selectedPedido === "retificacao" && (
-            <div className="mt-4 space-y-2">
-              <Label>Valor da retificação</Label>
-              <div className="flex items-center space-x-2">
-                <span className="text-lg">$</span>
-                <Input
-                  value={valorRetificacao}
-                  onChange={(e) => setValorRetificacao(e.target.value)}
-                  className="w-32"
-                />
-              </div>
-            </div>
-          )}
         </CardContent>
       </Card>
 
@@ -233,17 +242,17 @@ Desta forma, conclui-se que sobre o(s) procedimento(s) realizado(s), incide copa
         </CardContent>
       </Card>
 
-      {/* Botões de Ação */}
+      {/* Action Buttons */}
       <div className="flex justify-end gap-4">
         <Button variant="outline" className="rounded-xl">
           <Upload className="mr-2 h-4 w-4" />
           ANEXAR DOCUMENTO
         </Button>
         <Button variant="outline" className="rounded-xl">
-          <FileText className="mr-2 h-4 w-4" />
+          <Cloud className="mr-2 h-4 w-4" />
           INTEGRAR ANS
         </Button>
-        <Button className="rounded-xl shadow-lg">
+        <Button className="rounded-xl">
           <Save className="mr-2 h-4 w-4" />
           SALVAR E GERAR DEFESA
         </Button>

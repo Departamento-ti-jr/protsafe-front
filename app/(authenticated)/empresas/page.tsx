@@ -14,49 +14,43 @@ export default function EmpresasPage() {
   ]
 
   return (
-    <div className="p-6 space-y-8">
-      <div className="space-y-2">
-        <h1 className="text-4xl font-bold bg-gradient-to-r from-resus-secondary to-resus-primary bg-clip-text text-transparent">
-          Empresas
-        </h1>
-        <p className="text-resus-secondary/70">Aqui mostra uma lista de todas empresas cadastradas</p>
+    <div className="p-6 space-y-6">
+      <div>
+        <h1 className="text-2xl font-semibold text-gray-900">Empresas</h1>
       </div>
 
-      <div className="flex items-center py-4">
+      <div className="flex items-center">
         <div className="relative w-full max-w-sm">
-          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-resus-primary" />
+          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
           <Input
             placeholder="Pesquisar empresas..."
-            className="pl-10 border-resus-primary/30 focus:border-resus-primary focus:ring-resus-primary/20 rounded-xl bg-white/50 backdrop-blur-sm"
+            className="pl-10 border-gray-300 focus:border-blue-500 focus:ring-blue-500"
           />
         </div>
         <div className="ml-auto">
-          <Button className="rounded-xl shadow-lg">
+          <Button>
             <Plus className="mr-2 h-4 w-4" />
             Cadastrar
           </Button>
         </div>
       </div>
 
-      <div className="rounded-2xl border-0 shadow-xl bg-white/80 backdrop-blur-sm overflow-hidden">
+      <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
         <Table>
           <TableHeader>
-            <TableRow className="bg-gradient-to-r from-resus-primary/10 to-resus-accent/10 border-b border-resus-primary/20">
-              <TableHead className="font-semibold text-resus-secondary">Código</TableHead>
-              <TableHead className="font-semibold text-resus-secondary">Nome</TableHead>
-              <TableHead className="font-semibold text-resus-secondary text-right">Ações</TableHead>
+            <TableRow className="bg-gray-50">
+              <TableHead className="font-medium text-gray-900">Código</TableHead>
+              <TableHead className="font-medium text-gray-900">Nome</TableHead>
+              <TableHead className="font-medium text-gray-900 text-right">Ações</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {empresas.map((empresa) => (
-              <TableRow
-                key={empresa.codigo}
-                className="hover:bg-gradient-to-r hover:from-resus-primary/5 hover:to-resus-accent/5 transition-all duration-200 border-b border-gray-100"
-              >
-                <TableCell className="font-medium text-resus-secondary">{empresa.codigo}</TableCell>
-                <TableCell className="text-resus-secondary">{empresa.nome}</TableCell>
+              <TableRow key={empresa.codigo} className="hover:bg-gray-50">
+                <TableCell className="font-medium text-gray-900">{empresa.codigo}</TableCell>
+                <TableCell className="text-gray-600">{empresa.nome}</TableCell>
                 <TableCell className="text-right">
-                  <Button variant="ghost" size="icon" className="rounded-xl">
+                  <Button variant="ghost" size="icon">
                     <PenSquare className="h-4 w-4" />
                   </Button>
                 </TableCell>
@@ -66,21 +60,19 @@ export default function EmpresasPage() {
         </Table>
       </div>
 
-      {/* Paginação modernizada */}
+      {/* Paginação */}
       <div className="flex items-center justify-center space-x-2 py-4">
-        <Button variant="outline" size="icon" disabled className="rounded-xl">
+        <Button variant="outline" size="icon" disabled>
           &lt;
         </Button>
-        <Button size="sm" className="rounded-xl">
-          1
-        </Button>
-        <Button variant="outline" size="sm" className="rounded-xl">
+        <Button size="sm">1</Button>
+        <Button variant="outline" size="sm">
           2
         </Button>
-        <Button variant="outline" size="sm" className="rounded-xl">
+        <Button variant="outline" size="sm">
           3
         </Button>
-        <Button variant="outline" size="icon" className="rounded-xl">
+        <Button variant="outline" size="icon">
           &gt;
         </Button>
       </div>

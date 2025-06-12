@@ -2,7 +2,6 @@
 import Link from "next/link"
 import { usePathname } from "next/navigation"
 import { cn } from "@/lib/utils"
-import Image from "next/image"
 import {
   LayoutDashboard,
   Building2,
@@ -15,8 +14,10 @@ import {
   History,
   FileTerminal,
   LogOut,
+  ChevronRight,
 } from "lucide-react"
-import { Button } from "@/components/ui/button"
+import SignOut from "@/components/sign-out"
+import { handleSignOut } from "@/app/actions/auth"
 
 interface ModernSidebarProps {
   className?: string
@@ -79,48 +80,125 @@ export function ModernSidebar({ className }: ModernSidebarProps) {
   ]
 
   return (
-    <div className={cn("w-64 h-screen bg-white border-r border-gray-200 flex flex-col", className)}>
+    <div
+      className={cn("w-270 h-screen bg-white border-r border-modernize-gray-200 flex flex-col shadow-lg", className)}
+    >
       {/* Logo Section */}
-      <div className="p-6 border-b border-gray-200">
-        <div className="flex items-center gap-3">
-          <Image src="/images/resus-logo.jpeg" alt="Resus Logo" width={120} height={40} className="object-contain" />
-        </div>
-        <p className="text-sm text-gray-500 mt-2">Painel de Controle</p>
+      <div className="p-6 border-b border-modernize-gray-100">
+        <Link href="/dashboard" className="flex items-center gap-3">
+          <div className="w-8 h-8 bg-gradient-to-r from-modernize-primary to-modernize-secondary rounded-lg flex items-center justify-center">
+            <span className="text-white font-bold text-sm">R</span>
+          </div>
+          <div>
+            <h1 className="text-xl font-bold text-modernize-gray-800">ReSUS</h1>
+            <p className="text-xs text-modernize-gray-500">Sistema Jurídico</p>
+          </div>
+        </Link>
       </div>
 
       {/* Navigation */}
       <div className="flex-1 py-6">
-        <div className="px-3">
-          <p className="text-xs font-medium text-gray-500 uppercase tracking-wider mb-4 px-3">Navegação Principal</p>
-          <nav className="space-y-1">
-            {navItems.map((item) => (
-              <Link
-                key={item.href}
-                href={item.href}
-                className={cn(
-                  "flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors",
-                  pathname === item.href
-                    ? "bg-blue-50 text-blue-700 border-r-2 border-blue-600"
-                    : "text-gray-600 hover:bg-gray-50 hover:text-gray-900",
-                )}
-              >
-                <item.icon className="h-5 w-5" />
-                <span>{item.name}</span>
-              </Link>
-            ))}
-          </nav>
+        <div className="px-4">
+          <div className="mb-6">
+            <p className="text-xs font-semibold text-modernize-gray-400 uppercase tracking-wider mb-3 px-3">
+              PRINCIPAL
+            </p>
+            <nav className="space-y-1">
+              {navItems.slice(0, 1).map((item) => (
+                <Link
+                  key={item.href}
+                  href={item.href}
+                  className={cn(
+                    "flex items-center gap-3 px-3 py-3 rounded-xl text-sm font-medium transition-all duration-200 group relative",
+                    pathname === item.href
+                      ? "bg-gradient-to-r from-modernize-primary to-modernize-secondary text-white shadow-modernize"
+                      : "text-modernize-gray-600 hover:bg-modernize-gray-50 hover:text-modernize-primary",
+                  )}
+                >
+                  <item.icon className="h-5 w-5" />
+                  <span className="flex-1">{item.name}</span>
+                  {pathname === item.href && <ChevronRight className="h-4 w-4 opacity-70" />}
+                </Link>
+              ))}
+            </nav>
+          </div>
+
+          <div className="mb-6">
+            <p className="text-xs font-semibold text-modernize-gray-400 uppercase tracking-wider mb-3 px-3">GESTÃO</p>
+            <nav className="space-y-1">
+              {navItems.slice(1, 3).map((item) => (
+                <Link
+                  key={item.href}
+                  href={item.href}
+                  className={cn(
+                    "flex items-center gap-3 px-3 py-3 rounded-xl text-sm font-medium transition-all duration-200 group relative",
+                    pathname === item.href
+                      ? "bg-gradient-to-r from-modernize-primary to-modernize-secondary text-white shadow-modernize"
+                      : "text-modernize-gray-600 hover:bg-modernize-gray-50 hover:text-modernize-primary",
+                  )}
+                >
+                  <item.icon className="h-5 w-5" />
+                  <span className="flex-1">{item.name}</span>
+                  {pathname === item.href && <ChevronRight className="h-4 w-4 opacity-70" />}
+                </Link>
+              ))}
+            </nav>
+          </div>
+
+          <div className="mb-6">
+            <p className="text-xs font-semibold text-modernize-gray-400 uppercase tracking-wider mb-3 px-3">
+              DOCUMENTOS
+            </p>
+            <nav className="space-y-1">
+              {navItems.slice(3, 8).map((item) => (
+                <Link
+                  key={item.href}
+                  href={item.href}
+                  className={cn(
+                    "flex items-center gap-3 px-3 py-3 rounded-xl text-sm font-medium transition-all duration-200 group relative",
+                    pathname === item.href
+                      ? "bg-gradient-to-r from-modernize-primary to-modernize-secondary text-white shadow-modernize"
+                      : "text-modernize-gray-600 hover:bg-modernize-gray-50 hover:text-modernize-primary",
+                  )}
+                >
+                  <item.icon className="h-5 w-5" />
+                  <span className="flex-1">{item.name}</span>
+                  {pathname === item.href && <ChevronRight className="h-4 w-4 opacity-70" />}
+                </Link>
+              ))}
+            </nav>
+          </div>
+
+          <div>
+            <p className="text-xs font-semibold text-modernize-gray-400 uppercase tracking-wider mb-3 px-3">SISTEMA</p>
+            <nav className="space-y-1">
+              {navItems.slice(8).map((item) => (
+                <Link
+                  key={item.href}
+                  href={item.href}
+                  className={cn(
+                    "flex items-center gap-3 px-3 py-3 rounded-xl text-sm font-medium transition-all duration-200 group relative",
+                    pathname === item.href
+                      ? "bg-gradient-to-r from-modernize-primary to-modernize-secondary text-white shadow-modernize"
+                      : "text-modernize-gray-600 hover:bg-modernize-gray-50 hover:text-modernize-primary",
+                  )}
+                >
+                  <item.icon className="h-5 w-5" />
+                  <span className="flex-1">{item.name}</span>
+                  {pathname === item.href && <ChevronRight className="h-4 w-4 opacity-70" />}
+                </Link>
+              ))}
+            </nav>
+          </div>
         </div>
       </div>
 
       {/* Footer */}
-      <div className="p-4 border-t border-gray-200">
-        <Button
-          variant="ghost"
-          className="w-full flex items-center gap-3 text-gray-600 hover:text-red-600 justify-start"
-        >
-          <LogOut className="h-5 w-5" />
-          <span>Sair</span>
-        </Button>
+      <div className="p-4 border-t border-modernize-gray-100">
+        <div className="flex items-center gap-3 px-3 py-2 rounded-xl hover:bg-red-50 transition-colors">
+          <LogOut className="h-5 w-5 text-modernize-error" />
+          <SignOut onSignOut={handleSignOut} />
+        </div>
       </div>
     </div>
   )

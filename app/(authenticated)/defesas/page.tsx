@@ -58,8 +58,7 @@ export default function DefesasPage() {
       {/* Header */}
       <div className="flex items-center justify-between mb-8">
         <div>
-          <h1 className="text-2xl font-semibold text-gray-900 mb-2">Defesas</h1>
-          <p className="text-gray-600">Gerencie e acompanhe todas as defesas jurídicas</p>
+          <h1 className="text-2xl font-semibold text-gray-900">Defesas</h1>
         </div>
         <Button className="flex items-center gap-2">
           <Plus className="h-4 w-4" />
@@ -71,7 +70,10 @@ export default function DefesasPage() {
       <div className="flex flex-col md:flex-row gap-4 mb-6">
         <div className="relative flex-1">
           <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
-          <Input placeholder="Difícil de encontrar? Digite aqui que vamos encontrar para você..." className="pl-10" />
+          <Input
+            placeholder="Buscar defesas..."
+            className="pl-10 border-gray-300 focus:border-blue-500 focus:ring-blue-500"
+          />
         </div>
         <Button variant="outline">
           <Filter className="mr-2 h-4 w-4" />
@@ -128,9 +130,7 @@ export default function DefesasPage() {
         <Button variant="outline" size="icon" disabled>
           &lt;
         </Button>
-        <Button size="sm" className="bg-purple-main text-white">
-          1
-        </Button>
+        <Button size="sm">1</Button>
         <Button variant="outline" size="sm">
           2
         </Button>

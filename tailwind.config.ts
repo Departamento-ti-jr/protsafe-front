@@ -20,11 +20,27 @@ const config = {
     },
     extend: {
       colors: {
-        // Cores baseadas na nova logo
-        "resus-blue": "#1e3a8a", // Azul escuro da logo
-        "resus-teal": "#0d9488", // Verde/teal da logo
-        "resus-light-blue": "#3b82f6", // Azul médio
-        "resus-cyan": "#06b6d4", // Ciano claro
+        // Modern color palette inspired by Modernize
+        "modernize-primary": "#5D87FF",
+        "modernize-secondary": "#49BEFF",
+        "modernize-success": "#13DEB9",
+        "modernize-warning": "#FFAE1F",
+        "modernize-error": "#FA896B",
+        "modernize-purple": "#8B5CF6",
+        "modernize-pink": "#EC4899",
+        "modernize-indigo": "#6366F1",
+        "modernize-gray": {
+          50: "#F9FAFB",
+          100: "#F3F4F6",
+          200: "#E5E7EB",
+          300: "#D1D5DB",
+          400: "#9CA3AF",
+          500: "#6B7280",
+          600: "#4B5563",
+          700: "#374151",
+          800: "#1F2937",
+          900: "#111827",
+        },
 
         border: "hsl(var(--border))",
         input: "hsl(var(--input))",
@@ -32,7 +48,7 @@ const config = {
         background: "hsl(var(--background))",
         foreground: "hsl(var(--foreground))",
         primary: {
-          DEFAULT: "#1e3a8a", // Azul escuro da logo
+          DEFAULT: "#5D87FF",
           foreground: "#ffffff",
         },
         secondary: {
@@ -40,12 +56,12 @@ const config = {
           foreground: "#334155",
         },
         destructive: {
-          DEFAULT: "hsl(var(--destructive))",
-          foreground: "hsl(var(--destructive-foreground))",
+          DEFAULT: "#FA896B",
+          foreground: "#ffffff",
         },
         muted: {
-          DEFAULT: "hsl(var(--muted))",
-          foreground: "hsl(var(--muted-foreground))",
+          DEFAULT: "#F9FAFB",
+          foreground: "#6B7280",
         },
         accent: {
           DEFAULT: "#f8fafc",
@@ -61,9 +77,13 @@ const config = {
         },
       },
       borderRadius: {
-        lg: "var(--radius)",
-        md: "calc(var(--radius) - 2px)",
-        sm: "calc(var(--radius) - 4px)",
+        lg: "12px",
+        md: "8px",
+        sm: "6px",
+      },
+      boxShadow: {
+        modernize: "0 0 20px rgba(93, 135, 255, 0.15)",
+        "modernize-lg": "0 10px 40px rgba(93, 135, 255, 0.15)",
       },
       keyframes: {
         "accordion-down": {
