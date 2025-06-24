@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import React, { useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
@@ -10,9 +10,9 @@ import { useRouter } from "next/navigation"
 import { Textarea } from "@/components/ui/textarea"
 import { Label } from "@/components/ui/label"
 
-export default function EditarTextoDefesaPage({ params }: { params: { id: string } }) {
+export default function EditarTextoDefesaPage({ params }: { params: Promise<{ id: string }> }) {
   const router = useRouter()
-  const id = params.id
+  const { id } = React.use(params)
 
   // Dados de exemplo baseados na imagem fornecida
   const [textoDefesa, setTextoDefesa] = useState({
@@ -43,7 +43,7 @@ Por essa razão, o ressarcimento ao SUS não é devido.`
           </Button>
         </Link>
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">Editar texto de defesa</h1>
+          <h1 className="text-3xl font-bold">Editar texto de defesa</h1>
           <p className="text-gray-600">Aqui é mostrado os dados do texto de defesa</p>
         </div>
       </div>
@@ -62,7 +62,7 @@ Por essa razão, o ressarcimento ao SUS não é devido.`
               id="nome"
               value={textoDefesa.nome}
               onChange={(e) => setTextoDefesa({ ...textoDefesa, nome: e.target.value })}
-              className="font-medium"
+              className="border-gray-300 focus:border-blue-500 focus:ring-blue-500"
             />
           </div>
 
@@ -72,7 +72,7 @@ Por essa razão, o ressarcimento ao SUS não é devido.`
               id="texto"
               value={textoDefesa.texto}
               onChange={(e) => setTextoDefesa({ ...textoDefesa, texto: e.target.value })}
-              className="min-h-[200px]"
+              className="min-h-[200px] border-gray-300 focus:border-blue-500 focus:ring-blue-500"
             />
           </div>
 

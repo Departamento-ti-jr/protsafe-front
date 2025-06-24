@@ -151,11 +151,11 @@ export default function ABIDetalhesPage({ params }: { params: { id: string } }) 
           </div>
 
           {/* Paginação */}
-          <div className="flex items-center justify-center space-x-2 py-4">
+          <div className="flex items-center justify-center space-x-2 mt-6">
             <Button variant="outline" size="icon" disabled>
               &lt;
             </Button>
-            <Button variant="outline" size="sm" className="bg-blue-600 text-white hover:bg-blue-700">
+            <Button size="sm">
               1
             </Button>
             <Button variant="outline" size="sm">

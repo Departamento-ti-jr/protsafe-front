@@ -2,6 +2,7 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { PenSquare, Plus, Search } from "lucide-react"
+import Link from "next/link"
 
 export default function EmpresasPage() {
   const empresas = [
@@ -50,9 +51,11 @@ export default function EmpresasPage() {
                 <TableCell className="font-medium text-gray-900">{empresa.codigo}</TableCell>
                 <TableCell className="text-gray-600">{empresa.nome}</TableCell>
                 <TableCell className="text-right">
-                  <Button variant="ghost" size="icon">
-                    <PenSquare className="h-4 w-4" />
-                  </Button>
+                  <Link href={`/empresas/editar/${empresa.codigo}`}>
+                    <Button variant="ghost" size="icon">
+                      <PenSquare className="h-4 w-4" />
+                    </Button>
+                  </Link>
                 </TableCell>
               </TableRow>
             ))}
