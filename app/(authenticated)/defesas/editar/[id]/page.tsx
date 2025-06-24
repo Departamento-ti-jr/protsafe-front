@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import React, { useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
@@ -11,8 +11,11 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
 import { Checkbox } from "@/components/ui/checkbox"
 import { ArrowLeft, Upload, FileText, Save, Cloud, Calculator, FolderOpen } from "lucide-react"
 import Link from "next/link"
+import { useRouter } from "next/router"
 
-export default function EditarDefesaPage({ params }: { params: { id: string } }) {
+export default function EditarDefesaPage({ params }: { params: Promise<{ id: string }> }) {
+  const { id } = React.use(params)
+
   const [selectedTipo, setSelectedTipo] = useState("recurso")
   const [selectedMotivo, setSelectedMotivo] = useState("16")
   const [selectedPedido, setSelectedPedido] = useState("anulacao-identificacao")
@@ -20,7 +23,7 @@ export default function EditarDefesaPage({ params }: { params: { id: string } })
 
   // Dados de exemplo baseados na imagem fornecida
   const atendimento = {
-    id: params.id,
+    id: id,
     status: "201158904222339",
     competencia: "02/2023",
     tipo: "APAC",

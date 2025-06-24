@@ -20,26 +20,26 @@ const config = {
     },
     extend: {
       colors: {
-        // Modern color palette inspired by Modernize
-        "modernize-primary": "#5D87FF",
-        "modernize-secondary": "#49BEFF",
-        "modernize-success": "#13DEB9",
-        "modernize-warning": "#FFAE1F",
-        "modernize-error": "#FA896B",
-        "modernize-purple": "#8B5CF6",
-        "modernize-pink": "#EC4899",
-        "modernize-indigo": "#6366F1",
+        // Nova paleta de cores baseada em marrom #795032
+        "modernize-primary": "#795032",
+        "modernize-secondary": "#A67C52",
+        "modernize-success": "#5D7F3A",
+        "modernize-warning": "#D9A566",
+        "modernize-error": "#C25E3F",
+        "modernize-purple": "#6D4E70",
+        "modernize-pink": "#B25D69",
+        "modernize-indigo": "#4D5975",
         "modernize-gray": {
-          50: "#F9FAFB",
-          100: "#F3F4F6",
-          200: "#E5E7EB",
-          300: "#D1D5DB",
-          400: "#9CA3AF",
-          500: "#6B7280",
-          600: "#4B5563",
-          700: "#374151",
-          800: "#1F2937",
-          900: "#111827",
+          50: "#F9F7F5",
+          100: "#F3F0ED",
+          200: "#E5E0D9",
+          300: "#D1C8BE",
+          400: "#B3A89B",
+          500: "#8D7D6D",
+          600: "#6B5D4E",
+          700: "#574B3F",
+          800: "#3E352D",
+          900: "#2A241E",
         },
 
         border: "hsl(var(--border))",
@@ -48,24 +48,24 @@ const config = {
         background: "hsl(var(--background))",
         foreground: "hsl(var(--foreground))",
         primary: {
-          DEFAULT: "#5D87FF",
+          DEFAULT: "#795032",
           foreground: "#ffffff",
         },
         secondary: {
-          DEFAULT: "#f8fafc",
-          foreground: "#334155",
+          DEFAULT: "#A67C52",
+          foreground: "#ffffff",
         },
         destructive: {
-          DEFAULT: "#FA896B",
+          DEFAULT: "#C25E3F",
           foreground: "#ffffff",
         },
         muted: {
-          DEFAULT: "#F9FAFB",
-          foreground: "#6B7280",
+          DEFAULT: "#F9F7F5",
+          foreground: "#6B5D4E",
         },
         accent: {
-          DEFAULT: "#f8fafc",
-          foreground: "#334155",
+          DEFAULT: "#D9A566",
+          foreground: "#3E352D",
         },
         popover: {
           DEFAULT: "hsl(var(--popover))",
@@ -82,8 +82,8 @@ const config = {
         sm: "6px",
       },
       boxShadow: {
-        modernize: "0 0 20px rgba(93, 135, 255, 0.15)",
-        "modernize-lg": "0 10px 40px rgba(93, 135, 255, 0.15)",
+        modernize: "0 0 20px rgba(121, 80, 50, 0.15)",
+        "modernize-lg": "0 10px 40px rgba(121, 80, 50, 0.15)",
       },
       keyframes: {
         "accordion-down": {

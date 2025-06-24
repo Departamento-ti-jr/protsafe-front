@@ -81,16 +81,19 @@ export function ModernSidebar({ className }: ModernSidebarProps) {
 
   return (
     <div
-      className={cn("w-270 h-screen bg-white border-r border-modernize-gray-200 flex flex-col shadow-lg", className)}
+      className={cn(
+        "w-270 h-screen bg-gradient-to-b from-[#795032]/10 to-[#A67C52]/5 border-r border-modernize-gray-200 flex flex-col shadow-lg",
+        className,
+      )}
     >
       {/* Logo Section */}
       <div className="p-6 border-b border-modernize-gray-100">
         <Link href="/dashboard" className="flex items-center gap-3">
-          <div className="w-8 h-8 bg-gradient-to-r from-modernize-primary to-modernize-secondary rounded-lg flex items-center justify-center">
+          <div className="w-8 h-8 bg-gradient-to-r from-[#795032] to-[#A67C52] rounded-lg flex items-center justify-center">
             <span className="text-white font-bold text-sm">R</span>
           </div>
           <div>
-            <h1 className="text-xl font-bold text-modernize-gray-800">ReSUS</h1>
+            <h1 className="text-xl font-bold text-[#795032]">ReSUS</h1>
             <p className="text-xs text-modernize-gray-500">Sistema Jurídico</p>
           </div>
         </Link>
@@ -111,8 +114,8 @@ export function ModernSidebar({ className }: ModernSidebarProps) {
                   className={cn(
                     "flex items-center gap-3 px-3 py-3 rounded-xl text-sm font-medium transition-all duration-200 group relative",
                     pathname === item.href
-                      ? "bg-gradient-to-r from-modernize-primary to-modernize-secondary text-white shadow-modernize"
-                      : "text-modernize-gray-600 hover:bg-modernize-gray-50 hover:text-modernize-primary",
+                      ? "bg-gradient-to-r from-[#795032] to-[#A67C52] text-white shadow-modernize"
+                      : "text-modernize-gray-600 hover:bg-modernize-gray-50 hover:text-[#795032]",
                   )}
                 >
                   <item.icon className="h-5 w-5" />
@@ -133,8 +136,8 @@ export function ModernSidebar({ className }: ModernSidebarProps) {
                   className={cn(
                     "flex items-center gap-3 px-3 py-3 rounded-xl text-sm font-medium transition-all duration-200 group relative",
                     pathname === item.href
-                      ? "bg-gradient-to-r from-modernize-primary to-modernize-secondary text-white shadow-modernize"
-                      : "text-modernize-gray-600 hover:bg-modernize-gray-50 hover:text-modernize-primary",
+                      ? "bg-gradient-to-r from-[#795032] to-[#A67C52] text-white shadow-modernize"
+                      : "text-modernize-gray-600 hover:bg-modernize-gray-50 hover:text-[#795032]",
                   )}
                 >
                   <item.icon className="h-5 w-5" />
@@ -157,8 +160,8 @@ export function ModernSidebar({ className }: ModernSidebarProps) {
                   className={cn(
                     "flex items-center gap-3 px-3 py-3 rounded-xl text-sm font-medium transition-all duration-200 group relative",
                     pathname === item.href
-                      ? "bg-gradient-to-r from-modernize-primary to-modernize-secondary text-white shadow-modernize"
-                      : "text-modernize-gray-600 hover:bg-modernize-gray-50 hover:text-modernize-primary",
+                      ? "bg-gradient-to-r from-[#795032] to-[#A67C52] text-white shadow-modernize"
+                      : "text-modernize-gray-600 hover:bg-modernize-gray-50 hover:text-[#795032]",
                   )}
                 >
                   <item.icon className="h-5 w-5" />
@@ -179,8 +182,8 @@ export function ModernSidebar({ className }: ModernSidebarProps) {
                   className={cn(
                     "flex items-center gap-3 px-3 py-3 rounded-xl text-sm font-medium transition-all duration-200 group relative",
                     pathname === item.href
-                      ? "bg-gradient-to-r from-modernize-primary to-modernize-secondary text-white shadow-modernize"
-                      : "text-modernize-gray-600 hover:bg-modernize-gray-50 hover:text-modernize-primary",
+                      ? "bg-gradient-to-r from-[#795032] to-[#A67C52] text-white shadow-modernize"
+                      : "text-modernize-gray-600 hover:bg-modernize-gray-50 hover:text-[#795032]",
                   )}
                 >
                   <item.icon className="h-5 w-5" />

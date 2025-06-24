@@ -13,7 +13,7 @@ export default function DashboardPage() {
 
       {/* Colorful Stats Cards */}
       <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4 mb-8">
-        <Card className="bg-gradient-to-br from-blue-500 to-blue-600 border-0 text-white overflow-hidden relative">
+        <Card className="bg-gradient-to-br from-[#795032] to-[#A67C52] border-0 text-white overflow-hidden relative">
           <CardContent className="p-6">
             <div className="flex items-center justify-between">
               <div>
@@ -31,7 +31,7 @@ export default function DashboardPage() {
           </CardContent>
         </Card>
 
-        <Card className="bg-gradient-to-br from-emerald-500 to-emerald-600 border-0 text-white overflow-hidden relative">
+        <Card className="bg-gradient-to-br from-[#5D7F3A] to-[#7A9D58] border-0 text-white overflow-hidden relative">
           <CardContent className="p-6">
             <div className="flex items-center justify-between">
               <div>
@@ -49,7 +49,7 @@ export default function DashboardPage() {
           </CardContent>
         </Card>
 
-        <Card className="bg-gradient-to-br from-orange-500 to-orange-600 border-0 text-white overflow-hidden relative">
+        <Card className="bg-gradient-to-br from-[#D9A566] to-[#E5BB87] border-0 text-white overflow-hidden relative">
           <CardContent className="p-6">
             <div className="flex items-center justify-between">
               <div>
@@ -67,7 +67,7 @@ export default function DashboardPage() {
           </CardContent>
         </Card>
 
-        <Card className="bg-gradient-to-br from-purple-500 to-purple-600 border-0 text-white overflow-hidden relative">
+        <Card className="bg-gradient-to-br from-[#6D4E70] to-[#8A6B8D] border-0 text-white overflow-hidden relative">
           <CardContent className="p-6">
             <div className="flex items-center justify-between">
               <div>
@@ -91,8 +91,8 @@ export default function DashboardPage() {
         <Card className="bg-white border-modernize-gray-200 shadow-modernize">
           <CardHeader className="border-b border-modernize-gray-100 pb-4">
             <CardTitle className="flex items-center gap-2 text-modernize-gray-800">
-              <div className="w-8 h-8 bg-modernize-primary/10 rounded-lg flex items-center justify-center">
-                <Clock className="h-4 w-4 text-modernize-primary" />
+              <div className="w-8 h-8 bg-[#795032]/10 rounded-lg flex items-center justify-center">
+                <Clock className="h-4 w-4 text-[#795032]" />
               </div>
               Atividades Recentes
             </CardTitle>
@@ -131,8 +131,8 @@ export default function DashboardPage() {
         <Card className="bg-white border-modernize-gray-200 shadow-modernize">
           <CardHeader className="border-b border-modernize-gray-100 pb-4">
             <CardTitle className="flex items-center gap-2 text-modernize-gray-800">
-              <div className="w-8 h-8 bg-modernize-success/10 rounded-lg flex items-center justify-center">
-                <Shield className="h-4 w-4 text-modernize-success" />
+              <div className="w-8 h-8 bg-[#5D7F3A]/10 rounded-lg flex items-center justify-center">
+                <Shield className="h-4 w-4 text-[#5D7F3A]" />
               </div>
               Defesas Recentes
             </CardTitle>

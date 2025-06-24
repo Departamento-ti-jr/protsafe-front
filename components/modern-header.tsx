@@ -11,7 +11,14 @@ export async function ModernHeader() {
   try {
     const { claims } = await getLogtoContext(logtoConfig)
     userInfo = {
-      name: claims?.name || claims?.given_name || claims?.username || "Usuário",
+      name:
+        typeof claims?.name === "string"
+          ? claims.name
+          : typeof claims?.given_name === "string"
+          ? claims.given_name
+          : typeof claims?.username === "string"
+          ? claims.username
+          : "Usuário",
       email: claims?.email || "",
     }
   } catch (error) {
@@ -69,8 +76,8 @@ export async function ModernHeader() {
 
         {/* User Profile */}
         <div className="flex items-center gap-3">
-          <Avatar className="h-9 w-9 border-2 border-modernize-primary/20">
-            <AvatarFallback className="bg-gradient-to-r from-modernize-primary to-modernize-secondary text-white font-medium">
+          <Avatar className="h-9 w-9 border-2 border-[#795032]/20">
+            <AvatarFallback className="bg-gradient-to-r from-[#795032] to-[#A67C52] text-white font-medium">
               {userInfo.name.charAt(0).toUpperCase()}
             </AvatarFallback>
           </Avatar>
