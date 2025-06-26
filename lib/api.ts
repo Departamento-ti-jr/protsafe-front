@@ -41,4 +41,27 @@ export class ApiService {
       throw error
     }
   }
+
+  // Método para atualizar um texto de defesa
+  static async updateTextoDefesa(id: string, textoDefesa: Partial<TextoDefesa>): Promise<TextoDefesa> {
+    try {
+      const response = await fetch(`${API_BASE_URL}/texto-defesa/${id}`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(textoDefesa),
+      })
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`)
+      }
+
+      const data = await response.json()
+      return data
+    } catch (error) {
+      console.error(`Erro ao atualizar texto de defesa ${id}:`, error)
+      throw error
+    }
+  }
 }

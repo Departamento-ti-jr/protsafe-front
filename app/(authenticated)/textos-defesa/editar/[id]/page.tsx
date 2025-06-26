@@ -1,37 +1,107 @@
 "use client"
 
-import React, { useState } from "react"
+import React, { useState, useEffect } from "react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
-import { ArrowLeft, Save, Printer } from "lucide-react"
+import { ArrowLeft, Save, Printer, Loader2 } from "lucide-react"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
 import { Textarea } from "@/components/ui/textarea"
 import { Label } from "@/components/ui/label"
+import { ApiService, type TextoDefesa } from "@/lib/api"
 
 export default function EditarTextoDefesaPage({ params }: { params: Promise<{ id: string }> }) {
   const router = useRouter()
   const { id } = React.use(params)
 
-  // Dados de exemplo baseados na imagem fornecida
-  const [textoDefesa, setTextoDefesa] = useState({
-    id: id,
-    nome: id === "06" ? "06 – QUANTIDADE DO PROCEDIMENTO NÃO COBERTA PELO PRODUTO" : "",
-    texto:
-      id === "06"
-        ? `A operadora entende que a cobrança da presente AIH/APAC é indevida porque a quantidade do PROCEDIMENTO REALIZADO NO ATENDIMENTO IDENTIFICADO ULTRAPASSA A MÁXIMA COBERTA PELO PRODUTO, conforme prevê a Cláusula ____/ DUT_____.
+  const [textoDefesa, setTextoDefesa] = useState<TextoDefesa | null>(null)
+  const [loading, setLoading] = useState(true)
+  const [saving, setSaving] = useState(false)
+  const [error, setError] = useState<string | null>(null)
 
-Conforme documentos anexos, o(a) beneficiário(a) realizou o procedimento _________, o mesmo ora cobrado, em _________ e, consequentemente atingiu a quantidade cobertura contratualmente.
+  useEffect(() => {
+    loadTextoDefesa()
+  }, [id])
 
-Por essa razão, o ressarcimento ao SUS não é devido.`
-        : "",
-  })
+  const loadTextoDefesa = async () => {
+    try {
+      setLoading(true)
+      setError(null)
+      const data = await ApiService.getTextoDefesaById(id)
+      setTextoDefesa(data)
+    } catch (err) {
+      setError("Erro ao carregar texto de defesa. Tente novamente.")
+      console.error(err)
+    } finally {
+      setLoading(false)
+    }
+  }
 
-  const handleSave = () => {
-    // Aqui seria implementada a lógica para salvar o texto de defesa
-    alert("Texto de defesa salvo com sucesso!")
-    router.push("/textos-defesa")
+  const handleSave = async () => {
+    if (!textoDefesa) return
+
+    try {
+      setSaving(true)
+      // Aqui seria implementada a lógica para salvar o texto de defesa
+      // await ApiService.updateTextoDefesa(id, textoDefesa)
+      alert("Texto de defesa salvo com sucesso!")
+      router.push("/textos-defesa")
+    } catch (err) {
+      alert("Erro ao salvar texto de defesa. Tente novamente.")
+      console.error(err)
+    } finally {
+      setSaving(false)
+    }
+  }
+
+  const handleInputChange = (field: keyof TextoDefesa, value: string) => {
+    if (!textoDefesa) return
+    setTextoDefesa({ ...textoDefesa, [field]: value })
+  }
+
+  if (loading) {
+    return (
+      <div className="p-6 space-y-6">
+        <div className="flex items-center gap-4">
+          <Link href="/textos-defesa">
+            <Button variant="outline" size="icon">
+              <ArrowLeft className="h-4 w-4" />
+            </Button>
+          </Link>
+          <div>
+            <h1 className="text-3xl font-bold">Editar texto de defesa</h1>
+            <p className="text-gray-600">Carregando dados...</p>
+          </div>
+        </div>
+        <div className="flex items-center justify-center py-12">
+          <Loader2 className="h-8 w-8 animate-spin text-blue-500" />
+          <span className="ml-2 text-gray-600">Carregando texto de defesa...</span>
+        </div>
+      </div>
+    )
+  }
+
+  if (error || !textoDefesa) {
+    return (
+      <div className="p-6 space-y-6">
+        <div className="flex items-center gap-4">
+          <Link href="/textos-defesa">
+            <Button variant="outline" size="icon">
+              <ArrowLeft className="h-4 w-4" />
+            </Button>
+          </Link>
+          <div>
+            <h1 className="text-3xl font-bold">Editar texto de defesa</h1>
+            <p className="text-gray-600">Erro ao carregar dados</p>
+          </div>
+        </div>
+        <div className="flex flex-col items-center justify-center py-12 space-y-4">
+          <p className="text-red-600">{error || "Texto de defesa não encontrado"}</p>
+          <Button onClick={loadTextoDefesa}>Tentar novamente</Button>
+        </div>
+      </div>
+    )
   }
 
   return (
@@ -61,7 +131,7 @@ Por essa razão, o ressarcimento ao SUS não é devido.`
             <Input
               id="nome"
               value={textoDefesa.nome}
-              onChange={(e) => setTextoDefesa({ ...textoDefesa, nome: e.target.value })}
+              onChange={(e) => handleInputChange("nome", e.target.value)}
               className="border-gray-300 focus:border-blue-500 focus:ring-blue-500"
             />
           </div>
@@ -71,7 +141,7 @@ Por essa razão, o ressarcimento ao SUS não é devido.`
             <Textarea
               id="texto"
               value={textoDefesa.texto}
-              onChange={(e) => setTextoDefesa({ ...textoDefesa, texto: e.target.value })}
+              onChange={(e) => handleInputChange("texto", e.target.value)}
               className="min-h-[200px] border-gray-300 focus:border-blue-500 focus:ring-blue-500"
             />
           </div>
@@ -81,9 +151,18 @@ Por essa razão, o ressarcimento ao SUS não é devido.`
               <Printer className="mr-2 h-4 w-4" />
               Imprimir
             </Button>
-            <Button onClick={handleSave}>
-              <Save className="mr-2 h-4 w-4" />
-              Salvar
+            <Button onClick={handleSave} disabled={saving}>
+              {saving ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Salvando...
+                </>
+              ) : (
+                <>
+                  <Save className="mr-2 h-4 w-4" />
+                  Salvar
+                </>
+              )}
             </Button>
           </div>
         </CardContent>
