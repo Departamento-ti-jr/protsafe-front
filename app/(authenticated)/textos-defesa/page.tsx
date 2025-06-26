@@ -1,3 +1,8 @@
+"use client"
+
+import { useState, useEffect } from "react"
+import { ApiService, type TextoDefesa } from "@/lib/api"
+import { Loader2 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
@@ -5,44 +10,80 @@ import { PenSquare, Plus, Search } from "lucide-react"
 import Link from "next/link"
 
 export default function TextosDefesaPage() {
-  // Dados de exemplo baseados na imagem fornecida
-  const textosDefesa = [
-    {
-      id: "06",
-      nome: "06 – QUANTIDADE DO PROCEDIMENTO NÃO COBERTA PELO PRODUTO",
-      texto:
-        '<p>A operadora entende que a cobrança da presente AIH/APAC é indevida porque a quantidade do&nbsp;<strong><span style="background-color: transparent;">PROCEDIMENTO REALIZADO NO ATENDIMENTO IDENT...',
-    },
-    {
-      id: "02",
-      nome: "02 – HOMONÍMIA",
-      texto:
-        "<p>A operadora não concorda com a presente cobrança pelo motivo do (a) beneficiário (a) identificado não reconhecer o fato de ter realizado o procedimento, conforme declaração em anexo.</p><p><br></p>...",
-    },
-    {
-      id: "04",
-      nome: "04 – ÁREA DE ABRANGÊNCIA",
-      texto:
-        "<p>A operadora entende que a cobrança da presente AIH/APAC é indevida porque se trata de <strong>PROCEDIMENTO REALIZADO FORA DA ABRANGÊNCIA </strong></p><p><br></p><p>Com efeito, conforme detalhamento...",
-    },
-    {
-      id: "07",
-      nome: "07 – ATENDIMENTO JÁ PAGO",
-      texto:
-        "<p>A operadora entende que a cobrança da presente AIH/APAC é indevida porque o beneficiário realizou procedimento idêntico, na mesma data do atendimento pelo SUS, sendo esse já pago pela operadora, co...",
-    },
-    {
-      id: "37",
-      nome: "37 – BENEFICIÁRIO EXCLUÍDO NA ÉPOCA DO ATENDIMENTO",
-      texto:
-        "<p>A operadora entende que a cobrança da presente AIH é indevida porque se trata de <strong>BENEFICIÁRIO EXCLUÍDO À ÉPOCA DO ATENDIMENTO</strong>. </p><p><br></p><p>Conforme documentação em anexo, o (...",
-    },
-  ]
+  const [textosDefesa, setTextosDefesa] = useState<TextoDefesa[]>([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
+  const [searchTerm, setSearchTerm] = useState("")
+
+  useEffect(() => {
+    loadTextosDefesa()
+  }, [])
+
+  const loadTextosDefesa = async () => {
+    try {
+      setLoading(true)
+      setError(null)
+      const data = await ApiService.getTextosDefesa()
+      setTextosDefesa(data)
+    } catch (err) {
+      setError("Erro ao carregar textos de defesa. Tente novamente.")
+      console.error(err)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const filteredTextos = textosDefesa.filter(
+    (texto) =>
+      texto.nome.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      texto.id.toLowerCase().includes(searchTerm.toLowerCase()),
+  )
+
+  const stripHtml = (html: string) => {
+    return html.replace(/<[^>]*>/g, "").substring(0, 150) + "..."
+  }
+
+  const formatDate = (dateString?: string) => {
+    if (!dateString) return "-"
+    return new Date(dateString).toLocaleDateString("pt-BR")
+  }
+
+  if (loading) {
+    return (
+      <div className="p-6 space-y-6">
+        <div>
+          <h1 className="text-2xl font-semibold text-gray-900">Textos de defesa</h1>
+        </div>
+        <div className="flex items-center justify-center py-12">
+          <Loader2 className="h-8 w-8 animate-spin text-blue-500" />
+          <span className="ml-2 text-gray-600">Carregando textos de defesa...</span>
+        </div>
+      </div>
+    )
+  }
+
+  if (error) {
+    return (
+      <div className="p-6 space-y-6">
+        <div>
+          <h1 className="text-2xl font-semibold text-gray-900">Textos de defesa</h1>
+        </div>
+        <div className="flex flex-col items-center justify-center py-12 space-y-4">
+          <p className="text-red-600">{error}</p>
+          <Button onClick={loadTextosDefesa}>Tentar novamente</Button>
+        </div>
+      </div>
+    )
+  }
 
   return (
     <div className="p-6 space-y-6">
       <div>
         <h1 className="text-2xl font-semibold text-gray-900">Textos de defesa</h1>
+        <p className="text-sm text-gray-600 mt-1">
+          {filteredTextos.length} texto{filteredTextos.length !== 1 ? "s" : ""} encontrado
+          {filteredTextos.length !== 1 ? "s" : ""}
+        </p>
       </div>
 
       <div className="flex items-center">
@@ -51,6 +92,8 @@ export default function TextosDefesaPage() {
           <Input
             placeholder="Buscar textos..."
             className="pl-10 border-gray-300 focus:border-blue-500 focus:ring-blue-500"
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
           />
         </div>
         <div className="ml-auto">
@@ -64,35 +107,48 @@ export default function TextosDefesaPage() {
         <Table>
           <TableHeader>
             <TableRow className="bg-gray-50">
+              <TableHead className="font-medium text-gray-900">Código</TableHead>
               <TableHead className="font-medium text-gray-900">Nome</TableHead>
               <TableHead className="font-medium text-gray-900">Texto</TableHead>
+              <TableHead className="font-medium text-gray-900">Atualizado em</TableHead>
               <TableHead className="font-medium text-gray-900 text-right">Ações</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
-            {textosDefesa.map((texto) => (
-              <TableRow key={texto.id + texto.nome} className="hover:bg-gray-50">
-                <TableCell className="font-medium text-gray-900">{texto.nome}</TableCell>
-                <TableCell>
-                  <div
-                    className="text-sm text-gray-600 line-clamp-2"
-                    dangerouslySetInnerHTML={{ __html: texto.texto }}
-                  />
-                </TableCell>
-                <TableCell className="text-right">
-                  <Link href={`/textos-defesa/editar/${texto.id}`}>
-                    <Button variant="ghost" size="icon">
-                      <PenSquare className="h-4 w-4" />
-                    </Button>
-                  </Link>
+            {filteredTextos.length === 0 ? (
+              <TableRow>
+                <TableCell colSpan={5} className="text-center py-8 text-gray-500">
+                  {searchTerm ? "Nenhum texto encontrado para a busca." : "Nenhum texto de defesa cadastrado."}
                 </TableCell>
               </TableRow>
-            ))}
+            ) : (
+              filteredTextos.map((texto) => (
+                <TableRow key={texto._id} className="hover:bg-gray-50">
+                  <TableCell className="font-medium text-gray-900">{texto.id}</TableCell>
+                  <TableCell className="font-medium text-gray-900 max-w-xs">
+                    <div className="truncate" title={texto.nome}>
+                      {texto.nome}
+                    </div>
+                  </TableCell>
+                  <TableCell className="max-w-md">
+                    <div className="text-sm text-gray-600 line-clamp-2">{stripHtml(texto.texto)}</div>
+                  </TableCell>
+                  <TableCell className="text-sm text-gray-500">{formatDate(texto.updatedAt)}</TableCell>
+                  <TableCell className="text-right">
+                    <Link href={`/textos-defesa/editar/${texto._id}`}>
+                      <Button variant="ghost" size="icon">
+                        <PenSquare className="h-4 w-4" />
+                      </Button>
+                    </Link>
+                  </TableCell>
+                </TableRow>
+              ))
+            )}
           </TableBody>
         </Table>
       </div>
 
-      {/* Paginação */}
+      {/* Paginação - pode ser implementada posteriormente */}
       <div className="flex items-center justify-center space-x-2 py-4">
         <Button variant="outline" size="icon" disabled>
           &lt;&lt;
