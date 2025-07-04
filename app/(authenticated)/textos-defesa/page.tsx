@@ -1,29 +1,33 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { ApiService, type TextoDefesa } from "@/lib/api"
+import { TextosDefesaService, type TextoDefesa } from "@/lib/services/textos-defesa.service"
 import { Loader2 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { PenSquare, Plus, Search } from "lucide-react"
 import Link from "next/link"
+import { useAuthContext } from "@/components/auth-provider"
 
 export default function TextosDefesaPage() {
+  const { isAuthenticated } = useAuthContext()
   const [textosDefesa, setTextosDefesa] = useState<TextoDefesa[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [searchTerm, setSearchTerm] = useState("")
 
   useEffect(() => {
-    loadTextosDefesa()
-  }, [])
+    if (isAuthenticated) {
+      loadTextosDefesa()
+    }
+  }, [isAuthenticated])
 
   const loadTextosDefesa = async () => {
     try {
       setLoading(true)
       setError(null)
-      const data = await ApiService.getTextosDefesa()
+      const data = await TextosDefesaService.getAll()
       setTextosDefesa(data)
     } catch (err) {
       setError("Erro ao carregar textos de defesa. Tente novamente.")
@@ -46,6 +50,16 @@ export default function TextosDefesaPage() {
   const formatDate = (dateString?: string) => {
     if (!dateString) return "-"
     return new Date(dateString).toLocaleDateString("pt-BR")
+  }
+
+  if (!isAuthenticated) {
+    return (
+      <div className="p-6 space-y-6">
+        <div className="flex items-center justify-center py-12">
+          <p className="text-gray-600">Você precisa estar autenticado para acessar esta página.</p>
+        </div>
+      </div>
+    )
   }
 
   if (loading) {
