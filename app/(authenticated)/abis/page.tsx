@@ -1,3 +1,5 @@
+"use client"
+
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
@@ -5,56 +7,41 @@ import { Badge } from "@/components/ui/badge"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Eye, Plus, Search } from "lucide-react"
 import Link from "next/link"
+import { useEffect, useState } from "react"
+import { Abi, AbisService } from "@/lib/services/abis.service"
 
 export default function ABIsPage() {
-  // Dados de exemplo baseados na imagem fornecida
-  const abis = [
-    {
-      abi: "101",
-      numeroOficio: "8",
-      numeroProcesso: "339100110117/2025-45",
-      nomeOperadora: "AMAZÔNIA PLANOS DE SAÚDE LTDA",
-      cnpj: "16.926.969/0001-28",
-      dataHora: "26-03-2025 00:00",
-      status: "Aberto",
-    },
-    {
-      abi: "101",
-      numeroOficio: "215",
-      numeroProcesso: "339100112230/2025-57",
-      nomeOperadora: "HOSPITAL MARECHAL CÂNDIDO RONDON LTDA",
-      cnpj: "81.564.346/0001-14",
-      dataHora: "26-03-2025 00:00",
-      status: "Aberto",
-    },
-    {
-      abi: "101",
-      numeroOficio: "220",
-      numeroProcesso: "339100112235/2025-80",
-      nomeOperadora: "HUMANA SAÚDE NORDESTE LTDA",
-      cnpj: "00.361.325/0001-08",
-      dataHora: "26-03-2025 00:00",
-      status: "Aberto",
-    },
-    {
-      abi: "101",
-      numeroOficio: "137",
-      numeroProcesso: "339100111150/2025-00",
-      nomeOperadora: "CASA DE SAÚDE SÃO BERNARDO LTDA",
-      cnpj: "31.488.208/0001-25",
-      dataHora: "26-03-2025 00:00",
-      status: "Aberto",
-    },
-    {
-      abi: "101",
-      numeroOficio: "219",
-      numeroProcesso: "339100112234/2025-35",
-      nomeOperadora: "HUMANA SAÚDE LTDA",
-      cnpj: "95.642.179/0001-97",
-      dataHora: "26-03-2025 00:00",
-      status: "Aberto",
-    },
-  ]
+  const [abis, setAbis] = useState<Abi[]>([])
+  const [page, setPage] = useState(1)
+  const [totalPages, setTotalPages] = useState(1)
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
+  const limit = 20
+
+  useEffect(() => {
+    loadAbis(page)
+  }, [page])
+
+  const loadAbis = async (pageToLoad: number) => {
+    try {
+      setLoading(true)
+      setError(null)
+      const response = await AbisService.getAll(pageToLoad, limit)
+      setAbis(response.data)
+      setTotalPages(response.totalPages)
+    } catch (err) {
+      setError("Erro ao carregar ABIs. Tente novamente.")
+      console.error(err)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const goToPage = (newPage: number) => {
+    if (newPage >= 1 && newPage <= totalPages) {
+      setPage(newPage)
+    }
+  }
 
   return (
     <div className="p-6 space-y-6">
@@ -82,9 +69,11 @@ export default function ABIsPage() {
               <SelectItem value="em-andamento">Em Andamento</SelectItem>
             </SelectContent>
           </Select>
-          <Button>
-            <Plus className="mr-2 h-4 w-4" /> Nova ABI
-          </Button>
+          <Link href={`/abis/nova`}>
+            <Button>
+              <Plus className="mr-2 h-4 w-4" /> Nova ABI
+            </Button>
+          </Link>
         </div>
       </div>
 
@@ -92,75 +81,81 @@ export default function ABIsPage() {
         <Table>
           <TableHeader>
             <TableRow className="bg-gray-50">
-              <TableHead className="font-medium text-gray-900">ABI</TableHead>
-              <TableHead className="font-medium text-gray-900">Número do ofício</TableHead>
-              <TableHead className="font-medium text-gray-900">Número do processo</TableHead>
-              <TableHead className="font-medium text-gray-900">Nome da operadora / CNPJ</TableHead>
-              <TableHead className="font-medium text-gray-900">Data / Hora registro</TableHead>
-              <TableHead className="font-medium text-gray-900">Status</TableHead>
-              <TableHead className="font-medium text-gray-900 text-right">Ações</TableHead>
+              <TableHead>ABI</TableHead>
+              <TableHead>Número do ofício</TableHead>
+              <TableHead>Número do processo</TableHead>
+              <TableHead>Nome da operadora / CNPJ</TableHead>
+              <TableHead>Data / Hora registro</TableHead>
+              <TableHead>Status</TableHead>
+              <TableHead className="text-right">Ações</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
-            {abis.map((abi, index) => (
-              <TableRow key={index} className="hover:bg-gray-50">
-                <TableCell className="font-medium text-gray-900">{abi.abi}</TableCell>
-                <TableCell className="text-gray-600">{abi.numeroOficio}</TableCell>
-                <TableCell className="font-mono text-sm text-gray-600">{abi.numeroProcesso}</TableCell>
-                <TableCell>
-                  <div className="space-y-1">
-                    <div className="font-medium text-gray-900">{abi.nomeOperadora}</div>
-                    <div className="text-sm text-gray-500">{abi.cnpj}</div>
-                  </div>
-                </TableCell>
-                <TableCell className="text-sm text-gray-600">{abi.dataHora}</TableCell>
-                <TableCell>
-                  <Badge variant="secondary" className="bg-teal-100 text-teal-800 hover:bg-teal-200">
-                    {abi.status}
-                  </Badge>
-                </TableCell>
-                <TableCell className="text-right">
-                  <Link href={`/abis/detalhes/${abi.abi}`}>
-                    <Button variant="ghost" size="icon">
-                      <Eye className="h-4 w-4" />
-                    </Button>
-                  </Link>
+            {loading ? (
+              <TableRow>
+                <TableCell colSpan={7} className="text-center py-4">
+                  Carregando...
                 </TableCell>
               </TableRow>
-            ))}
+            ) : error ? (
+              <TableRow>
+                <TableCell colSpan={7} className="text-center text-red-500 py-4">
+                  {error}
+                </TableCell>
+              </TableRow>
+            ) : abis.length === 0 ? (
+              <TableRow>
+                <TableCell colSpan={7} className="text-center text-gray-500 py-4">
+                  Nenhuma ABI encontrada.
+                </TableCell>
+              </TableRow>
+            ) : (
+              abis.map((abi) => (
+                <TableRow key={abi._id}>
+                  <TableCell>{abi.numeroABI}</TableCell>
+                  <TableCell>{abi.numeroOficio}</TableCell>
+                  <TableCell className="font-mono text-sm">{abi.numeroProcesso}</TableCell>
+                  <TableCell>
+                    <div className="space-y-1">
+                      <div className="font-medium">{abi.razaoSocial}</div>
+                      <div className="text-sm text-gray-500">{abi.CNPJ}</div>
+                    </div>
+                  </TableCell>
+                  <TableCell>
+                    {abi.dataRegistroTransacao} {abi.horaRegistroTransacao}
+                  </TableCell>
+                  <TableCell>
+                    <Badge className="bg-teal-100 text-teal-800">Aberto</Badge>
+                  </TableCell>
+                  <TableCell className="text-right">
+                    <Link href={`/abis/detalhes/${abi._id}`}>
+                      <Button variant="ghost" size="icon">
+                        <Eye className="h-4 w-4" />
+                      </Button>
+                    </Link>
+                  </TableCell>
+                </TableRow>
+              ))
+            )}
           </TableBody>
         </Table>
       </div>
 
-      {/* Paginação */}
+      {/* Paginação funcional */}
       <div className="flex items-center justify-center space-x-2 py-4">
-        <Button variant="outline" size="icon" disabled>
+        <Button variant="outline" size="icon" onClick={() => goToPage(1)} disabled={page === 1}>
           &lt;&lt;
         </Button>
-        <Button variant="outline" size="icon" disabled>
+        <Button variant="outline" size="icon" onClick={() => goToPage(page - 1)} disabled={page === 1}>
           &lt;
         </Button>
-        <Button size="sm">1</Button>
-        <Button variant="outline" size="sm">
-          2
-        </Button>
-        <Button variant="outline" size="sm">
-          3
-        </Button>
-        <Button variant="outline" size="sm">
-          4
-        </Button>
-        <Button variant="outline" size="sm">
-          5
-        </Button>
-        <span className="px-2 text-gray-500">...</span>
-        <Button variant="outline" size="sm">
-          19
-        </Button>
-        <Button variant="outline" size="icon">
+        <span className="px-2 text-sm text-gray-700">
+          Página {page} de {totalPages}
+        </span>
+        <Button variant="outline" size="icon" onClick={() => goToPage(page + 1)} disabled={page === totalPages}>
           &gt;
         </Button>
-        <Button variant="outline" size="icon">
+        <Button variant="outline" size="icon" onClick={() => goToPage(totalPages)} disabled={page === totalPages}>
           &gt;&gt;
         </Button>
       </div>

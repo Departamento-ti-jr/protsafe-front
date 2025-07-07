@@ -1,3 +1,8 @@
+"use client"
+
+import { use, useEffect, useState } from "react"
+import { useRouter } from "next/navigation"
+import { AbisService, Abi } from "@/lib/services/abis.service"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
@@ -6,50 +11,45 @@ import { Input } from "@/components/ui/input"
 import { ArrowLeft, Eye, Search } from "lucide-react"
 import Link from "next/link"
 
-export default function ABIDetalhesPage({ params }: { params: { id: string } }) {
-  // Dados de exemplo baseados na imagem fornecida
-  const abiDetalhes = {
-    id: params.id,
-    numeroProcesso: "339101101107/2025-45",
-    nomeEmpresa: "AMAZÔNIA PLANOS DE SAÚDE LTDA",
-    cnpj: "16.926.696/001-28",
-    status: "Aberto",
-    valorProcesso: "R$ 79.070,96",
-    quantidadeProcessos: 24,
+export default function ABIDetalhesPage({ params }: { params: Promise<{ id: string }> }) {
+  const router = useRouter()
+  const [id, setId] = useState<string | null>(null);
+  const [abi, setAbi] = useState<Abi | null>(null)
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
+
+  useEffect(() => {
+    params.then((resolved) => {
+      // setId(resolved.id);
+      fetchAbi(resolved.id);
+    });
+  }, [params]);
+
+
+   const fetchAbi = async (id: string) => {
+      try {
+        console.log("Fetching ABI with ID:", id)
+        const result = await AbisService.getById(id)
+        setAbi(result)
+      } catch (err) {
+        setError("Erro ao carregar os detalhes da ABI.")
+        console.error(err)
+      } finally {
+        setLoading(false)
+      }
   }
 
-  const atendimentos = [
-    {
-      ordem: "1",
-      tipo: "Tratamento",
-      numeroProcesso: "339101101107/2025-45",
-      idAtendimento: "51078",
-      competencia: "01/2025",
-      dataEmissao: "26/03/2025",
-      procedimentoPrincipal: "Consulta médica",
-      status: "Defendido",
-    },
-    {
-      ordem: "2",
-      tipo: "Tratamento",
-      numeroProcesso: "339101101107/2025-45",
-      idAtendimento: "51079",
-      competencia: "01/2025",
-      dataEmissao: "26/03/2025",
-      procedimentoPrincipal: "Exame laboratorial",
-      status: "Defendido",
-    },
-    {
-      ordem: "3",
-      tipo: "Tratamento",
-      numeroProcesso: "339101101107/2025-45",
-      idAtendimento: "51080",
-      competencia: "01/2025",
-      dataEmissao: "26/03/2025",
-      procedimentoPrincipal: "Procedimento cirúrgico",
-      status: "Defendido",
-    },
-  ]
+  if (loading) {
+    return <div className="p-6">Carregando...</div>
+  }
+
+  if (error || !abi) {
+    return (
+      <div className="p-6 text-red-600">
+        {error || "Não foi possível encontrar os dados da ABI."}
+      </div>
+    )
+  }
 
   return (
     <div className="p-6 space-y-6">
@@ -59,7 +59,7 @@ export default function ABIDetalhesPage({ params }: { params: { id: string } }) 
             <ArrowLeft className="h-4 w-4" />
           </Button>
         </Link>
-        <h1 className="text-3xl font-bold tracking-tight">ABI {abiDetalhes.id}</h1>
+        <h1 className="text-3xl font-bold tracking-tight">ABI {abi.numeroABI}</h1>
       </div>
 
       <Card>
@@ -70,34 +70,37 @@ export default function ABIDetalhesPage({ params }: { params: { id: string } }) 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             <div>
               <p className="text-sm font-medium text-gray-500">Número do Processo</p>
-              <p className="font-mono">{abiDetalhes.numeroProcesso}</p>
+              <p className="font-mono">{abi.numeroProcesso}</p>
             </div>
             <div>
               <p className="text-sm font-medium text-gray-500">Nome da Empresa</p>
-              <p>{abiDetalhes.nomeEmpresa}</p>
+              <p>{abi.razaoSocial}</p>
             </div>
             <div>
               <p className="text-sm font-medium text-gray-500">CNPJ</p>
-              <p>{abiDetalhes.cnpj}</p>
+              <p>{abi.CNPJ}</p>
             </div>
             <div>
               <p className="text-sm font-medium text-gray-500">Status</p>
               <Badge variant="secondary" className="bg-teal-100 text-teal-800">
-                {abiDetalhes.status}
+                Aberto
               </Badge>
             </div>
             <div>
               <p className="text-sm font-medium text-gray-500">Valor do Processo</p>
-              <p className="font-semibold text-lg">{abiDetalhes.valorProcesso}</p>
+              <p className="font-semibold text-lg">
+                R$ {abi.valorTotalProcesso.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}
+              </p>
             </div>
             <div>
               <p className="text-sm font-medium text-gray-500">Quantidade de Processos</p>
-              <p className="font-semibold">{abiDetalhes.quantidadeProcessos}</p>
+              <p className="font-semibold">{abi.quantidadeProcesso}</p>
             </div>
           </div>
         </CardContent>
       </Card>
 
+      {/* Atendimentos fictícios (ainda não vindos do backend) */}
       <Card>
         <CardHeader>
           <CardTitle>Atendimentos</CardTitle>
@@ -125,48 +128,27 @@ export default function ABIDetalhesPage({ params }: { params: { id: string } }) 
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {atendimentos.map((atendimento) => (
-                  <TableRow key={atendimento.ordem}>
-                    <TableCell className="font-medium">{atendimento.ordem}</TableCell>
-                    <TableCell>{atendimento.tipo}</TableCell>
-                    <TableCell className="font-mono text-sm">{atendimento.numeroProcesso}</TableCell>
-                    <TableCell>{atendimento.idAtendimento}</TableCell>
-                    <TableCell>{atendimento.competencia}</TableCell>
-                    <TableCell>{atendimento.dataEmissao}</TableCell>
-                    <TableCell>{atendimento.procedimentoPrincipal}</TableCell>
-                    <TableCell>
-                      <Badge variant="secondary" className="bg-green-100 text-green-800">
-                        {atendimento.status}
-                      </Badge>
-                    </TableCell>
-                    <TableCell className="text-right">
-                      <Button variant="ghost" size="icon">
-                        <Eye className="h-4 w-4" />
-                      </Button>
-                    </TableCell>
-                  </TableRow>
-                ))}
+                <TableRow>
+                  <TableCell>1</TableCell>
+                  <TableCell>{abi.tipo}</TableCell>
+                  <TableCell className="font-mono">{abi.numeroProcesso}</TableCell>
+                  <TableCell>{abi._id}</TableCell>
+                  <TableCell>{String(abi.competencia).padStart(6, "0").replace(/^(\d{2})(\d{4})$/, "$1/$2")}</TableCell>
+                  <TableCell>{new Date(abi.dataRegistroTransacao).toLocaleDateString("pt-BR")}</TableCell>
+                  <TableCell>{abi.descricaoProcedimento}</TableCell>
+                  <TableCell>
+                    <Badge variant="secondary" className="bg-green-100 text-green-800">
+                      Aberto
+                    </Badge>
+                  </TableCell>
+                  <TableCell className="text-right">
+                    <Button variant="ghost" size="icon">
+                      <Eye className="h-4 w-4" />
+                    </Button>
+                  </TableCell>
+                </TableRow>
               </TableBody>
             </Table>
-          </div>
-
-          {/* Paginação */}
-          <div className="flex items-center justify-center space-x-2 mt-6">
-            <Button variant="outline" size="icon" disabled>
-              &lt;
-            </Button>
-            <Button size="sm">
-              1
-            </Button>
-            <Button variant="outline" size="sm">
-              2
-            </Button>
-            <Button variant="outline" size="sm">
-              3
-            </Button>
-            <Button variant="outline" size="icon">
-              &gt;
-            </Button>
           </div>
         </CardContent>
       </Card>
