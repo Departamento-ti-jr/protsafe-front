@@ -1,8 +1,8 @@
 export const logtoConfig = {
-  endpoint: "https://auth.codebeat.com.br/",
-  appId: "w0brlegoyb6wszymbazn9",
-  appSecret: "DLYW6xIcCTStVjzXHc4vh5E4yvQpipBD",
-  baseUrl: "https://protsafe.codebeat.com.br", // Change to your own base URL
-  cookieSecret: "keMGCVrIaE6fL6BU2TTXOvcAXRCeckZW", // Auto-generated 32 digit secret
-  cookieSecure: process.env.NODE_ENV === "production",
-}
+  endpoint: 'https://auth.codebeat.com.br/',
+  appId: 'ay4qmt9n2w2ktmhx42ncn',
+  appSecret: '1ugLtfPJDPkLlHY9GGimcFY6alUMZX2I',
+  baseUrl: 'https://protsafe.codebeat.com.br', // Change to your own base URL
+  cookieSecret: 'hXG8ZDg97dwaHwI1rLiemFiM1msJf0Sc', // Auto-generated 32 digit secret
+  cookieSecure: process.env.NODE_ENV === 'production',
+};
