@@ -146,7 +146,6 @@ export default function TextosDefesaPage() {
         <Table>
           <TableHeader>
             <TableRow className="bg-gray-50">
-              <TableHead className="font-medium text-gray-900">Código</TableHead>
               <TableHead className="font-medium text-gray-900">Nome</TableHead>
               <TableHead className="font-medium text-gray-900">Texto</TableHead>
               <TableHead className="font-medium text-gray-900">Atualizado em</TableHead>
@@ -163,7 +162,6 @@ export default function TextosDefesaPage() {
             ) : (
               paginatedData.data.map((texto) => (
                 <TableRow key={texto._id} className="hover:bg-gray-50">
-                  <TableCell className="font-medium text-gray-900">{texto.id}</TableCell>
                   <TableCell className="font-medium text-gray-900 max-w-xs">
                     <div className="truncate" title={texto.nome}>
                       {texto.nome}

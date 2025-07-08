@@ -85,6 +85,7 @@ export default function NovoTextoDefesaPage() {
           <CardTitle>Cadastro de Texto de Defesa</CardTitle>
         </CardHeader>
         <CardContent className="space-y-6">
+
           <div className="space-y-2">
             <Label htmlFor="nome">Nome do Texto de Defesa</Label>
             <Input

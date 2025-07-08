@@ -11,6 +11,7 @@ import { Textarea } from "@/components/ui/textarea"
 import { Label } from "@/components/ui/label"
 import { ApiService, type TextoDefesa } from "@/lib/api"
 import { TextosDefesaService } from "@/lib/services/textos-defesa.service"
+import { useToast } from "@/hooks/use-toast"
 
 export default function EditarTextoDefesaPage({ params }: { params: Promise<{ id: string }> }) {
   const router = useRouter()
@@ -20,6 +21,7 @@ export default function EditarTextoDefesaPage({ params }: { params: Promise<{ id
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const { toast } = useToast()
 
   useEffect(() => {
     loadTextoDefesa()
@@ -44,9 +46,11 @@ export default function EditarTextoDefesaPage({ params }: { params: Promise<{ id
 
     try {
       setSaving(true)
-      // Aqui seria implementada a lógica para salvar o texto de defesa
-      // await ApiService.updateTextoDefesa(id, textoDefesa)
-      alert("Texto de defesa salvo com sucesso!")
+      await TextosDefesaService.update(id, textoDefesa)
+      toast({
+        title: "Sucesso!",
+        description: "Texto de defesa atualizado com sucesso.",
+      })
       router.push("/textos-defesa")
     } catch (err) {
       alert("Erro ao salvar texto de defesa. Tente novamente.")
