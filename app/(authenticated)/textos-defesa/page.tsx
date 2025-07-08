@@ -65,7 +65,7 @@ export default function TextosDefesaPage() {
   }
 
   const stripHtml = (html: string) => {
-    return html.replace(/<[^>]*>/g, "").substring(0, 150) + "..."
+    return html?.replace(/<[^>]*>/g, "").substring(0, 150) + "..."
   }
 
   const formatDate = (dateString?: string) => {
