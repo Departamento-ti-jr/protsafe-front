@@ -1,12 +1,5 @@
 import { httpClient } from "../http-client"
-
-export interface AbisPaginatedResponse {
-  data: Abi[]
-  total: number
-  page: number
-  pageSize: number
-  totalPages: number
-}
+import type { PaginatedResponse } from "@/components/ui/pagination-controls"
 
 export interface Abi {
   _id: string
@@ -61,14 +54,38 @@ export interface Abi {
   hash: string
 }
 
-export interface CreateAbiData extends Abi { }
+export interface CreateAbiData extends Abi {}
+
+export interface GetAbisParams {
+  page?: number
+  limit?: number
+  search?: string
+  status?: string
+}
 
 export class AbisService {
   private static readonly endpoint = "/abis"
 
-  static async getAll(page = 1, limit = 20): Promise<AbisPaginatedResponse> {
+  static async getAll(params: GetAbisParams = {}): Promise<PaginatedResponse<Abi>> {
     try {
-      return await httpClient.get<AbisPaginatedResponse>(`/abis?page=${page}&limit=${limit}`)
+      const searchParams = new URLSearchParams()
+
+      if (params.page) {
+        searchParams.append("page", params.page.toString())
+      }
+      if (params.limit) {
+        searchParams.append("limit", params.limit.toString())
+      }
+      if (params.search) {
+        searchParams.append("search", params.search)
+      }
+      if (params.status) {
+        searchParams.append("status", params.status)
+      }
+
+      const url = searchParams.toString() ? `${this.endpoint}?${searchParams.toString()}` : this.endpoint
+
+      return await httpClient.get<PaginatedResponse<Abi>>(url)
     } catch (error) {
       console.error("Erro ao buscar ABIs:", error)
       throw new Error("Falha ao carregar ABIs")

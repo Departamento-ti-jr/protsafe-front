@@ -5,30 +5,42 @@ import { Input } from "@/components/ui/input"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Badge } from "@/components/ui/badge"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Eye, Plus, Search } from "lucide-react"
+import { Eye, Plus, Search, Loader2 } from "lucide-react"
 import Link from "next/link"
 import { useEffect, useState } from "react"
-import { Abi, AbisService } from "@/lib/services/abis.service"
+import { type Abi, AbisService } from "@/lib/services/abis.service"
+import { type PaginatedResponse, PaginationControls, PaginationInfo } from "@/components/ui/pagination-controls"
 
 export default function ABIsPage() {
-  const [abis, setAbis] = useState<Abi[]>([])
-  const [page, setPage] = useState(1)
-  const [totalPages, setTotalPages] = useState(1)
+  const [paginatedData, setPaginatedData] = useState<PaginatedResponse<Abi>>({
+    data: [],
+    total: 0,
+    page: 1,
+    pageSize: 20,
+    totalPages: 1,
+  })
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
-  const limit = 20
+  const [searchTerm, setSearchTerm] = useState("")
+  const [statusFilter, setStatusFilter] = useState("todos")
+  const [currentPage, setCurrentPage] = useState(1)
+  const [pageSize, setPageSize] = useState(20)
 
   useEffect(() => {
-    loadAbis(page)
-  }, [page])
+    loadAbis()
+  }, [currentPage, pageSize, searchTerm, statusFilter])
 
-  const loadAbis = async (pageToLoad: number) => {
+  const loadAbis = async () => {
     try {
       setLoading(true)
       setError(null)
-      const response = await AbisService.getAll(pageToLoad, limit)
-      setAbis(response.data)
-      setTotalPages(response.totalPages)
+      const response = await AbisService.getAll({
+        page: currentPage,
+        limit: pageSize,
+        search: searchTerm || undefined,
+        status: statusFilter !== "todos" ? statusFilter : undefined,
+      })
+      setPaginatedData(response)
     } catch (err) {
       setError("Erro ao carregar ABIs. Tente novamente.")
       console.error(err)
@@ -37,16 +49,63 @@ export default function ABIsPage() {
     }
   }
 
-  const goToPage = (newPage: number) => {
-    if (newPage >= 1 && newPage <= totalPages) {
-      setPage(newPage)
-    }
+  const handleSearch = (value: string) => {
+    setSearchTerm(value)
+    setCurrentPage(1) // Reset to first page when searching
+  }
+
+  const handleStatusFilter = (value: string) => {
+    setStatusFilter(value)
+    setCurrentPage(1) // Reset to first page when filtering
+  }
+
+  const handlePageChange = (page: number) => {
+    setCurrentPage(page)
+  }
+
+  const handlePageSizeChange = (newPageSize: number) => {
+    setPageSize(newPageSize)
+    setCurrentPage(1) // Reset to first page when changing page size
+  }
+
+  if (loading) {
+    return (
+      <div className="p-6 space-y-6">
+        <div>
+          <h1 className="text-2xl font-semibold text-gray-900">ABIs</h1>
+        </div>
+        <div className="flex items-center justify-center py-12">
+          <Loader2 className="h-8 w-8 animate-spin text-blue-500" />
+          <span className="ml-2 text-gray-600">Carregando ABIs...</span>
+        </div>
+      </div>
+    )
+  }
+
+  if (error) {
+    return (
+      <div className="p-6 space-y-6">
+        <div>
+          <h1 className="text-2xl font-semibold text-gray-900">ABIs</h1>
+        </div>
+        <div className="flex flex-col items-center justify-center py-12 space-y-4">
+          <p className="text-red-600">{error}</p>
+          <Button onClick={loadAbis}>Tentar novamente</Button>
+        </div>
+      </div>
+    )
   }
 
   return (
     <div className="p-6 space-y-6">
       <div>
         <h1 className="text-2xl font-semibold text-gray-900">ABIs</h1>
+        <PaginationInfo
+          currentPage={paginatedData.page}
+          totalPages={paginatedData.totalPages}
+          totalItems={paginatedData.total}
+          itemsPerPage={paginatedData.pageSize}
+        />
       </div>
 
       <div className="flex flex-col md:flex-row gap-4 items-start md:items-center">
@@ -55,10 +114,12 @@ export default function ABIsPage() {
           <Input
             placeholder="Buscar ABIs..."
             className="pl-10 border-gray-300 focus:border-blue-500 focus:ring-blue-500"
+            value={searchTerm}
+            onChange={(e) => handleSearch(e.target.value)}
           />
         </div>
         <div className="flex gap-3">
-          <Select defaultValue="todos">
+          <Select value={statusFilter} onValueChange={handleStatusFilter}>
             <SelectTrigger className="w-full md:w-[180px]">
               <SelectValue placeholder="Filtrar" />
             </SelectTrigger>
@@ -91,26 +152,16 @@ export default function ABIsPage() {
             </TableRow>
           </TableHeader>
           <TableBody>
-            {loading ? (
+            {paginatedData.data.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={7} className="text-center py-4">
-                  Carregando...
-                </TableCell>
-              </TableRow>
-            ) : error ? (
-              <TableRow>
-                <TableCell colSpan={7} className="text-center text-red-500 py-4">
-                  {error}
-                </TableCell>
-              </TableRow>
-            ) : abis.length === 0 ? (
-              <TableRow>
-                <TableCell colSpan={7} className="text-center text-gray-500 py-4">
-                  Nenhuma ABI encontrada.
+                <TableCell colSpan={7} className="text-center py-8 text-gray-500">
+                  {searchTerm || statusFilter !== "todos"
+                    ? "Nenhuma ABI encontrada para os filtros aplicados."
+                    : "Nenhuma ABI encontrada."}
                 </TableCell>
               </TableRow>
             ) : (
-              abis.map((abi) => (
+              paginatedData.data.map((abi) => (
                 <TableRow key={abi._id}>
                   <TableCell>{abi.numeroABI}</TableCell>
                   <TableCell>{abi.numeroOficio}</TableCell>
@@ -141,24 +192,16 @@ export default function ABIsPage() {
         </Table>
       </div>
 
-      {/* Paginação funcional */}
-      <div className="flex items-center justify-center space-x-2 py-4">
-        <Button variant="outline" size="icon" onClick={() => goToPage(1)} disabled={page === 1}>
-          &lt;&lt;
-        </Button>
-        <Button variant="outline" size="icon" onClick={() => goToPage(page - 1)} disabled={page === 1}>
-          &lt;
-        </Button>
-        <span className="px-2 text-sm text-gray-700">
-          Página {page} de {totalPages}
-        </span>
-        <Button variant="outline" size="icon" onClick={() => goToPage(page + 1)} disabled={page === totalPages}>
-          &gt;
-        </Button>
-        <Button variant="outline" size="icon" onClick={() => goToPage(totalPages)} disabled={page === totalPages}>
-          &gt;&gt;
-        </Button>
-      </div>
+      <PaginationControls
+        currentPage={paginatedData.page}
+        totalPages={paginatedData.totalPages}
+        pageSize={paginatedData.pageSize}
+        totalItems={paginatedData.total}
+        onPageChange={handlePageChange}
+        onPageSizeChange={handlePageSizeChange}
+        disabled={loading}
+        pageSizeOptions={[10, 20, 50, 100]}
+      />
     </div>
   )
 }

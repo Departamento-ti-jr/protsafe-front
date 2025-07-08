@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react"
 import { TextosDefesaService, type TextoDefesa } from "@/lib/services/textos-defesa.service"
+import { type PaginatedResponse, PaginationControls, PaginationInfo } from "@/components/ui/pagination-controls"
 import { Loader2 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -12,23 +13,35 @@ import { useAuthContext } from "@/components/auth-provider"
 
 export default function TextosDefesaPage() {
   const { isAuthenticated } = useAuthContext()
-  const [textosDefesa, setTextosDefesa] = useState<TextoDefesa[]>([])
+  const [paginatedData, setPaginatedData] = useState<PaginatedResponse<TextoDefesa>>({
+    data: [],
+    total: 0,
+    page: 1,
+    pageSize: 20,
+    totalPages: 1,
+  })
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [searchTerm, setSearchTerm] = useState("")
+  const [currentPage, setCurrentPage] = useState(1)
+  const [pageSize, setPageSize] = useState(20)
 
   useEffect(() => {
     if (isAuthenticated) {
       loadTextosDefesa()
     }
-  }, [isAuthenticated])
+  }, [isAuthenticated, currentPage, pageSize, searchTerm])
 
   const loadTextosDefesa = async () => {
     try {
       setLoading(true)
       setError(null)
-      const data = await TextosDefesaService.getAll()
-      setTextosDefesa(data)
+      const data = await TextosDefesaService.getAll({
+        page: currentPage,
+        limit: pageSize,
+        search: searchTerm || undefined,
+      })
+      setPaginatedData(data)
     } catch (err) {
       setError("Erro ao carregar textos de defesa. Tente novamente.")
       console.error(err)
@@ -37,11 +50,19 @@ export default function TextosDefesaPage() {
     }
   }
 
-  const filteredTextos = textosDefesa.filter(
-    (texto) =>
-      texto.nome.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      texto.id.toLowerCase().includes(searchTerm.toLowerCase()),
-  )
+  const handleSearch = (value: string) => {
+    setSearchTerm(value)
+    setCurrentPage(1) // Reset to first page when searching
+  }
+
+  const handlePageChange = (page: number) => {
+    setCurrentPage(page)
+  }
+
+  const handlePageSizeChange = (newPageSize: number) => {
+    setPageSize(newPageSize)
+    setCurrentPage(1) // Reset to first page when changing page size
+  }
 
   const stripHtml = (html: string) => {
     return html.replace(/<[^>]*>/g, "").substring(0, 150) + "..."
@@ -94,10 +115,12 @@ export default function TextosDefesaPage() {
     <div className="p-6 space-y-6">
       <div>
         <h1 className="text-2xl font-semibold text-gray-900">Textos de defesa</h1>
-        <p className="text-sm text-gray-600 mt-1">
-          {filteredTextos.length} texto{filteredTextos.length !== 1 ? "s" : ""} encontrado
-          {filteredTextos.length !== 1 ? "s" : ""}
-        </p>
+        <PaginationInfo
+          currentPage={paginatedData.page}
+          totalPages={paginatedData.totalPages}
+          totalItems={paginatedData.total}
+          itemsPerPage={paginatedData.pageSize}
+        />
       </div>
 
       <div className="flex items-center">
@@ -107,13 +130,15 @@ export default function TextosDefesaPage() {
             placeholder="Buscar textos..."
             className="pl-10 border-gray-300 focus:border-blue-500 focus:ring-blue-500"
             value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
+            onChange={(e) => handleSearch(e.target.value)}
           />
         </div>
         <div className="ml-auto">
-          <Button>
-            <Plus className="mr-2 h-4 w-4" /> Novo Texto
-          </Button>
+          <Link href="/textos-defesa/novo">
+            <Button>
+              <Plus className="mr-2 h-4 w-4" /> Novo Texto
+            </Button>
+          </Link>
         </div>
       </div>
 
@@ -129,14 +154,14 @@ export default function TextosDefesaPage() {
             </TableRow>
           </TableHeader>
           <TableBody>
-            {filteredTextos.length === 0 ? (
+            {paginatedData.data.length === 0 ? (
               <TableRow>
                 <TableCell colSpan={5} className="text-center py-8 text-gray-500">
                   {searchTerm ? "Nenhum texto encontrado para a busca." : "Nenhum texto de defesa cadastrado."}
                 </TableCell>
               </TableRow>
             ) : (
-              filteredTextos.map((texto) => (
+              paginatedData.data.map((texto) => (
                 <TableRow key={texto._id} className="hover:bg-gray-50">
                   <TableCell className="font-medium text-gray-900">{texto.id}</TableCell>
                   <TableCell className="font-medium text-gray-900 max-w-xs">
@@ -162,28 +187,16 @@ export default function TextosDefesaPage() {
         </Table>
       </div>
 
-      {/* Paginação - pode ser implementada posteriormente */}
-      <div className="flex items-center justify-center space-x-2 py-4">
-        <Button variant="outline" size="icon" disabled>
-          &lt;&lt;
-        </Button>
-        <Button variant="outline" size="icon" disabled>
-          &lt;
-        </Button>
-        <Button size="sm">1</Button>
-        <Button variant="outline" size="sm">
-          2
-        </Button>
-        <Button variant="outline" size="sm">
-          3
-        </Button>
-        <Button variant="outline" size="icon">
-          &gt;
-        </Button>
-        <Button variant="outline" size="icon">
-          &gt;&gt;
-        </Button>
-      </div>
+      <PaginationControls
+        currentPage={paginatedData.page}
+        totalPages={paginatedData.totalPages}
+        pageSize={paginatedData.pageSize}
+        totalItems={paginatedData.total}
+        onPageChange={handlePageChange}
+        onPageSizeChange={handlePageSizeChange}
+        disabled={loading}
+        pageSizeOptions={[10, 20, 50, 100]}
+      />
     </div>
   )
 }

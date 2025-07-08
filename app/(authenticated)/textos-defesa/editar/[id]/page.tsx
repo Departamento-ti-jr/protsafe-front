@@ -10,6 +10,7 @@ import { useRouter } from "next/navigation"
 import { Textarea } from "@/components/ui/textarea"
 import { Label } from "@/components/ui/label"
 import { ApiService, type TextoDefesa } from "@/lib/api"
+import { TextosDefesaService } from "@/lib/services/textos-defesa.service"
 
 export default function EditarTextoDefesaPage({ params }: { params: Promise<{ id: string }> }) {
   const router = useRouter()
@@ -28,7 +29,7 @@ export default function EditarTextoDefesaPage({ params }: { params: Promise<{ id
     try {
       setLoading(true)
       setError(null)
-      const data = await ApiService.getTextoDefesaById(id)
+      const data = await TextosDefesaService.getById(id)
       setTextoDefesa(data)
     } catch (err) {
       setError("Erro ao carregar texto de defesa. Tente novamente.")
