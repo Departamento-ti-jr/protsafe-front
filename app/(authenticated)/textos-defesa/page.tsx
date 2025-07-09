@@ -20,17 +20,21 @@ export default function TextosDefesaPage() {
     pageSize: 20,
     totalPages: 1,
   })
-  const [loading, setLoading] = useState(true)
+  const [loading, setLoading] = useState(false)  // <-- começa false
   const [error, setError] = useState<string | null>(null)
   const [searchTerm, setSearchTerm] = useState("")
   const [currentPage, setCurrentPage] = useState(1)
   const [pageSize, setPageSize] = useState(20)
 
   useEffect(() => {
-    if (isAuthenticated) {
+    if (!isAuthenticated) return
+
+    const delayDebounce = setTimeout(() => {
       loadTextosDefesa()
-    }
-  }, [isAuthenticated, currentPage, pageSize, searchTerm])
+    }, 500)
+
+    return () => clearTimeout(delayDebounce)
+  }, [searchTerm, currentPage, pageSize, isAuthenticated])
 
   const loadTextosDefesa = async () => {
     try {
@@ -50,9 +54,8 @@ export default function TextosDefesaPage() {
     }
   }
 
-  const handleSearch = (value: string) => {
-    setSearchTerm(value)
-    setCurrentPage(1) // Reset to first page when searching
+  const stripHtml = (html: string) => {
+    return html?.replace(/<[^>]*>/g, "").substring(0, 150) + "..."
   }
 
   const handlePageChange = (page: number) => {
@@ -64,15 +67,12 @@ export default function TextosDefesaPage() {
     setCurrentPage(1) // Reset to first page when changing page size
   }
 
-  const stripHtml = (html: string) => {
-    return html?.replace(/<[^>]*>/g, "").substring(0, 150) + "..."
-  }
-
   const formatDate = (dateString?: string) => {
     if (!dateString) return "-"
     return new Date(dateString).toLocaleDateString("pt-BR")
   }
 
+  // Se não autenticado, mostrar mensagem e sair logo
   if (!isAuthenticated) {
     return (
       <div className="p-6 space-y-6">
@@ -83,33 +83,7 @@ export default function TextosDefesaPage() {
     )
   }
 
-  if (loading) {
-    return (
-      <div className="p-6 space-y-6">
-        <div>
-          <h1 className="text-2xl font-semibold text-gray-900">Textos de defesa</h1>
-        </div>
-        <div className="flex items-center justify-center py-12">
-          <Loader2 className="h-8 w-8 animate-spin text-blue-500" />
-          <span className="ml-2 text-gray-600">Carregando textos de defesa...</span>
-        </div>
-      </div>
-    )
-  }
-
-  if (error) {
-    return (
-      <div className="p-6 space-y-6">
-        <div>
-          <h1 className="text-2xl font-semibold text-gray-900">Textos de defesa</h1>
-        </div>
-        <div className="flex flex-col items-center justify-center py-12 space-y-4">
-          <p className="text-red-600">{error}</p>
-          <Button onClick={loadTextosDefesa}>Tentar novamente</Button>
-        </div>
-      </div>
-    )
-  }
+  // Renderização principal SEM retornar no loading, só exibir loading na interface
 
   return (
     <div className="p-6 space-y-6">
@@ -130,17 +104,36 @@ export default function TextosDefesaPage() {
             placeholder="Buscar textos..."
             className="pl-10 border-gray-300 focus:border-blue-500 focus:ring-blue-500"
             value={searchTerm}
-            onChange={(e) => handleSearch(e.target.value)}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            disabled={loading}
           />
         </div>
         <div className="ml-auto">
           <Link href="/textos-defesa/novo">
-            <Button>
+            <Button disabled={loading}>
               <Plus className="mr-2 h-4 w-4" /> Novo Texto
             </Button>
           </Link>
         </div>
       </div>
+
+      {/* Loading aparece aqui, sem sumir nada */}
+      {loading && (
+        <div className="flex items-center justify-center py-4 space-x-2">
+          <Loader2 className="h-6 w-6 animate-spin text-blue-500" />
+          <span className="text-gray-600">Carregando textos de defesa...</span>
+        </div>
+      )}
+
+      {/* Se erro, mostra mensagem mas mantém tabela */}
+      {error && (
+        <div className="flex flex-col items-center justify-center py-4 space-y-2 text-red-600">
+          <p>{error}</p>
+          <Button onClick={loadTextosDefesa} disabled={loading}>
+            Tentar novamente
+          </Button>
+        </div>
+      )}
 
       <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
         <Table>
@@ -173,7 +166,7 @@ export default function TextosDefesaPage() {
                   <TableCell className="text-sm text-gray-500">{formatDate(texto.updatedAt)}</TableCell>
                   <TableCell className="text-right">
                     <Link href={`/textos-defesa/editar/${texto._id}`}>
-                      <Button variant="ghost" size="icon">
+                      <Button variant="ghost" size="icon" disabled={loading}>
                         <PenSquare className="h-4 w-4" />
                       </Button>
                     </Link>
