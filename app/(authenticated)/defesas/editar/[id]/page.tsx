@@ -11,7 +11,7 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
 import { Checkbox } from "@/components/ui/checkbox"
 import { ArrowLeft, Upload, FileText, Save, Cloud, Calculator, FolderOpen } from "lucide-react"
 import Link from "next/link"
-import { useRouter } from "next/router"
+import { AnexarDocumentoDefesaModal } from "@/components/anexar-documento-defesa-modal"
 
 export default function EditarDefesaPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = React.use(params)
@@ -20,6 +20,9 @@ export default function EditarDefesaPage({ params }: { params: Promise<{ id: str
   const [selectedMotivo, setSelectedMotivo] = useState("16")
   const [selectedPedido, setSelectedPedido] = useState("anulacao-identificacao")
   const [informarOutrosDocumentos, setInformarOutrosDocumentos] = useState(false)
+
+  const [isAnexarModalOpen, setIsAnexarModalOpen] = useState(false)
+  const [anexedDocuments, setAnexedDocuments] = useState<any[]>([])
 
   // Dados de exemplo baseados na imagem fornecida
   const atendimento = {
@@ -33,12 +36,28 @@ export default function EditarDefesaPage({ params }: { params: Promise<{ id: str
     abi: "97",
   }
 
+  const handleAnexarDocumento = (files: any[], documentType: string) => {
+    // Aqui você pode implementar a lógica para enviar os arquivos para a API
+    console.log("Arquivos selecionados:", files)
+    console.log("Tipo de documento:", documentType)
+
+    // Adicionar os documentos à lista local (temporário)
+    const newDocuments = files.map((fileData) => ({
+      id: Math.random().toString(36).substr(2, 9),
+      name: fileData.file.name,
+      size: fileData.file.size,
+      type: documentType,
+    }))
+
+    setAnexedDocuments((prev) => [...prev, ...newDocuments])
+  }
+
   return (
     <div className="p-6 space-y-6">
       {/* Header */}
       <div className="flex items-center gap-4">
         <Link href="/defesas">
-          <Button variant="outline" size="icon" className="rounded-xl">
+          <Button variant="outline" size="icon" className="rounded-xl bg-transparent">
             <ArrowLeft className="h-4 w-4" />
           </Button>
         </Link>
@@ -227,9 +246,25 @@ Conforme os documentos anexos, a adesão ao plano de saúde, na modalidade indiv
           <CardTitle>Documentos Anexados</CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center">
-            <p className="text-gray-500">Nenhum documento anexado</p>
-          </div>
+          {anexedDocuments.length > 0 ? (
+            <div className="space-y-2">
+              {anexedDocuments.map((doc) => (
+                <div key={doc.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                  <div className="flex items-center space-x-3">
+                    <FileText className="h-5 w-5 text-gray-500" />
+                    <div>
+                      <p className="text-sm font-medium text-gray-900">{doc.name}</p>
+                      <p className="text-xs text-gray-500">Tipo: {doc.type}</p>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div className="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center">
+              <p className="text-gray-500">Nenhum documento anexado</p>
+            </div>
+          )}
         </CardContent>
       </Card>
 
@@ -247,11 +282,11 @@ Conforme os documentos anexos, a adesão ao plano de saúde, na modalidade indiv
 
       {/* Action Buttons */}
       <div className="flex justify-end gap-4">
-        <Button variant="outline" className="rounded-xl">
+        <Button variant="outline" className="rounded-xl bg-transparent" onClick={() => setIsAnexarModalOpen(true)}>
           <Upload className="mr-2 h-4 w-4" />
           ANEXAR DOCUMENTO
         </Button>
-        <Button variant="outline" className="rounded-xl">
+        <Button variant="outline" className="rounded-xl bg-transparent">
           <Cloud className="mr-2 h-4 w-4" />
           INTEGRAR ANS
         </Button>
@@ -260,6 +295,11 @@ Conforme os documentos anexos, a adesão ao plano de saúde, na modalidade indiv
           SALVAR E GERAR DEFESA
         </Button>
       </div>
+      <AnexarDocumentoDefesaModal
+        open={isAnexarModalOpen}
+        onOpenChange={setIsAnexarModalOpen}
+        onSubmit={handleAnexarDocumento}
+      />
     </div>
   )
 }
