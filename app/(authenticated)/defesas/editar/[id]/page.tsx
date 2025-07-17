@@ -1,6 +1,6 @@
 "use client"
 
-import React, { useState } from "react"
+import React, { useEffect, useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
@@ -12,6 +12,9 @@ import { Checkbox } from "@/components/ui/checkbox"
 import { ArrowLeft, Upload, FileText, Save, Cloud, Calculator, FolderOpen } from "lucide-react"
 import Link from "next/link"
 import { AnexarDocumentoDefesaModal } from "@/components/anexar-documento-defesa-modal"
+import { MultiSelectCheckbox } from "@/components/multi-select-checkbox"
+import { TextoDefesa, TextosDefesaService } from "@/lib/services/textos-defesa.service"
+import { DocumentoComprobatorio, DocumentosComprobatoriosService } from "@/lib/services/documentos-comprobatorios.service"
 
 export default function EditarDefesaPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = React.use(params)
@@ -23,6 +26,24 @@ export default function EditarDefesaPage({ params }: { params: Promise<{ id: str
 
   const [isAnexarModalOpen, setIsAnexarModalOpen] = useState(false)
   const [anexedDocuments, setAnexedDocuments] = useState<any[]>([])
+  const [selectedMotivos, setSelectedMotivos] = useState<string[]>([]);
+  const [selectedComprobatorios, setSelectedComprobatorios] = useState<string[]>([]);
+  const [textosDefesa, setTextosDefesa] = useState<TextoDefesa[]>([]);
+  const [documentosComprobatorios, setDocumentosComprobatorios] = useState<DocumentoComprobatorio[]>([]);
+  const [error, setError] = useState<string | null>(null);
+
+  const motivos = [
+    { label: "08 - COPARTICIPAÇÃO - PRONTO SOCORRO", value: "08-coparticipacao-pronto-socorro" },
+    { label: "08 - COPARTICIPAÇÃO - INTERNAÇÃO PSIQUIÁTRICA", value: "08-coparticipacao-internacao-psiquiatrica" },
+    { label: "13 – DIVERGÊNCIA NOS VALORES COBRADOS (SIGTAP)", value: "13-divergencia-sigtap" },
+    { label: "13 – AUSÊNCIA/RECUSA PRONTUÁRIO", value: "13-ausencia-prontuario" },
+    { label: "13 - DEFESA TÉCNICA", value: "13-defesa-tecnica" },
+    { label: "13 - BENEFICIÁRIO NÃO PERTENCE À OPS", value: "13-beneficiario-nao-ops" },
+    { label: "13 - BENEFICIÁRIO EXCLUÍDO", value: "13-beneficiario-excluido" },
+    { label: "13 - IVR", value: "13-ivr" },
+    { label: "13 – VALOR COBRADO EM DUPLICIDADE", value: "13-valor-duplicidade" },
+    { label: "16 - COBERTURA PARCIAL TEMPORÁRIA PARA DOENÇA OU LESÃO PREEXISTENTE", value: "16-cobertura-parcial" }
+  ];
 
   // Dados de exemplo baseados na imagem fornecida
   const atendimento = {
@@ -34,6 +55,37 @@ export default function EditarDefesaPage({ params }: { params: Promise<{ id: str
     dataFinal: "27-02-2023",
     numero: "133",
     abi: "97",
+  }
+
+  useEffect(() => {
+    loadTextosDefesa();
+    loadDocumentosComprobatorios();
+  },[]);
+
+  const loadTextosDefesa = async () => {
+      try {
+        const data = await TextosDefesaService.getAll({
+          limit: 100000,
+        })
+        setTextosDefesa(data.data);
+      } catch (err) {
+        setError("Erro ao carregar textos de defesa. Tente novamente.")
+        console.error(err)
+      } finally {
+      }
+  }
+
+  const loadDocumentosComprobatorios = async () => {
+      try {
+        const data = await DocumentosComprobatoriosService.getAll({
+          limit: 100000,
+        })
+        setDocumentosComprobatorios(data.data);
+      } catch (err) {
+        setError("Erro ao carregar documentos comprobatórios. Tente novamente.")
+        console.error(err)
+      } finally {
+      }
   }
 
   const handleAnexarDocumento = (files: any[], documentType: string) => {
@@ -128,18 +180,12 @@ export default function EditarDefesaPage({ params }: { params: Promise<{ id: str
 
           {/* Motivo de Impugnação */}
           <div className="space-y-2">
-            <Label>Motivo de impugnação/recurso</Label>
-            <Select value={selectedMotivo} onValueChange={setSelectedMotivo}>
-              <SelectTrigger>
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="16">16 - COBERTURA PARCIAL TEMPORÁRIA PARA DOENÇA OU LESÃO PREEXISTENTE</SelectItem>
-                <SelectItem value="02">02 - HOMONÍMIA</SelectItem>
-                <SelectItem value="04">04 - ÁREA DE ABRANGÊNCIA</SelectItem>
-                <SelectItem value="06">06 - QUANTIDADE DO PROCEDIMENTO NÃO COBERTA PELO PRODUTO</SelectItem>
-              </SelectContent>
-            </Select>
+           <MultiSelectCheckbox
+              options={textosDefesa.map(texto => ({ label: texto.nome, value: texto._id }))}
+              value={selectedMotivos}
+              onChange={setSelectedMotivos}
+              label="Motivo de impugnação/recurso"
+            />
           </div>
 
           {/* Detalhamento do Motivo */}
@@ -183,20 +229,13 @@ Conforme os documentos anexos, a adesão ao plano de saúde, na modalidade indiv
                 </div>
 
                 <div className="space-y-2">
-                  <Label className="text-sm flex items-center gap-2">
-                    <FolderOpen className="h-4 w-4 text-gray-500" />
-                    Documentos Comprobatórios
-                  </Label>
-                  <Select>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Selecione o(s) documento(s) comprobatório(s)..." />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="contrato">Contrato</SelectItem>
-                      <SelectItem value="comprovante">Comprovante de Pagamento</SelectItem>
-                      <SelectItem value="prontuario">Prontuário Médico</SelectItem>
-                    </SelectContent>
-                  </Select>
+                  <MultiSelectCheckbox
+                    options={documentosComprobatorios.map(texto => ({ label: texto.tipo, value: texto._id }))}
+                    value={selectedComprobatorios}
+                    onChange={setSelectedComprobatorios}
+                    label="Documentos Comprobatórios"
+                    icon={<FolderOpen className="h-4 w-4 text-gray-500" />}
+                  />
                 </div>
               </div>
 
