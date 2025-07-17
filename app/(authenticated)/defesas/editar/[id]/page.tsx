@@ -15,6 +15,7 @@ import { AnexarDocumentoDefesaModal } from "@/components/anexar-documento-defesa
 import { MultiSelectCheckbox } from "@/components/multi-select-checkbox"
 import { TextoDefesa, TextosDefesaService } from "@/lib/services/textos-defesa.service"
 import { DocumentoComprobatorio, DocumentosComprobatoriosService } from "@/lib/services/documentos-comprobatorios.service"
+import { AnsDocumentosService } from "@/lib/services/ans-documentos.service"
 
 export default function EditarDefesaPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = React.use(params)
@@ -88,21 +89,42 @@ export default function EditarDefesaPage({ params }: { params: Promise<{ id: str
       }
   }
 
-  const handleAnexarDocumento = (files: any[], documentType: string) => {
-    // Aqui você pode implementar a lógica para enviar os arquivos para a API
-    console.log("Arquivos selecionados:", files)
-    console.log("Tipo de documento:", documentType)
+  const handleAnexarDocumento = async (files: any[], documentType: string) => {
+  // Supondo que 'id' é o id_defesa da página
+  const id_defesa = id;
+  const tipo_documento = documentType;
+  const id_protocolo = "0"; // ou passe dinâmico se necessário
 
-    // Adicionar os documentos à lista local (temporário)
-    const newDocuments = files.map((fileData) => ({
-      id: Math.random().toString(36).substr(2, 9),
-      name: fileData.file.name,
-      size: fileData.file.size,
-      type: documentType,
-    }))
+  try {
+    // Envia todos os arquivos e aguarda terminar tudo
+    const uploadedDocs = await Promise.all(
+      files.map(async (fileData) => {
+        if (!fileData.file) {
+          throw new Error("Arquivo inválido");
+        }
+        const url = await AnsDocumentosService.uploadDocument(
+          fileData.file,
+          id_defesa,
+          tipo_documento,
+          id_protocolo
+        );
+        return {
+          id: Math.random().toString(36).substr(2, 9),
+          name: fileData.file.name,
+          size: fileData.file.size,
+          type: documentType,
+          url
+        };
+      })
+    );
 
-    setAnexedDocuments((prev) => [...prev, ...newDocuments])
+    setAnexedDocuments((prev) => [...prev, ...uploadedDocs]);
+  } catch (error) {
+    setError("Erro ao enviar documento(s). Tente novamente.");
+    console.error(error);
   }
+};
+
 
   return (
     <div className="p-6 space-y-6">

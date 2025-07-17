@@ -5,13 +5,15 @@ class HttpClient {
     this.baseURL = baseURL
   }
 
-  private getAuthHeaders(): HeadersInit {
+  private getAuthHeaders(isFormData = false): HeadersInit {
     const token = localStorage.getItem("resus_auth_token")
+    // Só seta Content-Type se NÃO for FormData
     return {
-      "Content-Type": "application/json",
+      ...(isFormData ? {} : { "Content-Type": "application/json" }),
       ...(token && { Authorization: `Bearer ${token}` }),
     }
   }
+
 
   async get<T>(endpoint: string): Promise<T> {
     const response = await fetch(`${this.baseURL}${endpoint}`, {
@@ -27,11 +29,14 @@ class HttpClient {
   }
 
   async post<T>(endpoint: string, data?: any): Promise<T> {
+    
+    const isFormData = (typeof FormData !== "undefined") && data instanceof FormData;
+
     const response = await fetch(`${this.baseURL}${endpoint}`, {
       method: "POST",
-      headers: this.getAuthHeaders(),
-      body: data ? JSON.stringify(data) : undefined,
-    })
+      headers: this.getAuthHeaders(isFormData),
+      body: isFormData ? data : (data ? JSON.stringify(data) : undefined),
+    });
 
     if (!response.ok) {
       throw new Error(`HTTP error! status: ${response.status}`)
