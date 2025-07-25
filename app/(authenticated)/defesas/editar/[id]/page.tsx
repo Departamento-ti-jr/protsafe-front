@@ -31,7 +31,9 @@ export default function EditarDefesaPage({ params }: { params: Promise<{ id: str
   const [selectedComprobatorios, setSelectedComprobatorios] = useState<string[]>([]);
   const [textosDefesa, setTextosDefesa] = useState<TextoDefesa[]>([]);
   const [documentosComprobatorios, setDocumentosComprobatorios] = useState<DocumentoComprobatorio[]>([]);
+  const [detalhamentoMotivo, setDetalhamentoMotivo] = useState("");
   const [error, setError] = useState<string | null>(null);
+  
 
   const motivos = [
     { label: "08 - COPARTICIPAÇÃO - PRONTO SOCORRO", value: "08-coparticipacao-pronto-socorro" },
@@ -58,10 +60,35 @@ export default function EditarDefesaPage({ params }: { params: Promise<{ id: str
     abi: "97",
   }
 
+  console.log(id);
+
   useEffect(() => {
     loadTextosDefesa();
     loadDocumentosComprobatorios();
+
+    AnsDocumentosService.getDocumentosByDefesaId(id).then((docs) => {
+      const formattedDocs = docs.map((doc: any) => ({
+        id: doc.id,
+        name: doc.name,
+        size: doc.size,
+        type: doc.tipo_documento,
+        url: doc.url
+      }));
+      setAnexedDocuments(formattedDocs);
+    }).catch((err) => {
+      console.error("Erro ao carregar documentos da ANS:", err);
+      setError("Erro ao carregar documentos da ANS. Tente novamente.");
+    });
   },[]);
+
+  useEffect(() => {
+    const textosConcatenados = textosDefesa
+      .filter(t => selectedMotivos.includes(t._id))
+      .map(t => t.texto)
+      .join("\n\n");
+
+    setDetalhamentoMotivo(textosConcatenados);
+  }, [selectedMotivos, textosDefesa]);
 
   const loadTextosDefesa = async () => {
       try {
@@ -211,22 +238,11 @@ export default function EditarDefesaPage({ params }: { params: Promise<{ id: str
           </div>
 
           {/* Detalhamento do Motivo */}
-          {selectedMotivo === "16" && (
             <div className="space-y-4 p-4 bg-gray-50 rounded-lg border border-gray-200">
               <div className="space-y-2">
                 <Label className="text-sm">Detalhamento do Motivo</Label>
                 <Textarea
-                  value="A operadora entende que a cobrança da presente AIH/APAC é indevida porque se trata de DOENÇA E/OU LESÃO PREEXISTENTE.
-
-No momento da contratação, o(a) beneficiário(a) declarou ter ciência ser portador(a) de CATARATA conforme item 21 da DLS em anexo.
-
-Em razão disso, contratou CPT de 24 meses, vencível em 31/05/2024, para a patologia declarada.
-
-O(a) beneficiário(a) utilizou os serviços do SUS em 02/2023 a 27/02/2023 para realizar o procedimento FACOEMULSIFICAÇÃO COM IMPLANTE DE LENTE INTRA-OCULAR DOBRÁVEL, relacionado à doença ou lesão declarada.
-
-Desta forma, conclui-se que no momento da utilização dos serviços do SUS o(a) beneficiário(a) ainda estava cumprindo o período de Cobertura Parcial Temporária.
-
-Conforme os documentos anexos, a adesão ao plano de saúde, na modalidade individual/familiar, ocorreu em 01/06/2022, data em que houve a efetiva assinatura do instrumento contratual. Portanto, ao contrário do que foi alegado, é desnecessária a comprovação do pagamento da primeira mensalidade, uma vez que, conforme já exposto, para fins de contagem de carência e de Cobertura Parcial Temporária (CPT), a operadora considerou, para evitar qualquer prejuízo ao(à) beneficiário(a), a data da assinatura contratual como marco inicial."
+                  value={detalhamentoMotivo}
                   className="min-h-[200px] resize-none"
                   readOnly
                 />
@@ -272,7 +288,7 @@ Conforme os documentos anexos, a adesão ao plano de saúde, na modalidade indiv
                 </Label>
               </div>
             </div>
-          )}
+          
         </CardContent>
       </Card>
 

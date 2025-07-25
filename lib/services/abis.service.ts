@@ -12,7 +12,7 @@ export interface Abi {
   versaoPadrao: number
   registroANS2: number
   razaoSocial: string
-  CNPJ: number
+  CNPJ: string
   numeroOficio: number
   numeroProcesso: string
   numeroABI: string
@@ -60,6 +60,7 @@ export interface GetAbisParams {
   page?: number
   limit?: number
   search?: string
+  cnpj?: string,
   status?: string
 }
 
@@ -75,6 +76,9 @@ export class AbisService {
       }
       if (params.limit) {
         searchParams.append("limit", params.limit.toString())
+      }
+      if (params.cnpj) {
+        searchParams.append("cnpj", params.cnpj.toString())
       }
       if (params.search) {
         searchParams.append("search", params.search)

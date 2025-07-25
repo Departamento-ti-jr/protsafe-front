@@ -18,10 +18,10 @@ export default async function Home() {
         <div className="mb-8 text-center">
           <div className="flex justify-center mb-4">
             <Image
-              src="/images/LogoReSUS.6fc1138b.png"
+              src="/images/protsafe-logo-completa-vertical.svg"
               alt="ReSUS Logo"
-              width={200}
-              height={60}
+              width={600}
+              height={200}
               className="object-contain"
             />
           </div>

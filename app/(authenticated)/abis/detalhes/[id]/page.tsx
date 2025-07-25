@@ -10,13 +10,27 @@ import { Badge } from "@/components/ui/badge"
 import { Input } from "@/components/ui/input"
 import { ArrowLeft, Eye, Search } from "lucide-react"
 import Link from "next/link"
+import { PaginatedResponse, PaginationControls } from "@/components/ui/pagination-controls"
+import { useDebounce } from "@/hooks/use-debounce"
 
 export default function ABIDetalhesPage({ params }: { params: Promise<{ id: string }> }) {
   const router = useRouter()
+  const [atendimentosPaginated, setAtendimentoPaginated] = useState<PaginatedResponse<Abi>>({
+      data: [],
+      total: 0,
+      page: 1,
+      pageSize: 20,
+      totalPages: 1,
+  });
+  const [currentPage, setCurrentPage] = useState(1)
+  const [pageSize, setPageSize] = useState(5)
   const [id, setId] = useState<string | null>(null);
+  const [searchTerm, setSearchTerm] = useState("")
   const [abi, setAbi] = useState<Abi | null>(null)
+  const [cnpj, setCnpj] = useState<string | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const debouncedSearchTerm = useDebounce(searchTerm, 500)
 
   useEffect(() => {
     params.then((resolved) => {
@@ -25,12 +39,17 @@ export default function ABIDetalhesPage({ params }: { params: Promise<{ id: stri
     });
   }, [params]);
 
+  useEffect(() => {
+    fetchAtendimentos(cnpj);
+  }, [currentPage, pageSize])
+
 
    const fetchAbi = async (id: string) => {
       try {
         console.log("Fetching ABI with ID:", id)
         const result = await AbisService.getById(id)
         setAbi(result)
+        setCnpj(result.CNPJ);
       } catch (err) {
         setError("Erro ao carregar os detalhes da ABI.")
         console.error(err)
@@ -38,6 +57,43 @@ export default function ABIDetalhesPage({ params }: { params: Promise<{ id: stri
         setLoading(false)
       }
   }
+
+  const fetchAtendimentos = async (cnpj?: string | null) => {
+    try {
+      setError(null)
+      const response = await AbisService.getAll({
+        page: currentPage,
+        limit: pageSize,
+        cnpj: cnpj,
+        search: searchTerm || undefined
+      })
+      setAtendimentoPaginated(response)
+    } catch (err) {
+      setError("Erro ao carregar ABIs. Tente novamente.")
+      console.error(err)
+    }
+  }
+
+  const handleSearch = (value: string) => {
+      setSearchTerm(value)
+      setCurrentPage(1)
+  }
+
+  const handlePageChange = (page: number) => {
+    setCurrentPage(page)
+  }
+
+  const handlePageSizeChange = (newPageSize: number) => {
+    setPageSize(newPageSize)
+    setCurrentPage(1)
+  }
+
+  useEffect(() => {
+    if (cnpj) {
+      fetchAtendimentos(cnpj)
+    }
+  }, [debouncedSearchTerm])
+
 
   if (loading) {
     return <div className="p-6">Carregando...</div>
@@ -107,7 +163,12 @@ export default function ABIDetalhesPage({ params }: { params: Promise<{ id: stri
           <div className="flex items-center py-4">
             <div className="relative w-full max-w-sm">
               <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-gray-500" />
-              <Input placeholder="Buscar atendimentos..." className="pl-8" />
+              <Input 
+                placeholder="Buscar atendimentos..." 
+                className="pl-8" 
+                value={searchTerm}
+                onChange={(e) => handleSearch(e.target.value)}
+              />
             </div>
           </div>
         </CardHeader>
@@ -128,17 +189,20 @@ export default function ABIDetalhesPage({ params }: { params: Promise<{ id: stri
                 </TableRow>
               </TableHeader>
               <TableBody>
-                <TableRow>
-                  <TableCell>1</TableCell>
-                  <TableCell>{abi.tipo}</TableCell>
-                  <TableCell className="font-mono">{abi.numeroProcesso}</TableCell>
-                  <TableCell>{abi._id}</TableCell>
-                  <TableCell>{String(abi.competencia).padStart(6, "0").replace(/^(\d{2})(\d{4})$/, "$1/$2")}</TableCell>
-                  <TableCell>{new Date(abi.dataRegistroTransacao).toLocaleDateString("pt-BR")}</TableCell>
-                  <TableCell>{abi.descricaoProcedimento}</TableCell>
+              {atendimentosPaginated.data.map((item, index) => (
+                <TableRow key={item._id}>
+                  <TableCell>{(currentPage - 1) * pageSize + index + 1}</TableCell>
+                  <TableCell>{item.tipo}</TableCell>
+                  <TableCell className="font-mono">{item.numeroProcesso}</TableCell>
+                  <TableCell>{item._id}</TableCell>
+                  <TableCell>
+                    {String(item.competencia).padStart(6, "0").replace(/^(\d{2})(\d{4})$/, "$1/$2")}
+                  </TableCell>
+                  <TableCell>{new Date(item.dataRegistroTransacao).toLocaleDateString("pt-BR")}</TableCell>
+                  <TableCell>{item.descricaoProcedimento}</TableCell>
                   <TableCell>
                     <Badge variant="secondary" className="bg-green-100 text-green-800">
-                      Aberto
+                      "Aberto"
                     </Badge>
                   </TableCell>
                   <TableCell className="text-right">
@@ -147,11 +211,27 @@ export default function ABIDetalhesPage({ params }: { params: Promise<{ id: stri
                     </Button>
                   </TableCell>
                 </TableRow>
-              </TableBody>
+              ))}
+            </TableBody>
+
             </Table>
           </div>
         </CardContent>
       </Card>
+
+      <PaginationControls
+            currentPage={atendimentosPaginated.page}
+            totalPages={atendimentosPaginated.totalPages}
+            pageSize={atendimentosPaginated.pageSize}
+            totalItems={atendimentosPaginated.total}
+            onPageChange={handlePageChange}
+            onPageSizeChange={handlePageSizeChange}
+            disabled={loading}
+            pageSizeOptions={[10, 20, 50, 100]}
+          />
     </div>
+    
+
+     
   )
 }

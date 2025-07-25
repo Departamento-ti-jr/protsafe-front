@@ -51,12 +51,12 @@ export default function ABIsPage() {
 
   const handleSearch = (value: string) => {
     setSearchTerm(value)
-    setCurrentPage(1) // Reset to first page when searching
+    setCurrentPage(1)
   }
 
   const handleStatusFilter = (value: string) => {
     setStatusFilter(value)
-    setCurrentPage(1) // Reset to first page when filtering
+    setCurrentPage(1)
   }
 
   const handlePageChange = (page: number) => {
@@ -65,7 +65,7 @@ export default function ABIsPage() {
 
   const handlePageSizeChange = (newPageSize: number) => {
     setPageSize(newPageSize)
-    setCurrentPage(1) // Reset to first page when changing page size
+    setCurrentPage(1)
   }
 
   if (loading) {
