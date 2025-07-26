@@ -54,7 +54,55 @@
     @apply border-border;
   }
   body {
-    @apply bg-modernize-gray-50 text-foreground font-sans;
+    @apply bg-modernize-gray-50 text-foreground font-sans text-xs;
+  }
+
+  /* Reduzir tamanhos de fonte globalmente */
+  h1 {
+    @apply text-lg font-semibold;
+  }
+  h2 {
+    @apply text-base font-semibold;
+  }
+  h3 {
+    @apply text-sm font-semibold;
+  }
+  h4 {
+    @apply text-xs font-semibold;
+  }
+  p {
+    @apply text-xs;
+  }
+  span {
+    @apply text-xs;
+  }
+  div {
+    @apply text-xs;
+  }
+
+  /* Inputs e forms menores */
+  input,
+  textarea,
+  select {
+    @apply text-xs;
+  }
+
+  /* Botões menores */
+  button {
+    @apply text-xs;
+  }
+
+  /* Tabelas menores */
+  table {
+    @apply text-xs;
+  }
+
+  th {
+    @apply text-xs font-medium;
+  }
+
+  td {
+    @apply text-xs;
   }
 }
 

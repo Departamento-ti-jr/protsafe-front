@@ -1,252 +1,223 @@
-"use client"
-
-import { useEffect, useState } from "react"
-import { useRouter } from "next/navigation"
-import { AbisService, type Abi } from "@/lib/services/abis.service"
-import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
-import { Badge } from "@/components/ui/badge"
+import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import { ArrowLeft, Eye, Search } from "lucide-react"
+import { Badge } from "@/components/ui/badge"
+import { Eye, ArrowLeft, Search } from "lucide-react"
 import Link from "next/link"
-import { PaginationControls } from "@/components/ui/pagination-controls"
-import { useDebounce } from "@/hooks/use-debounce"
-import { usePagination } from "@/hooks/use-pagination"
 import { ABINavigationBreadcrumb } from "@/components/abi-navigation-breadcrumb"
 
-export default function ABIDetalhesPage({ params }: { params: Promise<{ id: string }> }) {
-  const router = useRouter()
-  const { pagination: atendimentosPaginated, setPagination: setAtendimentoPaginated } = usePagination<Abi>()
-  const [currentPage, setCurrentPage] = useState(1)
-  const [pageSize, setPageSize] = useState(5)
-  const [id, setId] = useState<string | null>(null)
-  const [searchTerm, setSearchTerm] = useState("")
-  const [abi, setAbi] = useState<Abi | null>(null)
-  const [cnpj, setCnpj] = useState<string | null>(null)
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
-  const debouncedSearchTerm = useDebounce(searchTerm, 500)
-
-  useEffect(() => {
-    params.then((resolved) => {
-      setId(resolved.id)
-      fetchAbi(resolved.id)
-    })
-  }, [params])
-
-  useEffect(() => {
-    fetchAtendimentos(cnpj)
-  }, [currentPage, pageSize])
-
-  const fetchAbi = async (id: string) => {
-    try {
-      console.log("Fetching ABI with ID:", id)
-      const result = await AbisService.getById(id)
-      setAbi(result)
-      setCnpj(result.CNPJ)
-    } catch (err) {
-      setError("Erro ao carregar os detalhes da ABI.")
-      console.error(err)
-    } finally {
-      setLoading(false)
-    }
+interface ABIDetalhesPageProps {
+  params: {
+    id: string
   }
+}
 
-  const fetchAtendimentos = async (cnpj?: string | null) => {
-    try {
-      setError(null)
-      const response = await AbisService.getAll({
-        page: currentPage,
-        limit: pageSize,
-        cnpj: cnpj,
-        search: searchTerm || undefined,
-      })
-      setAtendimentoPaginated(response)
-    } catch (err) {
-      setError("Erro ao carregar ABIs. Tente novamente.")
-      console.error(err)
-    }
-  }
+// Mock data - substituir por dados reais da API
+const mockABIData = {
+  id: "102",
+  numeroOficio: "33910028558/2025-11",
+  numeroProcesso: "940",
+  nomeOperadora: "SAMP ESPIRITO SANTO ASSISTENCIA MEDICA SA.",
+  cnpj: "02.403.281/0001-59",
+  dataHoraRegistro: "27-06-2025",
+  registroANS: "342033",
+  status: "Aberto",
+  quantidadeProcessos: "1417",
+  valorTotal: "R$ 2.676.023,20",
+}
 
-  const handleSearch = (value: string) => {
-    setSearchTerm(value)
-    setCurrentPage(1)
-  }
+const mockAtendimentos = [
+  {
+    id: "1",
+    ordem: "1",
+    tipo: "AIH",
+    numeroProcesso: "33910028558/2025-11",
+    numeroAtendimento: "322410319515",
+    competencia: "042024",
+    dataInicial: "13-03-2024",
+    dataFinal: "14-03-2024",
+    procedimentoPrincipal: "TRATAMENTO DE DENGUE CLÁSSICA",
+    status: "Aberto",
+  },
+  {
+    id: "2",
+    ordem: "2",
+    tipo: "AIH",
+    numeroProcesso: "33910028558/2025-11",
+    numeroAtendimento: "322410319691",
+    competencia: "042024",
+    dataInicial: "23-03-2024",
+    dataFinal: "26-03-2024",
+    procedimentoPrincipal: "TRATAMENTO DE DENGUE CLÁSSICA",
+    status: "Aberto",
+  },
+  {
+    id: "3",
+    ordem: "3",
+    tipo: "AIH",
+    numeroProcesso: "33910028558/2025-11",
+    numeroAtendimento: "322410320615",
+    competencia: "052024",
+    dataInicial: "17-04-2024",
+    dataFinal: "19-04-2024",
+    procedimentoPrincipal: "TRATAMENTO DE DENGUE CLÁSSICA",
+    status: "Aberto",
+  },
+  {
+    id: "4",
+    ordem: "4",
+    tipo: "AIH",
+    numeroProcesso: "33910028558/2025-11",
+    numeroAtendimento: "322410386569",
+    competencia: "042024",
+    dataInicial: "15-04-2024",
+    dataFinal: "17-04-2024",
+    procedimentoPrincipal: "PARTO NORMAL",
+    status: "Defendido",
+  },
+]
 
-  const handlePageChange = (page: number) => {
-    setCurrentPage(page)
-  }
-
-  const handlePageSizeChange = (newPageSize: number) => {
-    setPageSize(newPageSize)
-    setCurrentPage(1)
-  }
-
-  useEffect(() => {
-    if (cnpj) {
-      fetchAtendimentos(cnpj)
-    }
-  }, [debouncedSearchTerm])
-
-  if (loading) {
-    return <div className="p-6">Carregando...</div>
-  }
-
-  if (error || !abi) {
-    return <div className="p-6 text-red-600">{error || "Não foi possível encontrar os dados da ABI."}</div>
-  }
-
+export default function ABIDetalhesPage({ params }: ABIDetalhesPageProps) {
   return (
-    <div className="flex min-h-screen bg-gray-50">
-      <ABINavigationBreadcrumb currentStep="abi" abiId={id || undefined} />
+    <div className="flex min-h-screen bg-modernize-gray-50">
+      <ABINavigationBreadcrumb currentStep="abi" abiId={params.id} />
 
-      <div className="flex-1 p-6 space-y-6">
-        <div className="flex items-center gap-4">
-          <Link href="/abis">
-            <Button variant="outline" size="icon">
-              <ArrowLeft className="h-4 w-4" />
-            </Button>
-          </Link>
-          <div>
-            <h1 className="text-2xl font-bold tracking-tight">ABI {abi.numeroABI}</h1>
-            <p className="text-sm text-gray-600">Confira os detalhes da "ABI {abi.numeroABI}"</p>
+      <div className="flex-1 p-4">
+        <div className="mb-4">
+          <div className="flex items-center space-x-2 mb-2">
+            <Link href="/abis">
+              <Button variant="ghost" size="sm" className="p-1">
+                <ArrowLeft className="w-3 h-3" />
+              </Button>
+            </Link>
+            <div>
+              <h1 className="text-lg font-semibold text-modernize-gray-900">ABI</h1>
+              <p className="text-xs text-modernize-gray-600">Confira os detalhes da "ABI {mockABIData.id}"</p>
+            </div>
           </div>
         </div>
 
-        <Card>
-          <CardHeader>
-            <CardTitle>Você está visualizando a "ABI {abi.numeroABI}"</CardTitle>
+        <Card className="mb-4">
+          <CardHeader className="pb-3">
+            <CardTitle className="text-sm font-medium">Você está visualizando a "ABI {mockABIData.id}"</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            <div className="grid grid-cols-3 gap-4">
               <div>
-                <p className="text-sm font-medium text-gray-500">Número da ABI</p>
-                <p className="font-semibold">{abi.numeroABI}</p>
+                <p className="text-xs text-modernize-gray-600 mb-1">Número da ABI</p>
+                <p className="text-xs font-medium">{mockABIData.id}</p>
               </div>
               <div>
-                <p className="text-sm font-medium text-gray-500">Número do Processo</p>
-                <p className="font-mono">{abi.numeroProcesso}</p>
+                <p className="text-xs text-modernize-gray-600 mb-1">Número do processo</p>
+                <p className="text-xs font-medium">{mockABIData.numeroProcesso}</p>
               </div>
               <div>
-                <p className="text-sm font-medium text-gray-500">Número do ofício</p>
-                <p className="font-semibold">{abi.numeroABI}</p>
-              </div>
-              <div>
-                <p className="text-sm font-medium text-gray-500">Nome da operadora</p>
-                <p>{abi.razaoSocial}</p>
-              </div>
-              <div>
-                <p className="text-sm font-medium text-gray-500">CNPJ</p>
-                <p>{abi.CNPJ}</p>
-              </div>
-              <div>
-                <p className="text-sm font-medium text-gray-500">Data / Hora registro da transação</p>
-                <p>{new Date().toLocaleDateString("pt-BR")}</p>
+                <p className="text-xs text-modernize-gray-600 mb-1">Número do ofício</p>
+                <p className="text-xs font-medium">{mockABIData.numeroOficio}</p>
               </div>
             </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 pt-4 border-t">
+
+            <div className="grid grid-cols-3 gap-4">
               <div>
-                <p className="text-sm font-medium text-gray-500">Registro ANS</p>
-                <p className="font-semibold">342033</p>
+                <p className="text-xs text-modernize-gray-600 mb-1">Nome da operadora</p>
+                <p className="text-xs font-medium">{mockABIData.nomeOperadora}</p>
               </div>
               <div>
-                <p className="text-sm font-medium text-gray-500">Status</p>
-                <Badge variant="secondary" className="bg-teal-100 text-teal-800">
-                  Aberto
+                <p className="text-xs text-modernize-gray-600 mb-1">CNPJ</p>
+                <p className="text-xs font-medium">{mockABIData.cnpj}</p>
+              </div>
+              <div>
+                <p className="text-xs text-modernize-gray-600 mb-1">Data / Hora registro da transação</p>
+                <p className="text-xs font-medium">{mockABIData.dataHoraRegistro}</p>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-4 gap-4">
+              <div>
+                <p className="text-xs text-modernize-gray-600 mb-1">Registro ANS</p>
+                <p className="text-xs font-medium">{mockABIData.registroANS}</p>
+              </div>
+              <div>
+                <p className="text-xs text-modernize-gray-600 mb-1">Status</p>
+                <Badge variant="secondary" className="text-xs">
+                  {mockABIData.status}
                 </Badge>
               </div>
               <div>
-                <p className="text-sm font-medium text-gray-500">Quantidade de processos</p>
-                <p className="font-semibold">{abi.quantidadeProcesso}</p>
+                <p className="text-xs text-modernize-gray-600 mb-1">Quantidade de processos</p>
+                <p className="text-xs font-medium">{mockABIData.quantidadeProcessos}</p>
               </div>
               <div>
-                <p className="text-sm font-medium text-gray-500">Valor total dos processos</p>
-                <p className="font-semibold text-lg">
-                  R$ {abi.valorTotalProcesso.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}
-                </p>
+                <p className="text-xs text-modernize-gray-600 mb-1">Valor total dos processos</p>
+                <p className="text-xs font-medium">{mockABIData.valorTotal}</p>
               </div>
             </div>
           </CardContent>
         </Card>
 
         <Card>
-          <CardHeader>
-            <CardTitle>Atendimentos</CardTitle>
-            <div className="flex items-center py-4">
-              <div className="relative w-full max-w-sm">
-                <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-gray-500" />
+          <CardHeader className="pb-3">
+            <CardTitle className="text-sm font-medium">Atendimentos</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="mb-4">
+              <div className="relative">
+                <Search className="absolute left-2 top-2.5 h-3 w-3 text-modernize-gray-400" />
                 <Input
                   placeholder="Difícil de encontrar? Digite aqui que vamos encontrar para você..."
-                  className="pl-8"
-                  value={searchTerm}
-                  onChange={(e) => handleSearch(e.target.value)}
+                  className="pl-8 text-xs h-8"
                 />
               </div>
             </div>
-          </CardHeader>
-          <CardContent>
-            <div className="rounded-md border">
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead className="w-[80px]">N° Ordem</TableHead>
-                    <TableHead>Tipo</TableHead>
-                    <TableHead>N° Processo</TableHead>
-                    <TableHead>N° Atendimento</TableHead>
-                    <TableHead>Competência</TableHead>
-                    <TableHead>Data Inicial</TableHead>
-                    <TableHead>Data Final</TableHead>
-                    <TableHead>Procedimento Principal</TableHead>
-                    <TableHead>Status</TableHead>
-                    <TableHead className="text-right">Ações</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {atendimentosPaginated.data.map((item, index) => (
-                    <TableRow key={item._id}>
-                      <TableCell>{(currentPage - 1) * pageSize + index + 1}</TableCell>
-                      <TableCell>{item.tipo}</TableCell>
-                      <TableCell className="font-mono">{item.numeroProcesso}</TableCell>
-                      <TableCell>{item._id}</TableCell>
-                      <TableCell>
-                        {String(item.competencia)
-                          .padStart(6, "0")
-                          .replace(/^(\d{2})(\d{4})$/, "$1/$2")}
-                      </TableCell>
-                      <TableCell>{new Date(item.dataRegistroTransacao).toLocaleDateString("pt-BR")}</TableCell>
-                      <TableCell>{new Date(item.dataRegistroTransacao).toLocaleDateString("pt-BR")}</TableCell>
-                      <TableCell>{item.descricaoProcedimento}</TableCell>
-                      <TableCell>
-                        <Badge variant="secondary" className="bg-teal-100 text-teal-800">
-                          Aberto
+
+            <div className="overflow-x-auto">
+              <table className="w-full">
+                <thead>
+                  <tr className="border-b border-modernize-gray-200">
+                    <th className="text-left py-2 px-2 text-xs font-medium text-modernize-gray-600">N° Ordem</th>
+                    <th className="text-left py-2 px-2 text-xs font-medium text-modernize-gray-600">Tipo</th>
+                    <th className="text-left py-2 px-2 text-xs font-medium text-modernize-gray-600">N° Processo</th>
+                    <th className="text-left py-2 px-2 text-xs font-medium text-modernize-gray-600">N° Atendimento</th>
+                    <th className="text-left py-2 px-2 text-xs font-medium text-modernize-gray-600">Competência</th>
+                    <th className="text-left py-2 px-2 text-xs font-medium text-modernize-gray-600">Data Inicial</th>
+                    <th className="text-left py-2 px-2 text-xs font-medium text-modernize-gray-600">Data Final</th>
+                    <th className="text-left py-2 px-2 text-xs font-medium text-modernize-gray-600">
+                      Procedimento Principal
+                    </th>
+                    <th className="text-left py-2 px-2 text-xs font-medium text-modernize-gray-600">Status</th>
+                    <th className="text-left py-2 px-2 text-xs font-medium text-modernize-gray-600">Ações</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {mockAtendimentos.map((atendimento) => (
+                    <tr key={atendimento.id} className="border-b border-modernize-gray-100 hover:bg-modernize-gray-50">
+                      <td className="py-2 px-2 text-xs">{atendimento.ordem}</td>
+                      <td className="py-2 px-2 text-xs">{atendimento.tipo}</td>
+                      <td className="py-2 px-2 text-xs">{atendimento.numeroProcesso}</td>
+                      <td className="py-2 px-2 text-xs">{atendimento.numeroAtendimento}</td>
+                      <td className="py-2 px-2 text-xs">{atendimento.competencia}</td>
+                      <td className="py-2 px-2 text-xs">{atendimento.dataInicial}</td>
+                      <td className="py-2 px-2 text-xs">{atendimento.dataFinal}</td>
+                      <td className="py-2 px-2 text-xs">{atendimento.procedimentoPrincipal}</td>
+                      <td className="py-2 px-2">
+                        <Badge variant={atendimento.status === "Aberto" ? "secondary" : "default"} className="text-xs">
+                          {atendimento.status}
                         </Badge>
-                      </TableCell>
-                      <TableCell className="text-right">
-                        <Link href={`/abis/detalhes/${id}/atendimento/${item._id}`}>
-                          <Button variant="ghost" size="icon">
-                            <Eye className="h-4 w-4" />
+                      </td>
+                      <td className="py-2 px-2">
+                        <Link href={`/abis/detalhes/${params.id}/atendimento/${atendimento.id}`}>
+                          <Button variant="ghost" size="sm" className="p-1">
+                            <Eye className="w-3 h-3" />
                           </Button>
                         </Link>
-                      </TableCell>
-                    </TableRow>
+                      </td>
+                    </tr>
                   ))}
-                </TableBody>
-              </Table>
+                </tbody>
+              </table>
             </div>
           </CardContent>
         </Card>
-
-        <PaginationControls
-          currentPage={atendimentosPaginated.page}
-          totalPages={atendimentosPaginated.totalPages}
-          pageSize={atendimentosPaginated.pageSize}
-          totalItems={atendimentosPaginated.total}
-          onPageChange={handlePageChange}
-          onPageSizeChange={handlePageSizeChange}
-          disabled={loading}
-          pageSizeOptions={[10, 20, 50, 100]}
-        />
       </div>
     </div>
   )

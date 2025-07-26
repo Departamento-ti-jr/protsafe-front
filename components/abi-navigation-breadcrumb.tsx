@@ -3,13 +3,6 @@
 import { Check, ChevronDown } from "lucide-react"
 import { cn } from "@/lib/utils"
 
-interface NavigationStep {
-  id: string
-  label: string
-  status: "completed" | "current" | "upcoming"
-  href?: string
-}
-
 interface ABINavigationBreadcrumbProps {
   currentStep: "abi" | "atendimento" | "procedimento"
   abiId?: string
@@ -23,79 +16,64 @@ export function ABINavigationBreadcrumb({
   atendimentoId,
   procedimentoId,
 }: ABINavigationBreadcrumbProps) {
-  const steps: NavigationStep[] = [
+  const steps = [
     {
       id: "abi",
       label: "ABI",
-      status: currentStep === "abi" ? "current" : "completed",
-      href: abiId ? `/abis/detalhes/${abiId}` : undefined,
+      completed: currentStep === "atendimento" || currentStep === "procedimento",
+      current: currentStep === "abi",
     },
     {
       id: "atendimento",
       label: "Atendimento",
-      status: currentStep === "atendimento" ? "current" : currentStep === "procedimento" ? "completed" : "upcoming",
-      href: abiId && atendimentoId ? `/abis/detalhes/${abiId}/atendimento/${atendimentoId}` : undefined,
+      completed: currentStep === "procedimento",
+      current: currentStep === "atendimento",
     },
     {
       id: "procedimento",
       label: "Procedimento",
-      status: currentStep === "procedimento" ? "current" : "upcoming",
-      href:
-        abiId && atendimentoId && procedimentoId
-          ? `/abis/detalhes/${abiId}/atendimento/${atendimentoId}/procedimento/${procedimentoId}`
-          : undefined,
+      completed: false,
+      current: currentStep === "procedimento",
     },
   ]
 
-  const getStepIcon = (status: NavigationStep["status"]) => {
-    switch (status) {
-      case "completed":
-        return (
-          <div className="w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center">
-            <Check className="w-4 h-4 text-white" />
-          </div>
-        )
-      case "current":
-        return (
-          <div className="w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center">
-            <div className="w-2 h-2 bg-white rounded-full" />
-          </div>
-        )
-      case "upcoming":
-        return (
-          <div className="w-8 h-8 border-2 border-gray-300 rounded-full flex items-center justify-center">
-            <div className="w-2 h-2 bg-gray-300 rounded-full" />
-          </div>
-        )
-    }
-  }
-
   return (
-    <div className="w-64 bg-white border-r border-gray-200 p-4">
-      <div className="space-y-1">
+    <div className="w-64 bg-white border-r border-modernize-gray-200 p-3">
+      <div className="space-y-2">
         {steps.map((step, index) => (
-          <div key={step.id} className="relative">
-            <div className="flex items-center justify-between p-3 rounded-lg hover:bg-gray-50 transition-colors">
-              <div className="flex items-center gap-3">
-                {getStepIcon(step.status)}
-                <span
-                  className={cn(
-                    "font-medium",
-                    step.status === "current"
-                      ? "text-blue-600"
-                      : step.status === "completed"
-                        ? "text-gray-900"
-                        : "text-gray-400",
-                  )}
-                >
-                  {step.label}
-                </span>
+          <div
+            key={step.id}
+            className="flex items-center justify-between p-2 rounded-lg hover:bg-modernize-gray-50 transition-colors"
+          >
+            <div className="flex items-center space-x-3">
+              <div
+                className={cn(
+                  "w-6 h-6 rounded-full flex items-center justify-center text-xs font-medium",
+                  step.completed && "bg-blue-500 text-white",
+                  step.current && !step.completed && "bg-blue-500 text-white",
+                  !step.completed && !step.current && "border-2 border-gray-300 text-gray-400",
+                )}
+              >
+                {step.completed ? (
+                  <Check className="w-3 h-3" />
+                ) : step.current ? (
+                  <div className="w-2 h-2 bg-white rounded-full" />
+                ) : (
+                  <div className="w-2 h-2 border border-gray-400 rounded-full" />
+                )}
               </div>
-              <ChevronDown className="w-4 h-4 text-gray-400" />
+              <span
+                className={cn(
+                  "text-xs font-medium",
+                  step.current && "text-blue-600",
+                  step.completed && "text-gray-700",
+                  !step.completed && !step.current && "text-gray-400",
+                )}
+              >
+                {step.label}
+              </span>
             </div>
-
-            {/* Connector line */}
-            {index < steps.length - 1 && <div className="absolute left-7 top-11 w-0.5 h-6 bg-gray-200" />}
+            <ChevronDown className="w-3 h-3 text-gray-400" />
           </div>
         ))}
       </div>
