@@ -2,16 +2,15 @@
 
 import { useEffect, useState } from "react"
 import { useRouter } from "next/navigation"
-import { AbisService, type Abi } from "@/lib/services/abis.service"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Textarea } from "@/components/ui/textarea"
-import { ArrowLeft, Eye } from "lucide-react"
+import { ArrowLeft, Eye, Save } from "lucide-react"
 import Link from "next/link"
 import { ABINavigationBreadcrumb } from "@/components/abi-navigation-breadcrumb"
 
-interface AtendimentoDetails {
+interface AtendimentoDetalhes {
   id: string
   numeroOrdem: string
   competencia: string
@@ -27,6 +26,7 @@ interface AtendimentoDetails {
     dataNascimento: string
   }
   procedimentos: Array<{
+    id: string
     tipo: string
     codigo: string
     quantidade: number
@@ -43,8 +43,7 @@ export default function AtendimentoDetalhesPage({
   const router = useRouter()
   const [abiId, setAbiId] = useState<string>("")
   const [atendimentoId, setAtendimentoId] = useState<string>("")
-  const [atendimento, setAtendimento] = useState<AtendimentoDetails | null>(null)
-  const [abi, setAbi] = useState<Abi | null>(null)
+  const [atendimento, setAtendimento] = useState<AtendimentoDetalhes | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [observacoes, setObservacoes] = useState("")
@@ -55,24 +54,14 @@ export default function AtendimentoDetalhesPage({
     params.then((resolved) => {
       setAbiId(resolved.id)
       setAtendimentoId(resolved.atendimentoId)
-      fetchAbi(resolved.id)
       fetchAtendimento(resolved.atendimentoId)
     })
   }, [params])
 
-  const fetchAbi = async (id: string) => {
-    try {
-      const result = await AbisService.getById(id)
-      setAbi(result)
-    } catch (err) {
-      console.error("Erro ao carregar ABI:", err)
-    }
-  }
-
   const fetchAtendimento = async (atendimentoId: string) => {
     try {
-      // Simulando dados do atendimento baseado no print
-      const mockAtendimento: AtendimentoDetails = {
+      // Simulando dados do atendimento baseado na imagem
+      const mockAtendimento: AtendimentoDetalhes = {
         id: atendimentoId,
         numeroOrdem: "1",
         competencia: "042024",
@@ -89,6 +78,7 @@ export default function AtendimentoDetalhesPage({
         },
         procedimentos: [
           {
+            id: "1",
             tipo: "P",
             codigo: "0303010010",
             quantidade: 1,
@@ -108,29 +98,23 @@ export default function AtendimentoDetalhesPage({
   }
 
   const handleSave = () => {
-    // Implementar lógica de salvamento
-    console.log("Salvando dados:", { observacoes, documentos, protocolo })
+    // Implementar salvamento
+    console.log("Salvando:", { observacoes, documentos, protocolo })
   }
-
-  const navigationSteps = [
-    { id: "abi", label: "ABI", completed: true, current: false },
-    { id: "atendimento", label: "Atendimento", completed: false, current: true },
-    { id: "procedimento", label: "Procedimento", completed: false, current: false },
-  ]
 
   if (loading) {
     return <div className="p-6">Carregando...</div>
   }
 
-  if (error || !atendimento || !abi) {
+  if (error || !atendimento) {
     return <div className="p-6 text-red-600">{error || "Não foi possível encontrar os dados do atendimento."}</div>
   }
 
   return (
-    <div className="flex h-screen">
-      <ABINavigationBreadcrumb steps={navigationSteps} />
+    <div className="flex min-h-screen bg-gray-50">
+      <ABINavigationBreadcrumb currentStep="atendimento" abiId={abiId} atendimentoId={atendimentoId} />
 
-      <div className="flex-1 p-6 space-y-6 overflow-auto">
+      <div className="flex-1 p-6 space-y-6">
         <div className="flex items-center gap-4">
           <Link href={`/abis/detalhes/${abiId}`}>
             <Button variant="outline" size="icon">
@@ -139,7 +123,7 @@ export default function AtendimentoDetalhesPage({
           </Link>
           <div>
             <h1 className="text-2xl font-bold tracking-tight">ABI</h1>
-            <p className="text-gray-600">Confira os detalhes da "ABI {abi.numeroABI}"</p>
+            <p className="text-sm text-gray-600">Confira os detalhes da "ABI 102"</p>
           </div>
         </div>
 
@@ -150,7 +134,7 @@ export default function AtendimentoDetalhesPage({
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-6">
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <div>
                 <p className="text-sm font-medium text-gray-500">Nº Ordem</p>
                 <p className="font-semibold">{atendimento.numeroOrdem}</p>
@@ -173,30 +157,29 @@ export default function AtendimentoDetalhesPage({
           <CardHeader>
             <CardTitle>Atendimento identificado</CardTitle>
           </CardHeader>
-          <CardContent className="space-y-6">
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <CardContent className="space-y-4">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <div>
                 <p className="text-sm font-medium text-gray-500">Tipo</p>
-                <p className="font-semibold">{atendimento.tipo}</p>
+                <p>{atendimento.tipo}</p>
               </div>
               <div>
                 <p className="text-sm font-medium text-gray-500">Nº Atendimento</p>
-                <p className="font-semibold">{atendimento.numeroAtendimento}</p>
+                <p className="font-mono">{atendimento.numeroAtendimento}</p>
               </div>
               <div>
                 <p className="text-sm font-medium text-gray-500">Caráter Atendimento</p>
-                <p className="font-semibold">{atendimento.caraterAtendimento}</p>
+                <p>{atendimento.caraterAtendimento}</p>
               </div>
             </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
                 <p className="text-sm font-medium text-gray-500">Data Inicial</p>
-                <p className="font-semibold">{atendimento.dataInicial}</p>
+                <p>{atendimento.dataInicial}</p>
               </div>
               <div>
                 <p className="text-sm font-medium text-gray-500">Data Fim</p>
-                <p className="font-semibold">{atendimento.dataFim}</p>
+                <p>{atendimento.dataFim}</p>
               </div>
             </div>
           </CardContent>
@@ -206,19 +189,19 @@ export default function AtendimentoDetalhesPage({
           <CardHeader>
             <CardTitle>Beneficiário</CardTitle>
           </CardHeader>
-          <CardContent className="space-y-6">
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <CardContent className="space-y-4">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <div>
                 <p className="text-sm font-medium text-gray-500">Código</p>
                 <p className="font-mono text-sm">{atendimento.beneficiario.codigo}</p>
               </div>
               <div>
                 <p className="text-sm font-medium text-gray-500">Código CCO</p>
-                <p className="font-semibold">{atendimento.beneficiario.codigoCCO}</p>
+                <p className="font-mono">{atendimento.beneficiario.codigoCCO}</p>
               </div>
               <div>
                 <p className="text-sm font-medium text-gray-500">Data Nascimento</p>
-                <p className="font-semibold">{atendimento.beneficiario.dataNascimento}</p>
+                <p>{atendimento.beneficiario.dataNascimento}</p>
               </div>
             </div>
           </CardContent>
@@ -228,33 +211,33 @@ export default function AtendimentoDetalhesPage({
           <CardHeader>
             <CardTitle>Informações para Controle</CardTitle>
           </CardHeader>
-          <CardContent className="space-y-6">
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <CardContent className="space-y-4">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <div>
-                <label className="text-sm font-medium text-teal-600">Observações</label>
+                <label className="text-sm font-medium text-teal-600 mb-2 block">Observações</label>
                 <Textarea
                   placeholder="Se necessário, informe uma observação aqui..."
                   value={observacoes}
                   onChange={(e) => setObservacoes(e.target.value)}
-                  className="mt-1"
+                  className="min-h-[100px]"
                 />
               </div>
               <div>
-                <label className="text-sm font-medium text-teal-600">Documentos</label>
+                <label className="text-sm font-medium text-teal-600 mb-2 block">Documentos</label>
                 <Textarea
                   placeholder="Anote aqui os documentos que estão faltando ou se..."
                   value={documentos}
                   onChange={(e) => setDocumentos(e.target.value)}
-                  className="mt-1"
+                  className="min-h-[100px]"
                 />
               </div>
               <div>
-                <label className="text-sm font-medium text-teal-600">Nº Protocolo</label>
+                <label className="text-sm font-medium text-teal-600 mb-2 block">Nº Protocolo</label>
                 <Textarea
                   placeholder="Nº Protocolo da defesa..."
                   value={protocolo}
                   onChange={(e) => setProtocolo(e.target.value)}
-                  className="mt-1"
+                  className="min-h-[100px]"
                 />
               </div>
             </div>
@@ -279,8 +262,8 @@ export default function AtendimentoDetalhesPage({
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {atendimento.procedimentos.map((procedimento, index) => (
-                    <TableRow key={index}>
+                  {atendimento.procedimentos.map((procedimento) => (
+                    <TableRow key={procedimento.id}>
                       <TableCell>{procedimento.tipo}</TableCell>
                       <TableCell className="font-mono">{procedimento.codigo}</TableCell>
                       <TableCell>{procedimento.quantidade}</TableCell>
@@ -290,7 +273,7 @@ export default function AtendimentoDetalhesPage({
                       <TableCell>{procedimento.descricao}</TableCell>
                       <TableCell className="text-right">
                         <Link
-                          href={`/abis/detalhes/${abiId}/atendimento/${atendimentoId}/procedimento/${procedimento.codigo}`}
+                          href={`/abis/detalhes/${abiId}/atendimento/${atendimentoId}/procedimento/${procedimento.id}`}
                         >
                           <Button variant="ghost" size="icon">
                             <Eye className="h-4 w-4" />
@@ -307,10 +290,11 @@ export default function AtendimentoDetalhesPage({
 
         <div className="flex justify-end gap-4">
           <Button variant="outline">
-            <span className="mr-2">📎</span>
-            Anexar
+            <Save className="w-4 h-4 mr-2" />
+            Salvar
           </Button>
-          <Button onClick={handleSave} className="bg-blue-600 hover:bg-blue-700">
+          <Button onClick={handleSave}>
+            <Save className="w-4 h-4 mr-2" />
             SALVAR
           </Button>
         </div>

@@ -6,45 +6,96 @@ import { cn } from "@/lib/utils"
 interface NavigationStep {
   id: string
   label: string
-  completed: boolean
-  current: boolean
+  status: "completed" | "current" | "upcoming"
+  href?: string
 }
 
 interface ABINavigationBreadcrumbProps {
-  steps: NavigationStep[]
+  currentStep: "abi" | "atendimento" | "procedimento"
+  abiId?: string
+  atendimentoId?: string
+  procedimentoId?: string
 }
 
-export function ABINavigationBreadcrumb({ steps }: ABINavigationBreadcrumbProps) {
+export function ABINavigationBreadcrumb({
+  currentStep,
+  abiId,
+  atendimentoId,
+  procedimentoId,
+}: ABINavigationBreadcrumbProps) {
+  const steps: NavigationStep[] = [
+    {
+      id: "abi",
+      label: "ABI",
+      status: currentStep === "abi" ? "current" : "completed",
+      href: abiId ? `/abis/detalhes/${abiId}` : undefined,
+    },
+    {
+      id: "atendimento",
+      label: "Atendimento",
+      status: currentStep === "atendimento" ? "current" : currentStep === "procedimento" ? "completed" : "upcoming",
+      href: abiId && atendimentoId ? `/abis/detalhes/${abiId}/atendimento/${atendimentoId}` : undefined,
+    },
+    {
+      id: "procedimento",
+      label: "Procedimento",
+      status: currentStep === "procedimento" ? "current" : "upcoming",
+      href:
+        abiId && atendimentoId && procedimentoId
+          ? `/abis/detalhes/${abiId}/atendimento/${atendimentoId}/procedimento/${procedimentoId}`
+          : undefined,
+    },
+  ]
+
+  const getStepIcon = (status: NavigationStep["status"]) => {
+    switch (status) {
+      case "completed":
+        return (
+          <div className="w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center">
+            <Check className="w-4 h-4 text-white" />
+          </div>
+        )
+      case "current":
+        return (
+          <div className="w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center">
+            <div className="w-2 h-2 bg-white rounded-full" />
+          </div>
+        )
+      case "upcoming":
+        return (
+          <div className="w-8 h-8 border-2 border-gray-300 rounded-full flex items-center justify-center">
+            <div className="w-2 h-2 bg-gray-300 rounded-full" />
+          </div>
+        )
+    }
+  }
+
   return (
-    <div className="w-48 bg-gray-50 border-r border-gray-200 p-4">
-      <div className="space-y-2">
+    <div className="w-64 bg-white border-r border-gray-200 p-4">
+      <div className="space-y-1">
         {steps.map((step, index) => (
-          <div key={step.id} className="flex items-center space-x-3">
-            <div
-              className={cn(
-                "flex h-6 w-6 items-center justify-center rounded-full border-2",
-                step.completed || step.current
-                  ? "border-blue-600 bg-blue-600 text-white"
-                  : "border-gray-300 bg-white text-gray-500",
-              )}
-            >
-              {step.completed ? (
-                <Check className="h-3 w-3" />
-              ) : (
-                <span className="text-xs font-medium">{step.current ? "●" : "○"}</span>
-              )}
+          <div key={step.id} className="relative">
+            <div className="flex items-center justify-between p-3 rounded-lg hover:bg-gray-50 transition-colors">
+              <div className="flex items-center gap-3">
+                {getStepIcon(step.status)}
+                <span
+                  className={cn(
+                    "font-medium",
+                    step.status === "current"
+                      ? "text-blue-600"
+                      : step.status === "completed"
+                        ? "text-gray-900"
+                        : "text-gray-400",
+                  )}
+                >
+                  {step.label}
+                </span>
+              </div>
+              <ChevronDown className="w-4 h-4 text-gray-400" />
             </div>
-            <div className="flex-1">
-              <p
-                className={cn(
-                  "text-sm font-medium",
-                  step.current ? "text-blue-600" : step.completed ? "text-gray-900" : "text-gray-500",
-                )}
-              >
-                {step.label}
-              </p>
-            </div>
-            {index < steps.length - 1 && <ChevronDown className="h-4 w-4 text-gray-400" />}
+
+            {/* Connector line */}
+            {index < steps.length - 1 && <div className="absolute left-7 top-11 w-0.5 h-6 bg-gray-200" />}
           </div>
         ))}
       </div>
