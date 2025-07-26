@@ -12,16 +12,11 @@ import { ArrowLeft, Eye, Search } from "lucide-react"
 import Link from "next/link"
 import { PaginatedResponse, PaginationControls } from "@/components/ui/pagination-controls"
 import { useDebounce } from "@/hooks/use-debounce"
+import { usePagination } from "@/hooks/use-pagination"
 
 export default function ABIDetalhesPage({ params }: { params: Promise<{ id: string }> }) {
   const router = useRouter()
-  const [atendimentosPaginated, setAtendimentoPaginated] = useState<PaginatedResponse<Abi>>({
-      data: [],
-      total: 0,
-      page: 1,
-      pageSize: 20,
-      totalPages: 1,
-  });
+  const {pagination: atendimentosPaginated, setPagination: setAtendimentoPaginated} = usePagination<Abi>();
   const [currentPage, setCurrentPage] = useState(1)
   const [pageSize, setPageSize] = useState(5)
   const [id, setId] = useState<string | null>(null);
