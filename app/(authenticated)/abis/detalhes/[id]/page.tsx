@@ -14,6 +14,10 @@ import { PaginationControls } from "@/components/ui/pagination-controls"
 import { useDebounce } from "@/hooks/use-debounce"
 import { usePagination } from "@/hooks/use-pagination"
 import { ABINavigationBreadcrumb } from "@/components/abi-navigation-breadcrumb"
+import { ABIAtendimentoDetails } from "@/components/abi-atendimento-details"
+import { ABIProcedimentoDetails } from "@/components/abi-procedimento-details"
+
+type ViewMode = "abi" | "atendimento" | "procedimento"
 
 export default function ABIDetalhesPage({ params }: { params: Promise<{ id: string }> }) {
   const router = useRouter()
@@ -27,6 +31,11 @@ export default function ABIDetalhesPage({ params }: { params: Promise<{ id: stri
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const debouncedSearchTerm = useDebounce(searchTerm, 500)
+
+  // Navigation state
+  const [viewMode, setViewMode] = useState<ViewMode>("abi")
+  const [selectedAtendimento, setSelectedAtendimento] = useState<Abi | null>(null)
+  const [selectedProcedimento, setSelectedProcedimento] = useState<any>(null)
 
   useEffect(() => {
     params.then((resolved) => {
@@ -83,6 +92,27 @@ export default function ABIDetalhesPage({ params }: { params: Promise<{ id: stri
     setCurrentPage(1)
   }
 
+  const handleViewAtendimento = (atendimento: Abi) => {
+    setSelectedAtendimento(atendimento) // Usando o item real agora
+    setViewMode("atendimento")
+  }
+
+  const handleViewProcedimento = (procedimento: any) => {
+    setSelectedProcedimento(procedimento)
+    setViewMode("procedimento")
+  }
+
+  const handleBackToAbi = () => {
+    setViewMode("abi")
+    setSelectedAtendimento(null)
+    setSelectedProcedimento(null)
+  }
+
+  const handleBackToAtendimento = () => {
+    setViewMode("atendimento")
+    setSelectedProcedimento(null)
+  }
+
   useEffect(() => {
     if (cnpj) {
       fetchAtendimentos(cnpj)
@@ -97,156 +127,181 @@ export default function ABIDetalhesPage({ params }: { params: Promise<{ id: stri
     return <div className="p-6 text-red-600">{error || "Não foi possível encontrar os dados da ABI."}</div>
   }
 
+  const getCurrentStep = (): "abi" | "atendimento" | "procedimento" => {
+    return viewMode
+  }
+
   return (
     <div className="flex min-h-screen bg-gray-50">
-      <ABINavigationBreadcrumb currentStep="abi" abiId={id || undefined} />
+      <ABINavigationBreadcrumb
+        currentStep={getCurrentStep()}
+        abiId={id || undefined}
+        atendimentoId={selectedAtendimento?._id}
+        procedimentoId={selectedProcedimento?.id}
+        onNavigateToAbi={handleBackToAbi}
+        onNavigateToAtendimento={selectedAtendimento ? handleBackToAtendimento : undefined}
+      />
 
       <div className="flex-1 p-6 space-y-6">
-        <div className="flex items-center gap-4">
-          <Link href="/abis">
-            <Button variant="outline" size="icon">
-              <ArrowLeft className="h-4 w-4" />
-            </Button>
-          </Link>
-          <div>
-            <h1 className="text-2xl font-bold tracking-tight">ABI {abi.numeroABI}</h1>
-            <p className="text-sm text-gray-600">Confira os detalhes da "ABI {abi.numeroABI}"</p>
-          </div>
-        </div>
+        {viewMode === "abi" && (
+          <>
+            <div className="flex items-center gap-4">
+              <Link href="/abis">
+                <Button variant="outline" size="icon">
+                  <ArrowLeft className="h-4 w-4" />
+                </Button>
+              </Link>
+              <div>
+                <h1 className="text-2xl font-bold tracking-tight">ABI {abi.numeroABI}</h1>
+                <p className="text-sm text-gray-600">Confira os detalhes da "ABI {abi.numeroABI}"</p>
+              </div>
+            </div>
 
-        <Card>
-          <CardHeader>
-            <CardTitle>Você está visualizando a "ABI {abi.numeroABI}"</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              <div>
-                <p className="text-sm font-medium text-gray-500">Número da ABI</p>
-                <p className="font-semibold">{abi.numeroABI}</p>
-              </div>
-              <div>
-                <p className="text-sm font-medium text-gray-500">Número do Processo</p>
-                <p className="font-mono">{abi.numeroProcesso}</p>
-              </div>
-              <div>
-                <p className="text-sm font-medium text-gray-500">Número do ofício</p>
-                <p className="font-semibold">{abi.numeroABI}</p>
-              </div>
-              <div>
-                <p className="text-sm font-medium text-gray-500">Nome da operadora</p>
-                <p>{abi.razaoSocial}</p>
-              </div>
-              <div>
-                <p className="text-sm font-medium text-gray-500">CNPJ</p>
-                <p>{abi.CNPJ}</p>
-              </div>
-              <div>
-                <p className="text-sm font-medium text-gray-500">Data / Hora registro da transação</p>
-                <p>{new Date().toLocaleDateString("pt-BR")}</p>
-              </div>
-            </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 pt-4 border-t">
-              <div>
-                <p className="text-sm font-medium text-gray-500">Registro ANS</p>
-                <p className="font-semibold">342033</p>
-              </div>
-              <div>
-                <p className="text-sm font-medium text-gray-500">Status</p>
-                <Badge variant="secondary" className="bg-teal-100 text-teal-800">
-                  Aberto
-                </Badge>
-              </div>
-              <div>
-                <p className="text-sm font-medium text-gray-500">Quantidade de processos</p>
-                <p className="font-semibold">{abi.quantidadeProcesso}</p>
-              </div>
-              <div>
-                <p className="text-sm font-medium text-gray-500">Valor total dos processos</p>
-                <p className="font-semibold text-lg">
-                  R$ {abi.valorTotalProcesso.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}
-                </p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
+            <Card>
+              <CardHeader>
+                <CardTitle>Você está visualizando a "ABI {abi.numeroABI}"</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                  <div>
+                    <p className="text-sm font-medium text-gray-500">Número da ABI</p>
+                    <p className="font-semibold">{abi.numeroABI}</p>
+                  </div>
+                  <div>
+                    <p className="text-sm font-medium text-gray-500">Número do Processo</p>
+                    <p className="font-mono">{abi.numeroProcesso}</p>
+                  </div>
+                  <div>
+                    <p className="text-sm font-medium text-gray-500">Número do ofício</p>
+                    <p className="font-semibold">{abi.numeroABI}</p>
+                  </div>
+                  <div>
+                    <p className="text-sm font-medium text-gray-500">Nome da operadora</p>
+                    <p>{abi.razaoSocial}</p>
+                  </div>
+                  <div>
+                    <p className="text-sm font-medium text-gray-500">CNPJ</p>
+                    <p>{abi.CNPJ}</p>
+                  </div>
+                  <div>
+                    <p className="text-sm font-medium text-gray-500">Data / Hora registro da transação</p>
+                    <p>{new Date().toLocaleDateString("pt-BR")}</p>
+                  </div>
+                </div>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 pt-4 border-t">
+                  <div>
+                    <p className="text-sm font-medium text-gray-500">Registro ANS</p>
+                    <p className="font-semibold">342033</p>
+                  </div>
+                  <div>
+                    <p className="text-sm font-medium text-gray-500">Status</p>
+                    <Badge variant="secondary" className="bg-teal-100 text-teal-800">
+                      Aberto
+                    </Badge>
+                  </div>
+                  <div>
+                    <p className="text-sm font-medium text-gray-500">Quantidade de processos</p>
+                    <p className="font-semibold">{abi.quantidadeProcesso}</p>
+                  </div>
+                  <div>
+                    <p className="text-sm font-medium text-gray-500">Valor total dos processos</p>
+                    <p className="font-semibold text-lg">
+                      R$ {abi.valorTotalProcesso.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}
+                    </p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
 
-        <Card>
-          <CardHeader>
-            <CardTitle>Atendimentos</CardTitle>
-            <div className="flex items-center py-4">
-              <div className="relative w-full max-w-sm">
-                <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-gray-500" />
-                <Input
-                  placeholder="Difícil de encontrar? Digite aqui que vamos encontrar para você..."
-                  className="pl-8"
-                  value={searchTerm}
-                  onChange={(e) => handleSearch(e.target.value)}
-                />
-              </div>
-            </div>
-          </CardHeader>
-          <CardContent>
-            <div className="rounded-md border">
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead className="w-[80px]">N° Ordem</TableHead>
-                    <TableHead>Tipo</TableHead>
-                    <TableHead>N° Processo</TableHead>
-                    <TableHead>N° Atendimento</TableHead>
-                    <TableHead>Competência</TableHead>
-                    <TableHead>Data Inicial</TableHead>
-                    <TableHead>Data Final</TableHead>
-                    <TableHead>Procedimento Principal</TableHead>
-                    <TableHead>Status</TableHead>
-                    <TableHead className="text-right">Ações</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {atendimentosPaginated.data.map((item, index) => (
-                    <TableRow key={item._id}>
-                      <TableCell>{(currentPage - 1) * pageSize + index + 1}</TableCell>
-                      <TableCell>{item.tipo}</TableCell>
-                      <TableCell className="font-mono">{item.numeroProcesso}</TableCell>
-                      <TableCell>{item._id}</TableCell>
-                      <TableCell>
-                        {String(item.competencia)
-                          .padStart(6, "0")
-                          .replace(/^(\d{2})(\d{4})$/, "$1/$2")}
-                      </TableCell>
-                      <TableCell>{new Date(item.dataRegistroTransacao).toLocaleDateString("pt-BR")}</TableCell>
-                      <TableCell>{new Date(item.dataRegistroTransacao).toLocaleDateString("pt-BR")}</TableCell>
-                      <TableCell>{item.descricaoProcedimento}</TableCell>
-                      <TableCell>
-                        <Badge variant="secondary" className="bg-teal-100 text-teal-800">
-                          Aberto
-                        </Badge>
-                      </TableCell>
-                      <TableCell className="text-right">
-                        <Link href={`/abis/detalhes/${id}/atendimento/${item._id}`}>
-                          <Button variant="ghost" size="icon">
-                            <Eye className="h-4 w-4" />
-                          </Button>
-                        </Link>
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </div>
-          </CardContent>
-        </Card>
+            <Card>
+              <CardHeader>
+                <CardTitle>Atendimentos</CardTitle>
+                <div className="flex items-center py-4">
+                  <div className="relative w-full max-w-sm">
+                    <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-gray-500" />
+                    <Input
+                      placeholder="Difícil de encontrar? Digite aqui que vamos encontrar para você..."
+                      className="pl-8"
+                      value={searchTerm}
+                      onChange={(e) => handleSearch(e.target.value)}
+                    />
+                  </div>
+                </div>
+              </CardHeader>
+              <CardContent>
+                <div className="rounded-md border">
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead className="w-[80px]">N° Ordem</TableHead>
+                        <TableHead>Tipo</TableHead>
+                        <TableHead>N° Processo</TableHead>
+                        <TableHead>N° Atendimento</TableHead>
+                        <TableHead>Competência</TableHead>
+                        <TableHead>Data Inicial</TableHead>
+                        <TableHead>Data Final</TableHead>
+                        <TableHead>Procedimento Principal</TableHead>
+                        <TableHead>Status</TableHead>
+                        <TableHead className="text-right">Ações</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {atendimentosPaginated.data.map((item, index) => (
+                        <TableRow key={item._id}>
+                          <TableCell>{(currentPage - 1) * pageSize + index + 1}</TableCell>
+                          <TableCell>{item.tipo}</TableCell>
+                          <TableCell className="font-mono">{item.numeroProcesso}</TableCell>
+                          <TableCell>{item._id}</TableCell>
+                          <TableCell>
+                            {String(item.competencia)
+                              .padStart(6, "0")
+                              .replace(/^(\d{2})(\d{4})$/, "$1/$2")}
+                          </TableCell>
+                          <TableCell>{new Date(item.dataRegistroTransacao).toLocaleDateString("pt-BR")}</TableCell>
+                          <TableCell>{new Date(item.dataRegistroTransacao).toLocaleDateString("pt-BR")}</TableCell>
+                          <TableCell>{item.descricaoProcedimento}</TableCell>
+                          <TableCell>
+                            <Badge variant="secondary" className="bg-teal-100 text-teal-800">
+                              Aberto
+                            </Badge>
+                          </TableCell>
+                          <TableCell className="text-right">
+                            <Button variant="ghost" size="icon" onClick={() => handleViewAtendimento(item)}>
+                              <Eye className="h-4 w-4" />
+                            </Button>
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </div>
+              </CardContent>
+            </Card>
 
-        <PaginationControls
-          currentPage={atendimentosPaginated.page}
-          totalPages={atendimentosPaginated.totalPages}
-          pageSize={atendimentosPaginated.pageSize}
-          totalItems={atendimentosPaginated.total}
-          onPageChange={handlePageChange}
-          onPageSizeChange={handlePageSizeChange}
-          disabled={loading}
-          pageSizeOptions={[10, 20, 50, 100]}
-        />
+            <PaginationControls
+              currentPage={atendimentosPaginated.page}
+              totalPages={atendimentosPaginated.totalPages}
+              pageSize={atendimentosPaginated.pageSize}
+              totalItems={atendimentosPaginated.total}
+              onPageChange={handlePageChange}
+              onPageSizeChange={handlePageSizeChange}
+              disabled={loading}
+              pageSizeOptions={[10, 20, 50, 100]}
+            />
+          </>
+        )}
+
+        {viewMode === "atendimento" && selectedAtendimento && (
+          <ABIAtendimentoDetails
+            atendimento={selectedAtendimento}
+            onBack={handleBackToAbi}
+            onViewProcedimento={handleViewProcedimento}
+          />
+        )}
+
+        {viewMode === "procedimento" && selectedProcedimento && (
+          <ABIProcedimentoDetails procedimento={selectedProcedimento} onBack={handleBackToAtendimento} />
+        )}
       </div>
     </div>
   )

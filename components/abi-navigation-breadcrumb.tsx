@@ -8,6 +8,9 @@ interface ABINavigationBreadcrumbProps {
   abiId?: string
   atendimentoId?: string
   procedimentoId?: string
+  onNavigateToAbi?: () => void
+  onNavigateToAtendimento?: () => void
+  onNavigateToProcedimento?: () => void
 }
 
 export function ABINavigationBreadcrumb({
@@ -15,6 +18,9 @@ export function ABINavigationBreadcrumb({
   abiId,
   atendimentoId,
   procedimentoId,
+  onNavigateToAbi,
+  onNavigateToAtendimento,
+  onNavigateToProcedimento,
 }: ABINavigationBreadcrumbProps) {
   const steps = [
     {
@@ -22,18 +28,21 @@ export function ABINavigationBreadcrumb({
       label: "ABI",
       completed: currentStep === "atendimento" || currentStep === "procedimento",
       current: currentStep === "abi",
+      onClick: onNavigateToAbi,
     },
     {
       id: "atendimento",
       label: "Atendimento",
       completed: currentStep === "procedimento",
       current: currentStep === "atendimento",
+      onClick: onNavigateToAtendimento,
     },
     {
       id: "procedimento",
       label: "Procedimento",
       completed: false,
       current: currentStep === "procedimento",
+      onClick: onNavigateToProcedimento,
     },
   ]
 
@@ -43,7 +52,16 @@ export function ABINavigationBreadcrumb({
         {steps.map((step, index) => (
           <div
             key={step.id}
-            className="flex items-center justify-between p-2 rounded-lg hover:bg-modernize-gray-50 transition-colors"
+            className={cn(
+              "flex items-center justify-between p-2 rounded-lg transition-colors",
+              step.onClick && (step.completed || step.current) ? "cursor-pointer hover:bg-modernize-gray-50" : "",
+              !step.onClick ? "cursor-default" : "",
+            )}
+            onClick={() => {
+              if (step.onClick && (step.completed || step.current)) {
+                step.onClick()
+              }
+            }}
           >
             <div className="flex items-center space-x-3">
               <div

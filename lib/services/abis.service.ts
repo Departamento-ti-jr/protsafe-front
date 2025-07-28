@@ -61,7 +61,9 @@ export interface GetAbisParams {
   limit?: number
   search?: string
   cnpj?: string,
-  status?: string
+  status?: string,
+  codigoBeneficiario?: number,
+  abi?: string
 }
 
 export class AbisService {
