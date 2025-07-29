@@ -33,7 +33,7 @@ interface PaginationInfoProps {
 export function PaginationControls({
   currentPage,
   totalPages,
-  pageSize,
+  pageSize = 10,
   totalItems,
   onPageChange,
   onPageSizeChange,

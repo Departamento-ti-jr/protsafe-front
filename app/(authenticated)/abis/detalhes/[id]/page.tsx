@@ -13,9 +13,9 @@ import Link from "next/link"
 import { PaginationControls } from "@/components/ui/pagination-controls"
 import { useDebounce } from "@/hooks/use-debounce"
 import { usePagination } from "@/hooks/use-pagination"
-import { ABINavigationBreadcrumb } from "@/components/abi-navigation-breadcrumb"
-import { ABIAtendimentoDetails } from "@/components/abi-atendimento-details"
-import { ABIProcedimentoDetails } from "@/components/abi-procedimento-details"
+import { ABINavigationBreadcrumb } from "../components/abi-navigation-breadcrumb"
+import { ABIAtendimentoDetails } from "../components/abi-atendimento-details"
+import { ABIProcedimentoDetails } from "../components/abi-procedimento-details"
 
 type ViewMode = "abi" | "atendimento" | "procedimento"
 
@@ -31,6 +31,7 @@ export default function ABIDetalhesPage({ params }: { params: Promise<{ id: stri
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const debouncedSearchTerm = useDebounce(searchTerm, 500)
+  const [atendimentosLoading, setAtendimentosLoading] = useState(false)
 
   // Navigation state
   const [viewMode, setViewMode] = useState<ViewMode>("abi")
@@ -38,6 +39,7 @@ export default function ABIDetalhesPage({ params }: { params: Promise<{ id: stri
   const [selectedProcedimento, setSelectedProcedimento] = useState<any>(null)
 
   useEffect(() => {
+    console.log(atendimentosPaginated);
     params.then((resolved) => {
       setId(resolved.id)
       fetchAbi(resolved.id)
@@ -45,8 +47,8 @@ export default function ABIDetalhesPage({ params }: { params: Promise<{ id: stri
   }, [params])
 
   useEffect(() => {
-    fetchAtendimentos(cnpj)
-  }, [currentPage, pageSize])
+    fetchAtendimentos(abi?.CNPJ, abi?.numeroABI ? Number(abi.numeroABI) : null)
+  }, [abi, currentPage, pageSize])
 
   const fetchAbi = async (id: string) => {
     try {
@@ -62,19 +64,23 @@ export default function ABIDetalhesPage({ params }: { params: Promise<{ id: stri
     }
   }
 
-  const fetchAtendimentos = async (cnpj?: string | null) => {
+  const fetchAtendimentos = async (cnpj?: string | null, abi?: number | null) => {
     try {
       setError(null)
+      setAtendimentosLoading(true)
       const response = await AbisService.getAll({
         page: currentPage,
         limit: pageSize,
+        abi: abi,
         cnpj: cnpj,
         search: searchTerm || undefined,
       })
       setAtendimentoPaginated(response)
+      setAtendimentosLoading(false)
     } catch (err) {
       setError("Erro ao carregar ABIs. Tente novamente.")
       console.error(err)
+      setAtendimentosLoading(false)
     }
   }
 
@@ -246,7 +252,20 @@ export default function ABIDetalhesPage({ params }: { params: Promise<{ id: stri
                       </TableRow>
                     </TableHeader>
                     <TableBody>
-                      {atendimentosPaginated.data.map((item, index) => (
+                      {atendimentosLoading ? (
+    <TableRow>
+      <TableCell colSpan={10} className="text-center py-8">
+        Carregando atendimentos...
+      </TableCell>
+    </TableRow>
+  ) : atendimentosPaginated.data.length === 0 ? (
+    <TableRow>
+      <TableCell colSpan={10} className="text-center py-8">
+        Nenhum atendimento encontrado.
+      </TableCell>
+    </TableRow>
+  ) : (
+                      atendimentosPaginated.data.map((item, index) => (
                         <TableRow key={item._id}>
                           <TableCell>{(currentPage - 1) * pageSize + index + 1}</TableCell>
                           <TableCell>{item.tipo}</TableCell>
@@ -271,7 +290,7 @@ export default function ABIDetalhesPage({ params }: { params: Promise<{ id: stri
                             </Button>
                           </TableCell>
                         </TableRow>
-                      ))}
+                      )))}
                     </TableBody>
                   </Table>
                 </div>
@@ -286,7 +305,7 @@ export default function ABIDetalhesPage({ params }: { params: Promise<{ id: stri
               onPageChange={handlePageChange}
               onPageSizeChange={handlePageSizeChange}
               disabled={loading}
-              pageSizeOptions={[10, 20, 50, 100]}
+              pageSizeOptions={[5, 10, 20, 50, 100]}
             />
           </>
         )}

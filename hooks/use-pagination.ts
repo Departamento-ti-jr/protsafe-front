@@ -14,7 +14,7 @@ export function usePagination<T>(initialPageSize = 20) {
     data: [],
     total: 0,
     page: 1,
-    pageSize: initialPageSize,
+    pageSize: 5,
     totalPages: 1,
   });
 

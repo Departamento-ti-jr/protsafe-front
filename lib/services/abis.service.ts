@@ -63,7 +63,7 @@ export interface GetAbisParams {
   cnpj?: string,
   status?: string,
   codigoBeneficiario?: number,
-  abi?: string
+  abi?: number
 }
 
 export class AbisService {
@@ -82,7 +82,10 @@ export class AbisService {
       if (params.cnpj) {
         searchParams.append("cnpj", params.cnpj.toString())
       }
-      if (params.search) {
+      if (params.abi) {
+        searchParams.append("abi", params.abi)
+      }
+      if (params.search && params.search.trim() !== "") {
         searchParams.append("search", params.search)
       }
       if (params.status) {
