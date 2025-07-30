@@ -37,8 +37,9 @@ export function ABIAtendimentoDetails({ atendimento, onBack, onViewProcedimento 
      console.log("==> ", atendimento);
      console.log("Fetching ABIs for atendimento:", atendimento._id);
      AbisService.getAll({
-      codigoBeneficiario: atendimento?.codigoBeneficiario,
+      codigoBeneficiario: String(atendimento?.codigoBeneficiario),
       abi: atendimento?.numeroABI,
+      cnpj: atendimento?.CNPJ,
       page: 1,
       limit: 10
     }).then(response => {
