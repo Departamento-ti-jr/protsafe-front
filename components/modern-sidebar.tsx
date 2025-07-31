@@ -87,15 +87,13 @@ export function ModernSidebar({ className }: ModernSidebarProps) {
       )}
     >
       {/* Logo Section */}
-      <div className="p-6 border-b border-slate-100">
-        <Link href="/dashboard" className="flex items-center gap-3">
-          <div className="w-8 h-8 bg-gradient-to-r from-[#09989d] to-[#0bb8bf] rounded-lg flex items-center justify-center">
-            <span className="text-white font-bold text-sm">R</span>
-          </div>
-          <div>
-            <h1 className="text-xl font-bold text-[#09989d]">ReSUS</h1>
-            <p className="text-xs text-slate-500">Sistema Jurídico</p>
-          </div>
+      <div className="p-3 border-b border-slate-100">
+        <Link href="/dashboard" className="gap-3 justify-items-center block">
+          <img
+            src="/images/logo_menu.png"
+            alt="ProtSafe Logo"
+            className="h-10 w-auto"
+          />
         </Link>
       </div>
 
