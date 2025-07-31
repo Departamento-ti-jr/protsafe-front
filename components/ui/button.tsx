@@ -9,15 +9,14 @@ const buttonVariants = cva(
   {
     variants: {
       variant: {
-        default: "bg-[#795032] text-white hover:bg-[#795032]/90 shadow-modernize hover:shadow-modernize-lg",
-        destructive: "bg-[#C25E3F] text-white hover:bg-[#C25E3F]/90",
-        outline:
-          "border border-modernize-gray-300 bg-white text-modernize-gray-700 hover:bg-modernize-gray-50 hover:border-[#795032] hover:text-[#795032]",
-        secondary: "bg-[#A67C52] text-white hover:bg-[#A67C52]/90",
-        ghost: "text-modernize-gray-600 hover:bg-modernize-gray-100 hover:text-modernize-gray-900",
-        link: "text-[#795032] underline-offset-4 hover:underline",
-        success: "bg-[#5D7F3A] text-white hover:bg-[#5D7F3A]/90",
-        warning: "bg-[#D9A566] text-white hover:bg-[#D9A566]/90",
+        default: "bg-primary text-primary-foreground hover:bg-primary/90 shadow-modernize hover:shadow-modernize-lg",
+        destructive: "bg-destructive text-destructive-foreground hover:bg-destructive/90",
+        outline: "border border-input bg-background text-foreground hover:bg-accent hover:text-accent-foreground",
+        secondary: "bg-secondary text-secondary-foreground hover:bg-secondary/90",
+        ghost: "text-foreground hover:bg-accent hover:text-accent-foreground",
+        link: "text-primary underline-offset-4 hover:underline",
+        success: "bg-modernize-success text-white hover:bg-modernize-success/90",
+        warning: "bg-modernize-warning text-white hover:bg-modernize-warning/90",
       },
       size: {
         default: "h-8 px-3 py-1.5",

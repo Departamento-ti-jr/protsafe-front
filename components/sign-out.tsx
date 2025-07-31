@@ -1,29 +1,21 @@
 "use client"
 
-import { useTransition } from "react"
+import { Button } from "@/components/ui/button"
 
-type Props = {
+interface SignOutProps {
   onSignOut: () => Promise<void>
 }
 
-const SignOut = ({ onSignOut }: Props) => {
-  const [isPending, startTransition] = useTransition()
-
-  const handleClick = () => {
-    startTransition(async () => {
-      await onSignOut()
-    })
-  }
-
+export default function SignOut({ onSignOut }: SignOutProps) {
   return (
-    <button
-      onClick={handleClick}
-      disabled={isPending}
-      className="flex-1 text-left text-sm font-medium text-modernize-error hover:text-modernize-error/80 transition-colors disabled:opacity-50"
-    >
-      {isPending ? "Saindo..." : "Sair"}
-    </button>
+    <form action={onSignOut}>
+      <Button
+        type="submit"
+        variant="ghost"
+        className="text-red-500 hover:text-red-600 hover:bg-red-50 font-medium text-sm p-0 h-auto"
+      >
+        Sair
+      </Button>
+    </form>
   )
 }
-
-export default SignOut
