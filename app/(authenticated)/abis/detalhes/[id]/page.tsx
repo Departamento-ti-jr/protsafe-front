@@ -8,7 +8,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Badge } from "@/components/ui/badge"
 import { Input } from "@/components/ui/input"
-import { ArrowLeft, Eye, Search } from "lucide-react"
+import { ArrowLeft, Eye, Search, Shield, ShieldCheck } from "lucide-react"
 import Link from "next/link"
 import { PaginationControls } from "@/components/ui/pagination-controls"
 import { useDebounce } from "@/hooks/use-debounce"
@@ -253,18 +253,18 @@ export default function ABIDetalhesPage({ params }: { params: Promise<{ id: stri
                     </TableHeader>
                     <TableBody>
                       {atendimentosLoading ? (
-    <TableRow>
-      <TableCell colSpan={10} className="text-center py-8">
-        Carregando atendimentos...
-      </TableCell>
-    </TableRow>
-  ) : atendimentosPaginated.data.length === 0 ? (
-    <TableRow>
-      <TableCell colSpan={10} className="text-center py-8">
-        Nenhum atendimento encontrado.
-      </TableCell>
-    </TableRow>
-  ) : (
+                        <TableRow>
+                          <TableCell colSpan={10} className="text-center py-8">
+                            Carregando atendimentos...
+                          </TableCell>
+                        </TableRow>
+                      ) : atendimentosPaginated.data.length === 0 ? (
+                        <TableRow>
+                          <TableCell colSpan={10} className="text-center py-8">
+                            Nenhum atendimento encontrado.
+                          </TableCell>
+                        </TableRow>
+                      ) : (
                       atendimentosPaginated.data.map((item, index) => (
                         <TableRow key={item._id}>
                           <TableCell>{(currentPage - 1) * pageSize + index + 1}</TableCell>
@@ -285,9 +285,28 @@ export default function ABIDetalhesPage({ params }: { params: Promise<{ id: stri
                             </Badge>
                           </TableCell>
                           <TableCell className="text-right">
-                            <Button variant="ghost" size="icon" onClick={() => handleViewAtendimento(item)}>
-                              <Eye className="h-4 w-4" />
-                            </Button>
+                            <div className="flex items-center justify-end">
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                onClick={() => {}}
+                              >
+                                <ShieldCheck className="h-4 w-4" />  
+                              </Button>
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                onClick={() => {}}
+                              >
+                                <Shield className="h-4 w-4" />  
+                              </Button>
+                              <Button 
+                                variant="ghost" 
+                                size="icon" 
+                                onClick={() => handleViewAtendimento(item)}>
+                                <Eye className="h-4 w-4" />
+                              </Button>
+                            </div>
                           </TableCell>
                         </TableRow>
                       )))}
