@@ -179,7 +179,7 @@ export default function ABIDetalhesPage({ params }: { params: Promise<{ id: stri
                   </div>
                   <div>
                     <p className="text-sm font-medium text-gray-500">Número do ofício</p>
-                    <p className="font-semibold">{abi.numeroABI}</p>
+                    <p className="font-semibold">{abi.numeroOficio}</p>
                   </div>
                   <div>
                     <p className="text-sm font-medium text-gray-500">Nome da operadora</p>

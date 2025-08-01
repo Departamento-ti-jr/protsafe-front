@@ -43,12 +43,13 @@ export function ABIAtendimentoDetails({ atendimento, onBack, onViewProcedimento 
       page: 1,
       limit: 10
     }).then(response => {
+      console.log("Fetched ABIs:", response.data);
       setProcedimentos(response.data.map(abi => ({
         id: abi._id,
         tipo: abi.tipoProcedimento,
         codigo: abi.codigoProcedimento,
         quantidade: abi.quantidadeProcedimento,
-        valor: `R$ ${abi.valorTotalPrestador.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}`,
+        valor: `R$ ${abi.valorTotal.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}`,
         descricao: abi.descricaoProcedimento
       })))
     }).catch(error => {
@@ -181,7 +182,7 @@ export function ABIAtendimentoDetails({ atendimento, onBack, onViewProcedimento 
         </CardContent>
       </Card>
 
-      <ProcedimentosTable 
+      <ProcedimentosTable
         procedimentos={procedimentos} 
         onViewProcedimento={onViewProcedimento} 
       />

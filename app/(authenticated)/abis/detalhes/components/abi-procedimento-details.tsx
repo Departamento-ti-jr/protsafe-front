@@ -10,7 +10,7 @@ interface ProcedimentoData {
   tipo: string
   codigo: string
   quantidade: string
-  valor: string
+  valorTotal: string
   descricao: string
 }
 
@@ -59,7 +59,7 @@ export function ABIProcedimentoDetails({ procedimento, onBack }: ABIProcedimento
             </div>
             <div>
               <p className="text-xs text-gray-600 mb-1">Valor</p>
-              <p className="text-xs font-medium">{procedimento.valor}</p>
+              <p className="text-xs font-medium">{procedimento.valorTotal}</p>
             </div>
           </div>
 

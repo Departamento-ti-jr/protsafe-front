@@ -67,8 +67,8 @@ export function ABINavigationBreadcrumb({
               <div
                 className={cn(
                   "w-6 h-6 rounded-full flex items-center justify-center text-xs font-medium",
-                  step.completed && "bg-blue-500 text-white",
-                  step.current && !step.completed && "bg-blue-500 text-white",
+                  step.completed && "bg-primary text-white",
+                  step.current && !step.completed && "bg-primary text-white",
                   !step.completed && !step.current && "border-2 border-gray-300 text-gray-400",
                 )}
               >
@@ -83,7 +83,7 @@ export function ABINavigationBreadcrumb({
               <span
                 className={cn(
                   "text-xs font-medium",
-                  step.current && "text-blue-600",
+                  step.current && "text-primary",
                   step.completed && "text-gray-700",
                   !step.completed && !step.current && "text-gray-400",
                 )}
