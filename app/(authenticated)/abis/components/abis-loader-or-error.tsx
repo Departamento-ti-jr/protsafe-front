@@ -13,7 +13,7 @@ export default function AbisLoaderOrError({ loading, error, onRetry }: Props) {
   if (loading) {
     return (
       <div className="flex items-center justify-center py-12">
-        <Loader2 className="h-8 w-8 animate-spin text-blue-500" />
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
         <span className="ml-2 text-gray-600">Carregando ABIs...</span>
       </div>
     )

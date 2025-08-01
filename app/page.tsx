@@ -20,7 +20,7 @@ export default async function Home() {
             <Image
               src="/images/protsafe-logo-completa-vertical.svg"
               alt="ReSUS Logo"
-              width={600}
+              width={350}
               height={200}
               className="object-contain"
             />

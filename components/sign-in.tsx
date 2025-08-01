@@ -19,7 +19,7 @@ const SignIn = ({ onSignIn }: Props) => {
     <button
       onClick={handleClick}
       disabled={isPending}
-      className="w-full bg-[#09989d] text-white py-3 px-4 rounded-lg font-medium hover:bg-[#09989d]/90 transition-colors disabled:opacity-50"
+      className="w-full bg-primary text-white py-3 px-4 rounded-lg font-medium hover:bg-[#09989d]/90 transition-colors disabled:opacity-50"
     >
       {isPending ? "Entrando..." : "Entrar"}
     </button>
