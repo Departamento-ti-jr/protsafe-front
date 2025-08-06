@@ -119,6 +119,10 @@ export default function ABIDetalhesPage({ params }: { params: Promise<{ id: stri
     setSelectedProcedimento(null)
   }
 
+  const handleDefender = (idAtendimento: string) => {
+    router.push(`/defesas/nova/${idAtendimento}`)
+  }
+
   useEffect(() => {
     if (cnpj) {
       fetchAtendimentos(cnpj)
@@ -289,7 +293,7 @@ export default function ABIDetalhesPage({ params }: { params: Promise<{ id: stri
                               <Button
                                 variant="ghost"
                                 size="icon"
-                                onClick={() => {}}
+                                onClick={() => {handleDefender(item._id)}}
                               >
                                 <ShieldCheck className="h-4 w-4" />  
                               </Button>

@@ -1,0 +1,168 @@
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Label } from "@/components/ui/label"
+import { Input } from "@/components/ui/input"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { Textarea } from "@/components/ui/textarea"
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
+import { Checkbox } from "@/components/ui/checkbox"
+import { FileText, Calculator, FolderOpen } from "lucide-react"
+import { MultiSelectCheckbox } from "@/components/multi-select-checkbox"
+
+export function CardFormularioImputacao({
+  selectedTipo,
+  setSelectedTipo,
+  textosDefesa,
+  selectedMotivos,
+  setSelectedMotivos,
+  detalhamentoMotivo,
+  documentosComprobatorios,
+  selectedComprobatorios,
+  setSelectedComprobatorios,
+  informarOutrosDocumentos,
+  setInformarOutrosDocumentos
+}: any) {
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle>Formulário de impugnação/recurso</CardTitle>
+      </CardHeader>
+      <CardContent className="space-y-6">
+        <div className="space-y-2">
+          <Label>Tipo de Pedido</Label>
+          <Select value={selectedTipo} onValueChange={setSelectedTipo}>
+            <SelectTrigger><SelectValue /></SelectTrigger>
+            <SelectContent>
+              <SelectItem value="1">Recurso</SelectItem>
+              <SelectItem value="2">Impugnação</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+
+        <MultiSelectCheckbox
+          options={textosDefesa.map((texto: any) => ({ label: texto.nome, value: texto._id }))}
+          value={selectedMotivos}
+          onChange={setSelectedMotivos}
+          label="Motivo de impugnação/recurso"
+        />
+
+        <div className="space-y-4 p-4 bg-gray-50 rounded-lg border border-gray-200">
+          <div className="space-y-2">
+            <Label className="text-sm">Detalhamento do Motivo</Label>
+            <Textarea
+              value={detalhamentoMotivo}
+              className="min-h-[200px] resize-none"
+              readOnly
+            />
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="space-y-2">
+              <Label className="text-sm flex items-center gap-2">
+                <FileText className="h-4 w-4 text-gray-500" />
+                Tempestividade e Outras Preliminares
+              </Label>
+              <Input placeholder="Informe a tempestividade ou outras preliminares" />
+            </div>
+
+            <div className="space-y-2">
+              <Label className="text-sm flex items-center gap-2">
+                <Calculator className="h-4 w-4 text-gray-500" />
+                Memória de Cálculo
+              </Label>
+              <Input placeholder="Se necessário, informe a memória de cálculo" />
+            </div>
+
+            <div className="space-y-2">
+              <MultiSelectCheckbox
+                options={documentosComprobatorios.map((doc: any) => ({ label: doc.tipo, value: doc._id }))}
+                value={selectedComprobatorios}
+                onChange={setSelectedComprobatorios}
+                label="Documentos Comprobatórios"
+                icon={<FolderOpen className="h-4 w-4 text-gray-500" />}
+              />
+            </div>
+          </div>
+
+          <div className="flex items-center space-x-2 pt-2">
+            <Checkbox
+              id="outros-documentos"
+              checked={informarOutrosDocumentos}
+              onCheckedChange={setInformarOutrosDocumentos}
+            />
+            <Label htmlFor="outros-documentos" className="text-sm">
+              Informar outros documentos comprobatórios.
+            </Label>
+          </div>
+        </div>
+      </CardContent>
+    </Card>
+  )
+}
+
+export function CardPedidos({ selectedPedido, setSelectedPedido }: any) {
+  return (
+    <Card>
+      <CardHeader><CardTitle>Pedidos</CardTitle></CardHeader>
+      <CardContent>
+        <RadioGroup value={selectedPedido} onValueChange={setSelectedPedido} className="space-y-4">
+          <div className="flex items-center space-x-3">
+            <RadioGroupItem value="anulacao-identificacao" id="anulacao-identificacao" />
+            <Label htmlFor="anulacao-identificacao">Anulação da identificação do atendimento.</Label>
+          </div>
+          <div className="flex items-center space-x-3">
+            <RadioGroupItem value="retificacao" id="retificacao" />
+            <Label htmlFor="retificacao">Retificação do valor a ser ressarcido.</Label>
+          </div>
+          <div className="flex items-center space-x-3">
+            <RadioGroupItem value="anulacao-subsidiaria" id="anulacao-subsidiaria" />
+            <Label htmlFor="anulacao-subsidiaria">
+              Anulação da identificação do atendimento ou, subsidiariamente, retificação do valor a ser ressarcido.
+            </Label>
+          </div>
+        </RadioGroup>
+      </CardContent>
+    </Card>
+  )
+}
+
+export function CardDocumentosAnexados({ anexedDocuments }: any) {
+  return (
+    <Card>
+      <CardHeader><CardTitle>Documentos Anexados</CardTitle></CardHeader>
+      <CardContent>
+        {anexedDocuments.length > 0 ? (
+          <div className="space-y-2">
+            {anexedDocuments.map((doc: any) => (
+              <div key={doc.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                <div className="flex items-center space-x-3">
+                  <FileText className="h-5 w-5 text-gray-500" />
+                  <div>
+                    <p className="text-sm font-medium text-gray-900">{doc.name}</p>
+                    <p className="text-xs text-gray-500">Tipo: {doc.type}</p>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        ) : (
+          <div className="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center">
+            <p className="text-gray-500">Nenhum documento anexado</p>
+          </div>
+        )}
+      </CardContent>
+    </Card>
+  )
+}
+
+export function CardDocumentosAns() {
+  return (
+    <Card>
+      <CardHeader><CardTitle>Documentos Anexados na ANS</CardTitle></CardHeader>
+      <CardContent>
+        <div className="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center">
+          <p className="text-gray-500">Nenhum documento anexado na ANS</p>
+        </div>
+      </CardContent>
+    </Card>
+  )
+}

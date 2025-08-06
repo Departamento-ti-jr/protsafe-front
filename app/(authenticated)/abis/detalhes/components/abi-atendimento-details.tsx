@@ -3,9 +3,8 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Textarea } from "@/components/ui/textarea"
-import { Eye, ArrowLeft, Save } from "lucide-react"
-import { Badge } from "@/components/ui/badge"
-import { use, useEffect, useState } from "react"
+import { ArrowLeft, Save } from "lucide-react"
+import { useEffect, useState } from "react"
 import { AbisService } from "@/lib/services/abis.service"
 import ProcedimentosTable from "./procedimentos-table"
 
@@ -34,8 +33,6 @@ export function ABIAtendimentoDetails({ atendimento, onBack, onViewProcedimento 
   const [procedimentos, setProcedimentos] = useState<any[]>([]);
 
   useEffect(() => {
-     console.log("==> ", atendimento);
-     console.log("Fetching ABIs for atendimento:", atendimento._id);
      AbisService.getAll({
       codigoBeneficiario: String(atendimento?.codigoBeneficiario),
       abi: atendimento?.numeroABI,
@@ -43,7 +40,6 @@ export function ABIAtendimentoDetails({ atendimento, onBack, onViewProcedimento 
       page: 1,
       limit: 10
     }).then(response => {
-      console.log("Fetched ABIs:", response.data);
       setProcedimentos(response.data.map(abi => ({
         id: abi._id,
         tipo: abi.tipoProcedimento,
@@ -188,10 +184,6 @@ export function ABIAtendimentoDetails({ atendimento, onBack, onViewProcedimento 
       />
 
       <div className="flex justify-end space-x-2">
-        <Button variant="outline" size="sm" className="text-xs bg-transparent">
-          <Save className="w-3 h-3 mr-1" />
-          Salvar
-        </Button>
         <Button size="sm" className="text-xs">
           <Save className="w-3 h-3 mr-1" />
           Salvar

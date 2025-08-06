@@ -48,7 +48,6 @@ export class AnsDocumentosService {
 
   static async getDocumentosByDefesaId(id_defesa: string): Promise<any[]> {
     try {
-      id_defesa = '3224103278891';
       const response: any = await httpClient.get<any[]>(`${this.endpoint}/por-defesa/${id_defesa}`);
       return response?.data;
     } catch (error) {

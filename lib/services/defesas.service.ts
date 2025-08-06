@@ -1,47 +1,62 @@
+import { PaginatedResponse } from "@/hooks/use-pagination"
 import { httpClient } from "../http-client"
 
 export interface Defesa {
   _id: string
-  id: string
-  abi: string
-  numeroOficio: string
-  nomeOperadora: string
-  cnpj: string
-  numeroOrder: string
-  atendimento: string
-  data: string
-  status?: string
-  createdAt?: string
-  updatedAt?: string
-}
-
-export interface CreateDefesaData {
-  abi: string
-  numeroOficio: string
-  nomeOperadora: string
-  cnpj: string
-  numeroOrder: string
-  atendimento: string
-  data: string
-}
-
-export interface UpdateDefesaData {
-  abi?: string
-  numeroOficio?: string
-  nomeOperadora?: string
-  cnpj?: string
-  numeroOrder?: string
-  atendimento?: string
-  data?: string
-  status?: string
+  petitionType: string
+  text: string
+  preliminary: string
+  calculationMemory: string
+  supportingDocuments: {
+    _id: string
+    tipo: string
+    createdAt: string
+    updatedAt: string
+    __v: number
+  }[]
+  othersSupportingDocument: boolean
+  supportingDocument: string
+  orderOption: number
+  rectificationValue: string
+  defencesText: {
+    _id: string
+    nome: string
+  }[]
+  atendimento: {
+    _id: string
+    registroANS: number
+    razaoSocial: string
+    CNPJ: string
+    numeroProcesso: string
+    numeroABI: string
+    municipio: string
+    codigoUF: string
+    tipo: string
+    numero: number
+    dataInicioAtendimento: string
+    dataFimAtendimento: string
+    codigoCCO: number
+  }[]
+  createdAt: string
+  updatedAt: string
+  __v: number
 }
 
 export class DefesasService {
-  private static readonly endpoint = "/defesas"
+  private static readonly endpoint = "/defesa"
 
-  static async getAll(): Promise<Defesa[]> {
+  static async getAll(params: any): Promise<PaginatedResponse<Defesa>> {
     try {
-      return await httpClient.get<Defesa[]>(this.endpoint)
+      const searchParams = new URLSearchParams()
+      if (params.page) {
+        searchParams.append("page", params.page.toString())
+      }
+      if (params.limit) {
+        searchParams.append("limit", params.limit.toString())
+      }
+
+      const url = `${this.endpoint}?${searchParams.toString()}`
+      return await httpClient.get<PaginatedResponse<Defesa>>(url)
     } catch (error) {
       console.error("Erro ao buscar defesas:", error)
       throw new Error("Falha ao carregar defesas")
@@ -50,23 +65,18 @@ export class DefesasService {
 
   static async getById(id: string): Promise<Defesa> {
     try {
-      return await httpClient.get<Defesa>(`${this.endpoint}/${id}`)
+      return await httpClient.get<Defesa>(`${this.endpoint}?id=${id}`)
     } catch (error) {
       console.error(`Erro ao buscar defesa ${id}:`, error)
       throw new Error("Falha ao carregar defesa")
     }
   }
 
-  static async create(data: CreateDefesaData): Promise<Defesa> {
-    try {
-      return await httpClient.post<Defesa>(this.endpoint, data)
-    } catch (error) {
-      console.error("Erro ao criar defesa:", error)
-      throw new Error("Falha ao criar defesa")
-    }
+  static async create(data: Partial<Defesa>): Promise<Blob> {
+    return await httpClient.post("/defesa", data, "blob");
   }
 
-  static async update(id: string, data: UpdateDefesaData): Promise<Defesa> {
+  static async update(id: string, data: Partial<Defesa>): Promise<Defesa> {
     try {
       return await httpClient.put<Defesa>(`${this.endpoint}/${id}`, data)
     } catch (error) {

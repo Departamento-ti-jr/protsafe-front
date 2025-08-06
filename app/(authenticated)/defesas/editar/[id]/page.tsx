@@ -2,160 +2,183 @@
 
 import React, { useEffect, useState } from "react"
 import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { Textarea } from "@/components/ui/textarea"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
-import { Checkbox } from "@/components/ui/checkbox"
-import { ArrowLeft, Upload, FileText, Save, Cloud, Calculator, FolderOpen } from "lucide-react"
+import { ArrowLeft, Upload, FileText, Save, Cloud } from "lucide-react"
 import Link from "next/link"
 import { AnexarDocumentoDefesaModal } from "@/components/anexar-documento-defesa-modal"
-import { MultiSelectCheckbox } from "@/components/multi-select-checkbox"
 import { TextoDefesa, TextosDefesaService } from "@/lib/services/textos-defesa.service"
 import { DocumentoComprobatorio, DocumentosComprobatoriosService } from "@/lib/services/documentos-comprobatorios.service"
 import { AnsDocumentosService } from "@/lib/services/ans-documentos.service"
+import { Defesa, DefesasService } from "@/lib/services/defesas.service"
+import DefesaCardAtendimento from "../../components/defesas-card-atendimento"
+import { Abi } from "@/lib/services/abis.service"
+import {
+  CardFormularioImputacao,
+  CardPedidos,
+  CardDocumentosAnexados,
+  CardDocumentosAns,
+} from "../../components/defesa-cards/defesa-cards"
 
 export default function EditarDefesaPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = React.use(params)
 
   const [selectedTipo, setSelectedTipo] = useState("recurso")
-  const [selectedMotivo, setSelectedMotivo] = useState("16")
   const [selectedPedido, setSelectedPedido] = useState("anulacao-identificacao")
   const [informarOutrosDocumentos, setInformarOutrosDocumentos] = useState(false)
-
+  const [defesa, setDefesa] = useState<Defesa>()
+  const [abi, setAbi] = useState<Abi>()
   const [isAnexarModalOpen, setIsAnexarModalOpen] = useState(false)
   const [anexedDocuments, setAnexedDocuments] = useState<any[]>([])
-  const [selectedMotivos, setSelectedMotivos] = useState<string[]>([]);
-  const [selectedComprobatorios, setSelectedComprobatorios] = useState<string[]>([]);
-  const [textosDefesa, setTextosDefesa] = useState<TextoDefesa[]>([]);
-  const [documentosComprobatorios, setDocumentosComprobatorios] = useState<DocumentoComprobatorio[]>([]);
-  const [detalhamentoMotivo, setDetalhamentoMotivo] = useState("");
-  const [error, setError] = useState<string | null>(null);
-  
+  const [selectedMotivos, setSelectedMotivos] = useState<string[]>([])
+  const [selectedComprobatorios, setSelectedComprobatorios] = useState<string[]>([])
+  const [textosDefesa, setTextosDefesa] = useState<TextoDefesa[]>([])
+  const [documentosComprobatorios, setDocumentosComprobatorios] = useState<DocumentoComprobatorio[]>([])
+  const [detalhamentoMotivo, setDetalhamentoMotivo] = useState("")
+  const [error, setError] = useState<string | null>(null)
 
-  const motivos = [
-    { label: "08 - COPARTICIPAÇÃO - PRONTO SOCORRO", value: "08-coparticipacao-pronto-socorro" },
-    { label: "08 - COPARTICIPAÇÃO - INTERNAÇÃO PSIQUIÁTRICA", value: "08-coparticipacao-internacao-psiquiatrica" },
-    { label: "13 – DIVERGÊNCIA NOS VALORES COBRADOS (SIGTAP)", value: "13-divergencia-sigtap" },
-    { label: "13 – AUSÊNCIA/RECUSA PRONTUÁRIO", value: "13-ausencia-prontuario" },
-    { label: "13 - DEFESA TÉCNICA", value: "13-defesa-tecnica" },
-    { label: "13 - BENEFICIÁRIO NÃO PERTENCE À OPS", value: "13-beneficiario-nao-ops" },
-    { label: "13 - BENEFICIÁRIO EXCLUÍDO", value: "13-beneficiario-excluido" },
-    { label: "13 - IVR", value: "13-ivr" },
-    { label: "13 – VALOR COBRADO EM DUPLICIDADE", value: "13-valor-duplicidade" },
-    { label: "16 - COBERTURA PARCIAL TEMPORÁRIA PARA DOENÇA OU LESÃO PREEXISTENTE", value: "16-cobertura-parcial" }
-  ];
+  const [preliminary, setPreliminary] = useState("")
+  const [calculationMemory, setCalculationMemory] = useState("")
+  const [supportingDocument, setSupportingDocument] = useState("")
+  const [rectificationValue, setRectificationValue] = useState("")
 
-  // Dados de exemplo baseados na imagem fornecida
-  const atendimento = {
-    id: id,
-    status: "201158904222339",
-    competencia: "02/2023",
-    tipo: "APAC",
-    dataInicial: "01-02-2023",
-    dataFinal: "27-02-2023",
-    numero: "133",
-    abi: "97",
-  }
-
-  console.log(id);
 
   useEffect(() => {
-    loadTextosDefesa();
-    loadDocumentosComprobatorios();
-
-    AnsDocumentosService.getDocumentosByDefesaId(id).then((docs) => {
-      const formattedDocs = docs.map((doc: any) => ({
-        id: doc.id,
-        name: doc.name,
-        size: doc.size,
-        type: doc.tipo_documento,
-        url: doc.url
-      }));
-      setAnexedDocuments(formattedDocs);
-    }).catch((err) => {
-      console.error("Erro ao carregar documentos da ANS:", err);
-      setError("Erro ao carregar documentos da ANS. Tente novamente.");
-    });
-  },[]);
+    loadDefesa()
+    loadTextosDefesa()
+    loadDocumentosComprobatorios()
+  }, [])
 
   useEffect(() => {
     const textosConcatenados = textosDefesa
       .filter(t => selectedMotivos.includes(t._id))
       .map(t => t.texto)
-      .join("\n\n");
+      .join("\n\n")
 
-    setDetalhamentoMotivo(textosConcatenados);
-  }, [selectedMotivos, textosDefesa]);
+    setDetalhamentoMotivo(textosConcatenados)
+  }, [selectedMotivos, textosDefesa])
+
+  const loadDefesa = async () => {
+    try {
+      const id = await params.then(p => p.id)
+      const data = await DefesasService.getById(id)
+
+      setDefesa(data)
+      setAbi(data.atendimento[0] as Abi)
+
+      setSelectedTipo(data.petitionType)
+
+      switch (data.orderOption) {
+        case 2:
+          setSelectedPedido("retificacao")
+          break
+        case 3:
+          setSelectedPedido("anulacao-subsidiaria")
+          break
+        default:
+          setSelectedPedido("anulacao-identificacao")
+      }
+
+      setInformarOutrosDocumentos(data.othersSupportingDocument)
+      setPreliminary(data.preliminary)
+      setCalculationMemory(data.calculationMemory)
+      setSupportingDocument(data.supportingDocument)
+      setRectificationValue(data.rectificationValue || "")
+      setSelectedMotivos(data.defencesText.map((d) => d._id))
+      setSelectedComprobatorios(data.supportingDocuments.map((doc) => doc._id))
+
+    } catch (err) {
+      setError("Erro ao carregar defesa. Tente novamente.")
+      console.error(err)
+    }
+  }
+
 
   const loadTextosDefesa = async () => {
-      try {
-        const data = await TextosDefesaService.getAll({
-          limit: 100000,
-        })
-        setTextosDefesa(data.data);
-      } catch (err) {
-        setError("Erro ao carregar textos de defesa. Tente novamente.")
-        console.error(err)
-      } finally {
-      }
+    try {
+      const data = await TextosDefesaService.getAll({ limit: 100000 })
+      setTextosDefesa(data.data)
+    } catch (err) {
+      setError("Erro ao carregar textos de defesa. Tente novamente.")
+      console.error(err)
+    }
   }
 
   const loadDocumentosComprobatorios = async () => {
-      try {
-        const data = await DocumentosComprobatoriosService.getAll({
-          limit: 100000,
-        })
-        setDocumentosComprobatorios(data.data);
-      } catch (err) {
-        setError("Erro ao carregar documentos comprobatórios. Tente novamente.")
-        console.error(err)
-      } finally {
-      }
+    try {
+      const data = await DocumentosComprobatoriosService.getAll({ limit: 100000 })
+      setDocumentosComprobatorios(data.data)
+    } catch (err) {
+      setError("Erro ao carregar documentos comprobatórios. Tente novamente.")
+      console.error(err)
+    }
   }
+
+  const handleSalvarDefesa = async () => {
+    try {
+      if (!defesa || !defesa._id || !abi?._id) return
+
+      const payload = {
+        petitionType: selectedTipo,
+        text: detalhamentoMotivo,
+        preliminary,
+        calculationMemory,
+        supportingDocuments: selectedComprobatorios,
+        othersSupportingDocument: informarOutrosDocumentos,
+        supportingDocument,
+        orderOption:
+          selectedPedido === "retificacao"
+            ? 2
+            : selectedPedido === "anulacao-subsidiaria"
+            ? 3
+            : 1,
+        rectificationValue,
+        defencesText: selectedMotivos,
+        atendimento: abi._id,
+        id_Attendance: abi._id,
+      }
+
+      await DefesasService.update(defesa._id, payload)
+      alert("Defesa atualizada com sucesso!")
+    } catch (error) {
+      console.error("Erro ao atualizar defesa:", error)
+      alert("Erro ao atualizar defesa. Tente novamente.")
+    }
+  }
+
 
   const handleAnexarDocumento = async (files: any[], documentType: string) => {
-  // Supondo que 'id' é o id_defesa da página
-  const id_defesa = id;
-  const tipo_documento = documentType;
-  const id_protocolo = "0"; // ou passe dinâmico se necessário
+    const id_defesa = id
+    const tipo_documento = documentType
+    const id_protocolo = "0"
 
-  try {
-    // Envia todos os arquivos e aguarda terminar tudo
-    const uploadedDocs = await Promise.all(
-      files.map(async (fileData) => {
-        if (!fileData.file) {
-          throw new Error("Arquivo inválido");
-        }
-        const url = await AnsDocumentosService.uploadDocument(
-          fileData.file,
-          id_defesa,
-          tipo_documento,
-          id_protocolo
-        );
-        return {
-          id: Math.random().toString(36).substr(2, 9),
-          name: fileData.file.name,
-          size: fileData.file.size,
-          type: documentType,
-          url
-        };
-      })
-    );
+    try {
+      const uploadedDocs = await Promise.all(
+        files.map(async (fileData) => {
+          if (!fileData.file) throw new Error("Arquivo inválido")
+          const url = await AnsDocumentosService.uploadDocument(
+            fileData.file,
+            id_defesa,
+            tipo_documento,
+            id_protocolo
+          )
+          return {
+            id: Math.random().toString(36).substr(2, 9),
+            name: fileData.file.name,
+            size: fileData.file.size,
+            type: documentType,
+            url
+          }
+        })
+      )
 
-    setAnexedDocuments((prev) => [...prev, ...uploadedDocs]);
-  } catch (error) {
-    setError("Erro ao enviar documento(s). Tente novamente.");
-    console.error(error);
+      setAnexedDocuments((prev) => [...prev, ...uploadedDocs])
+    } catch (error) {
+      setError("Erro ao enviar documento(s). Tente novamente.")
+      console.error(error)
+    }
   }
-};
-
 
   return (
     <div className="p-6 space-y-6">
-      {/* Header */}
       <div className="flex items-center gap-4">
         <Link href="/defesas">
           <Button variant="outline" size="icon" className="rounded-xl bg-transparent">
@@ -168,210 +191,53 @@ export default function EditarDefesaPage({ params }: { params: Promise<{ id: str
         </div>
       </div>
 
-      {/* Context Info */}
       <div className="bg-gray-100 rounded-xl p-4">
         <p className="text-sm text-gray-700">
-          Você está realizando a defesa do atendimento <strong>"N° {atendimento.numero}"</strong> da{" "}
-          <strong>"ABI {atendimento.abi}"</strong>
+          Você está realizando a defesa do atendimento <strong>"N° {abi?.numero}"</strong> da <strong>"ABI {abi?.numeroABI}"</strong>
         </p>
       </div>
 
-      {/* Atendimento Card */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Atendimento</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            <div>
-              <Label className="text-sm font-medium text-gray-500">Status</Label>
-              <p className="font-medium">{atendimento.status}</p>
-            </div>
-            <div>
-              <Label className="text-sm font-medium text-gray-500">Competência</Label>
-              <p className="font-medium">{atendimento.competencia}</p>
-            </div>
-            <div>
-              <Label className="text-sm font-medium text-gray-500">Tipo</Label>
-              <p className="font-medium">{atendimento.tipo}</p>
-            </div>
-            <div>
-              <Label className="text-sm font-medium text-gray-500">Data Inicial</Label>
-              <p className="font-medium">{atendimento.dataInicial}</p>
-            </div>
-          </div>
-          <div className="mt-4">
-            <Label className="text-sm font-medium text-gray-500">Data Final</Label>
-            <p className="font-medium">{atendimento.dataFinal}</p>
-          </div>
-        </CardContent>
-      </Card>
+      <DefesaCardAtendimento abi={abi} />
 
-      {/* Formulário de Impugnação/recurso */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Formulário de impugnação/recurso</CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-6">
-          {/* Tipo de Pedido */}
-          <div className="space-y-2">
-            <Label>Tipo de Pedido</Label>
-            <Select value={selectedTipo} onValueChange={setSelectedTipo}>
-              <SelectTrigger>
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="recurso">Recurso</SelectItem>
-                <SelectItem value="impugnacao">Impugnação</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
+      <CardFormularioImputacao
+        selectedTipo={selectedTipo}
+        setSelectedTipo={setSelectedTipo}
+        textosDefesa={textosDefesa}
+        selectedMotivos={selectedMotivos}
+        setSelectedMotivos={setSelectedMotivos}
+        detalhamentoMotivo={detalhamentoMotivo}
+        documentosComprobatorios={documentosComprobatorios}
+        selectedComprobatorios={selectedComprobatorios}
+        setSelectedComprobatorios={setSelectedComprobatorios}
+        informarOutrosDocumentos={informarOutrosDocumentos}
+        setInformarOutrosDocumentos={setInformarOutrosDocumentos}
+        preliminary={preliminary}
+        setPreliminary={setPreliminary}
+        calculationMemory={calculationMemory}
+        setCalculationMemory={setCalculationMemory}
+        supportingDocument={supportingDocument}
+        setSupportingDocument={setSupportingDocument}
+      />
 
-          {/* Motivo de Impugnação */}
-          <div className="space-y-2">
-           <MultiSelectCheckbox
-              options={textosDefesa.map(texto => ({ label: texto.nome, value: texto._id }))}
-              value={selectedMotivos}
-              onChange={setSelectedMotivos}
-              label="Motivo de impugnação/recurso"
-            />
-          </div>
 
-          {/* Detalhamento do Motivo */}
-            <div className="space-y-4 p-4 bg-gray-50 rounded-lg border border-gray-200">
-              <div className="space-y-2">
-                <Label className="text-sm">Detalhamento do Motivo</Label>
-                <Textarea
-                  value={detalhamentoMotivo}
-                  className="min-h-[200px] resize-none"
-                  readOnly
-                />
-              </div>
+      <CardPedidos selectedPedido={selectedPedido} setSelectedPedido={setSelectedPedido} />
 
-              {/* Bottom Section with 3 columns */}
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div className="space-y-2">
-                  <Label className="text-sm flex items-center gap-2">
-                    <FileText className="h-4 w-4 text-gray-500" />
-                    Tempestividade e Outras Preliminares
-                  </Label>
-                  <Input placeholder="Informe a tempestividade ou outras preliminares" />
-                </div>
+      <CardDocumentosAnexados anexedDocuments={anexedDocuments} />
 
-                <div className="space-y-2">
-                  <Label className="text-sm flex items-center gap-2">
-                    <Calculator className="h-4 w-4 text-gray-500" />
-                    Memória de Cálculo
-                  </Label>
-                  <Input placeholder="Se necessário, informe a memória de cálculo" />
-                </div>
+      <CardDocumentosAns />
 
-                <div className="space-y-2">
-                  <MultiSelectCheckbox
-                    options={documentosComprobatorios.map(texto => ({ label: texto.tipo, value: texto._id }))}
-                    value={selectedComprobatorios}
-                    onChange={setSelectedComprobatorios}
-                    label="Documentos Comprobatórios"
-                    icon={<FolderOpen className="h-4 w-4 text-gray-500" />}
-                  />
-                </div>
-              </div>
-
-              <div className="flex items-center space-x-2 pt-2">
-                <Checkbox
-                  id="outros-documentos"
-                  checked={informarOutrosDocumentos}
-                  onCheckedChange={setInformarOutrosDocumentos}
-                />
-                <Label htmlFor="outros-documentos" className="text-sm">
-                  Informar outros documentos comprobatórios.
-                </Label>
-              </div>
-            </div>
-          
-        </CardContent>
-      </Card>
-
-      {/* Pedidos */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Pedidos</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <RadioGroup value={selectedPedido} onValueChange={setSelectedPedido} className="space-y-4">
-            <div className="flex items-center space-x-3">
-              <RadioGroupItem value="anulacao-identificacao" id="anulacao-identificacao" />
-              <Label htmlFor="anulacao-identificacao">Anulação da identificação do atendimento.</Label>
-            </div>
-            <div className="flex items-center space-x-3">
-              <RadioGroupItem value="retificacao" id="retificacao" />
-              <Label htmlFor="retificacao">Retificação do valor a ser ressarcido.</Label>
-            </div>
-            <div className="flex items-center space-x-3">
-              <RadioGroupItem value="anulacao-subsidiaria" id="anulacao-subsidiaria" />
-              <Label htmlFor="anulacao-subsidiaria">
-                Anulação da identificação do atendimento ou, subsidiariamente, retificação do valor a ser ressarcido.
-              </Label>
-            </div>
-          </RadioGroup>
-        </CardContent>
-      </Card>
-
-      {/* Documentos Anexados */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Documentos Anexados</CardTitle>
-        </CardHeader>
-        <CardContent>
-          {anexedDocuments.length > 0 ? (
-            <div className="space-y-2">
-              {anexedDocuments.map((doc) => (
-                <div key={doc.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-                  <div className="flex items-center space-x-3">
-                    <FileText className="h-5 w-5 text-gray-500" />
-                    <div>
-                      <p className="text-sm font-medium text-gray-900">{doc.name}</p>
-                      <p className="text-xs text-gray-500">Tipo: {doc.type}</p>
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          ) : (
-            <div className="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center">
-              <p className="text-gray-500">Nenhum documento anexado</p>
-            </div>
-          )}
-        </CardContent>
-      </Card>
-
-      {/* Documentos Anexados na ANS */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Documentos Anexados na ANS</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center">
-            <p className="text-gray-500">Nenhum documento anexado na ANS</p>
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* Action Buttons */}
       <div className="flex justify-end gap-4">
         <Button variant="outline" className="rounded-xl bg-transparent" onClick={() => setIsAnexarModalOpen(true)}>
-          <Upload className="mr-2 h-4 w-4" />
-          ANEXAR DOCUMENTO
+          <Upload className="mr-2 h-4 w-4" /> ANEXAR DOCUMENTO
         </Button>
         <Button variant="outline" className="rounded-xl bg-transparent">
-          <Cloud className="mr-2 h-4 w-4" />
-          INTEGRAR ANS
+          <Cloud className="mr-2 h-4 w-4" /> INTEGRAR ANS
         </Button>
-        <Button className="rounded-xl">
-          <Save className="mr-2 h-4 w-4" />
-          SALVAR E GERAR DEFESA
+        <Button className="rounded-xl" onClick={handleSalvarDefesa}>
+          <Save className="mr-2 h-4 w-4" /> SALVAR E GERAR DEFESA
         </Button>
       </div>
+
       <AnexarDocumentoDefesaModal
         open={isAnexarModalOpen}
         onOpenChange={setIsAnexarModalOpen}

@@ -28,8 +28,7 @@ class HttpClient {
     return response.json()
   }
 
-  async post<T>(endpoint: string, data?: any): Promise<T> {
-    
+  async post<T>(endpoint: string, data?: any, responseType: "json" | "blob" = "json"): Promise<T | Blob> {
     const isFormData = (typeof FormData !== "undefined") && data instanceof FormData;
 
     const response = await fetch(`${this.baseURL}${endpoint}`, {
@@ -42,8 +41,13 @@ class HttpClient {
       throw new Error(`HTTP error! status: ${response.status}`)
     }
 
-    return response.json()
+    if (responseType === "blob") {
+      return response.blob();
+    }
+
+    return response.json();
   }
+
 
   async put<T>(endpoint: string, data?: any): Promise<T> {
     const response = await fetch(`${this.baseURL}${endpoint}`, {
