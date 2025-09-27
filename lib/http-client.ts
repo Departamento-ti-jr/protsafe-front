@@ -77,4 +77,4 @@ class HttpClient {
   }
 }
 
-export const httpClient = new HttpClient("https://resus-api.codebeat.com.br")
+export const httpClient = new HttpClient("http://localhost:8080")

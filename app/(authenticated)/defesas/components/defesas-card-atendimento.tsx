@@ -17,11 +17,11 @@ export default function DefesaCardAtendimento({abi} : DefesasAtendimentoProps) {
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             <div>
               <Label className="text-sm font-medium text-gray-500">Status</Label>
-              {/* <p className="font-medium">{abi?.status}</p> */}
+              <p className="font-medium">{abi?.status}</p>
             </div>
             <div>
               <Label className="text-sm font-medium text-gray-500">Competência</Label>
-              <p className="font-medium">{abi?.competencia}</p>
+              <p className="font-medium">{abi?.comp}</p>
             </div>
             <div>
               <Label className="text-sm font-medium text-gray-500">Tipo</Label>

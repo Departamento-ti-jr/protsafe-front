@@ -14,7 +14,7 @@ export default function AbisTable({ data }: { data: Abi[] }) {
         <TableHeader>
           <TableRow className="bg-gray-50">
             <TableHead>ABI</TableHead>
-            <TableHead>Ofício</TableHead>
+            {/* <TableHead>Ofício</TableHead> */}
             <TableHead>Processo</TableHead>
             <TableHead>Operadora / CNPJ</TableHead>
             <TableHead>Data / Hora</TableHead>
@@ -33,12 +33,12 @@ export default function AbisTable({ data }: { data: Abi[] }) {
             data.map((abi) => (
               <TableRow key={abi._id}>
                 <TableCell>{abi.numeroABI}</TableCell>
-                <TableCell>{abi.numeroOficio}</TableCell>
+                {/* <TableCell>{abi.numeroOficio}</TableCell> */}
                 <TableCell>{abi.numeroProcesso}</TableCell>
                 <TableCell>
                   <div className="space-y-1">
                     <div className="font-medium">{abi.razaoSocial}</div>
-                    <div className="text-sm text-gray-500">{abi.CNPJ}</div>
+                    <div className="text-sm text-gray-500">{abi.cnpj}</div>
                   </div>
                 </TableCell>
                 <TableCell>{abi.dataRegistroTransacao} {abi.horaRegistroTransacao}</TableCell>

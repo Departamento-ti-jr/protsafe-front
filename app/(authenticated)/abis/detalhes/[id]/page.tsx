@@ -47,15 +47,15 @@ export default function ABIDetalhesPage({ params }: { params: Promise<{ id: stri
   }, [params])
 
   useEffect(() => {
-    fetchAtendimentos(abi?.CNPJ, abi?.numeroABI ? Number(abi.numeroABI) : null)
+    fetchAtendimentos(abi?.cnpj, abi?.numeroABI ? Number(abi.numeroABI) : null)
   }, [abi, currentPage, pageSize])
 
   const fetchAbi = async (id: string) => {
     try {
       console.log("Fetching ABI with ID:", id)
-      const result = await AbisService.getById(id)
+      const result = await AbisService.getById(id, { include: ["operadora"] })
       setAbi(result)
-      setCnpj(result.CNPJ)
+      setCnpj(result.cnpj || null)
     } catch (err) {
       setError("Erro ao carregar os detalhes da ABI.")
       console.error(err)
@@ -63,6 +63,7 @@ export default function ABIDetalhesPage({ params }: { params: Promise<{ id: stri
       setLoading(false)
     }
   }
+
 
   const fetchAtendimentos = async (cnpj?: string | null, abi?: number | null) => {
     try {
@@ -72,9 +73,10 @@ export default function ABIDetalhesPage({ params }: { params: Promise<{ id: stri
         page: currentPage,
         limit: pageSize,
         abi: abi,
-        cnpj: cnpj,
+        // cnpj: cnpj,
         search: searchTerm || undefined,
       })
+      console.log("Fetched atendimentos:", response)
       setAtendimentoPaginated(response)
       setAtendimentosLoading(false)
     } catch (err) {
@@ -181,17 +183,18 @@ export default function ABIDetalhesPage({ params }: { params: Promise<{ id: stri
                     <p className="text-sm font-medium text-gray-500">Número do Processo</p>
                     <p className="font-mono">{abi.numeroProcesso}</p>
                   </div>
-                  <div>
+                  {/* <div>
                     <p className="text-sm font-medium text-gray-500">Número do ofício</p>
                     <p className="font-semibold">{abi.numeroOficio}</p>
-                  </div>
+                  </div> */}
+                  <div></div>
                   <div>
                     <p className="text-sm font-medium text-gray-500">Nome da operadora</p>
-                    <p>{abi.razaoSocial}</p>
+                    <p>{abi?.operadora?.name}</p>
                   </div>
                   <div>
                     <p className="text-sm font-medium text-gray-500">CNPJ</p>
-                    <p>{abi.CNPJ}</p>
+                    <p>{abi.cnpj}</p>
                   </div>
                   <div>
                     <p className="text-sm font-medium text-gray-500">Data / Hora registro da transação</p>
@@ -209,16 +212,16 @@ export default function ABIDetalhesPage({ params }: { params: Promise<{ id: stri
                       Aberto
                     </Badge>
                   </div>
-                  <div>
+                  {/* <div>
                     <p className="text-sm font-medium text-gray-500">Quantidade de processos</p>
                     <p className="font-semibold">{abi.quantidadeProcesso}</p>
-                  </div>
-                  <div>
+                  </div> */}
+                  {/* <div>
                     <p className="text-sm font-medium text-gray-500">Valor total dos processos</p>
                     <p className="font-semibold text-lg">
-                      R$ {abi.valorTotalProcesso.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}
+                      R$ {abi?.valorTotalProcesso?.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}
                     </p>
-                  </div>
+                  </div> */}
                 </div>
               </CardContent>
             </Card>
@@ -274,14 +277,14 @@ export default function ABIDetalhesPage({ params }: { params: Promise<{ id: stri
                           <TableCell>{(currentPage - 1) * pageSize + index + 1}</TableCell>
                           <TableCell>{item.tipo}</TableCell>
                           <TableCell className="font-mono">{item.numeroProcesso}</TableCell>
-                          <TableCell>{item._id}</TableCell>
+                          <TableCell>{item.numeroAihApac}</TableCell>
                           <TableCell>
-                            {String(item.competencia)
+                            {String(item.comp)
                               .padStart(6, "0")
                               .replace(/^(\d{2})(\d{4})$/, "$1/$2")}
                           </TableCell>
-                          <TableCell>{new Date(item.dataRegistroTransacao).toLocaleDateString("pt-BR")}</TableCell>
-                          <TableCell>{new Date(item.dataRegistroTransacao).toLocaleDateString("pt-BR")}</TableCell>
+                          <TableCell>{item?.dataInicial}</TableCell>
+                          <TableCell>{item?.dataFinal}</TableCell>
                           <TableCell>{item.descricaoProcedimento}</TableCell>
                           <TableCell>
                             <Badge variant="secondary" className="bg-teal-100 text-teal-800">

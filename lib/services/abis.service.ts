@@ -1,69 +1,129 @@
 import { httpClient } from "../http-client"
 import type { PaginatedResponse } from "@/components/ui/pagination-controls"
 
-export interface Abi {
-  _id: string
-  tipoTransacao: string
-  sequencialTransacao: number
-  dataRegistroTransacao: string
-  horaRegistroTransacao: string
-  identificadorANS: number
-  registroANS: number
-  versaoPadrao: number
-  registroANS2: number
-  razaoSocial: string
+/** Dados básicos da operadora (join por registroAns ↔ ansRegister) */
+export interface Operadora {
+  id: number
   CNPJ: string
-  numeroOficio: number
-  numeroProcesso: string
-  numeroABI: string
-  CNES: number
-  nomeUPS: string
-  naturezaUPS: string
-  endereco: string
-  municipio: string
-  codigoUF: string
-  cep: number
-  competencia: number
-  tipo: string
-  numero: number
-  dataInicioAtendimento: string
-  dataFimAtendimento: string
-  caraterAtendimento: number
-  codigoBeneficiario: number
-  codigoCCO: number
-  dataNascBeneficiario: string
-  nomeBeneficiario: string
-  primeiraAlegacao: string
-  segundaAlegacao: string
-  clausulaPrimeiraAlegacao: string
-  clausulaSegundaAlegacao: string
-  declaracaoCPT: string
-  grupoMunicipios: string
-  cidades: string
-  itemDLS: string
-  valorTotal: number
-  tipoProcedimento: string
-  codigoProcedimento: number
-  descricaoProcedimento: string
-  quantidadeProcedimento: number
-  valorProcedimento: number
-  quantidadePrestador: number
-  valorTotalPrestador: number
-  quantidadeProcesso: number
-  valorTotalProcesso: number
-  hash: string
+  name: string
+  alias?: string
+  type?: string
+  email?: string
+  phone?: string
+  ansRegister: string
 }
 
-export interface CreateAbiData extends Abi {}
+/**
+ * Observações:
+ * - Chaves com zeros à esquerda (cnpj/CNPJ, numeroABI, registroAns, numeroProcesso, numeroAihApac) como string.
+ * - Campos “legados” ficaram opcionais.
+ */
+export interface Abi {
+  _id: string
+
+  // ===== Chaves / filtros principais =====
+  cnpj?: string            // frontend pode usar minúsculo
+  CNPJ?: string            // compatibilidade com dados antigos
+  numeroABI?: string
+  registroAns?: string
+  numeroProcesso?: string
+  numeroAihApac?: string
+  codigoBeneficiario?: number
+  comp?: string
+
+  // ===== Campos CSV recentes =====
+  pedido?: string
+  requiredDocsCount?: number
+  ordem?: number
+
+  tipo?: string
+  dataInicial?: string
+  dataFinal?: string
+  dataInicioAtendimento?: string
+  dataFimAtendimento?: string
+
+  descricaoPlanoDataAtendimento?: string
+  registroAnsDataAtendimento?: string
+
+  carencia?: number
+  carenciaParto?: number
+  preexistencia?: number
+  abrangencia?: number
+
+  abgNome?: string
+  segmentacao?: string
+
+  razaoSocial?: string
+  nomeUPS?: string
+  municipio?: string
+  codigoUF?: string
+
+  // Status/origem definidos na importação
+  status?: string
+  tipoDoc?: string
+
+  // ===== Legados (opcionais) =====
+  tipoTransacao?: string
+  sequencialTransacao?: number
+  dataRegistroTransacao?: string
+  horaRegistroTransacao?: string
+  identificadorANS?: number
+  registroANS?: number
+  versaoPadrao?: number
+  registroANS2?: number
+  numeroOficio?: number
+  CNES?: number
+  naturezaUPS?: string
+  endereco?: string
+  cep?: number
+  competencia?: number
+  numero?: number
+  caraterAtendimento?: number
+  codigoCCO?: number
+  dataNascBeneficiario?: string
+  nomeBeneficiario?: string
+  primeiraAlegacao?: string
+  segundaAlegacao?: string
+  clausulaPrimeiraAlegacao?: string
+  clausulaSegundaAlegacao?: string
+  declaracaoCPT?: string
+  grupoMunicipios?: string
+  cidades?: string
+  itemDLS?: string
+  valorTotal?: number
+  tipoProcedimento?: string
+  codigoProcedimento?: number
+  descricaoProcedimento?: string
+  quantidadeProcedimento?: number
+  valorProcedimento?: number
+  quantidadePrestador?: number
+  valorTotalPrestador?: number
+  quantidadeProcesso?: number
+  valorTotalProcesso?: number
+
+  // ===== Relações (via include) =====
+  operadora?: Operadora
+
+  hash?: string
+  createdAt?: string
+  updatedAt?: string
+}
+
+export type CreateAbiData = Omit<Abi, "_id" | "createdAt" | "updatedAt">
 
 export interface GetAbisParams {
   page?: number
   limit?: number
+  id?: string
+  cnpj?: string
+  codigoBeneficiario?: number | string
+  numeroABI?: string
+  /** @deprecated use numeroABI */
+  abi?: number | string
+  /** não suportado no backend atual (ignorado) */
   search?: string
-  cnpj?: string,
-  status?: string,
-  codigoBeneficiario?: string,
-  abi?: number
+  /** não suportado no backend atual (ignorado) */
+  status?: string
 }
 
 export class AbisService {
@@ -73,27 +133,17 @@ export class AbisService {
     try {
       const searchParams = new URLSearchParams()
 
-      if (params.page) {
-        searchParams.append("page", params.page.toString())
+      if (params.page) searchParams.append("page", String(params.page))
+      if (params.limit) searchParams.append("limit", String(params.limit))
+      if (params.id) searchParams.append("id", params.id)
+      if (params.cnpj) searchParams.append("cnpj", params.cnpj)
+
+      if (params.codigoBeneficiario !== undefined && params.codigoBeneficiario !== null) {
+        searchParams.append("codigoBeneficiario", String(params.codigoBeneficiario))
       }
-      if (params.limit) {
-        searchParams.append("limit", params.limit.toString())
-      }
-      if (params.cnpj) {
-        searchParams.append("cnpj", params.cnpj.toString())
-      }
-      if (params.codigoBeneficiario) {
-        searchParams.append("codigoBeneficiario", params.codigoBeneficiario.toString())
-      }
-      if (params.abi) {
-        searchParams.append("abi", String(params.abi))
-      }
-      if (params.search && params.search.trim() !== "") {
-        searchParams.append("search", params.search)
-      }
-      if (params.status) {
-        searchParams.append("status", params.status)
-      }
+
+      const numeroABI = params.numeroABI ?? (params.abi != null ? String(params.abi) : undefined)
+      if (numeroABI) searchParams.append("numeroABI", numeroABI)
 
       const url = searchParams.toString() ? `${this.endpoint}?${searchParams.toString()}` : this.endpoint
 
@@ -104,9 +154,18 @@ export class AbisService {
     }
   }
 
-  static async getById(id: string): Promise<Abi> {
+  static async getById(
+    id: string,
+    options?: { include?: string[] }
+  ): Promise<Abi> {
     try {
-      return await httpClient.get<Abi>(`${this.endpoint}/${id}`)
+      let url = `${this.endpoint}/${id}`
+      if (options?.include?.length) {
+        const params = new URLSearchParams()
+        params.append("include", options.include.join(","))
+        url += `?${params.toString()}`
+      }
+      return await httpClient.get<Abi>(url)
     } catch (error) {
       console.error(`Erro ao buscar ABI com id ${id}:`, error)
       throw new Error("Falha ao carregar os detalhes da ABI")
@@ -120,5 +179,25 @@ export class AbisService {
       console.error("Erro ao criar ABI:", error)
       throw new Error("Falha ao criar ABI")
     }
+  }
+
+  /** Upload de CSV conforme controller Nest: POST /abis/upload-csv?tipoDoc&upsert&batchSize */
+  static async uploadCsv(
+    file: File,
+    opts?: { tipoDoc?: string; upsert?: boolean; batchSize?: number }
+  ): Promise<{ total: number; inserted: number; upserted: number; matched: number }> {
+    const form = new FormData()
+    form.append("file", file)
+
+    const params = new URLSearchParams()
+    if (opts?.tipoDoc) params.append("tipoDoc", opts.tipoDoc)
+    if (typeof opts?.upsert === "boolean") params.append("upsert", String(opts.upsert))
+    if (opts?.batchSize) params.append("batchSize", String(opts.batchSize))
+
+    const url = params.toString()
+      ? `${this.endpoint}/upload-csv?${params.toString()}`
+      : `${this.endpoint}/upload-csv`
+
+    return await httpClient.post(url, form)
   }
 }
