@@ -4,6 +4,7 @@ import React, { useEffect, useState } from "react"
 import { Button } from "@/components/ui/button"
 import { ArrowLeft, Upload, FileText, Save, Cloud } from "lucide-react"
 import Link from "next/link"
+import { useRouter } from "next/navigation";
 import { AnexarDocumentoDefesaModal } from "@/components/anexar-documento-defesa-modal"
 import { TextoDefesa, TextosDefesaService } from "@/lib/services/textos-defesa.service"
 import { DocumentoComprobatorio, DocumentosComprobatoriosService } from "@/lib/services/documentos-comprobatorios.service"
@@ -17,24 +18,29 @@ import {
   CardDocumentosAnexados,
   CardDocumentosAns,
 } from "../../components/defesa-cards/defesa-cards"
+import { useToast } from "@/hooks/use-toast"
 
 export default function NovaDefesaPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = React.use(params)
 
-  const [selectedTipo, setSelectedTipo] = useState("recurso")
+  const router = useRouter();
+  const { toast } = useToast();
+
+  const [tipoDoc, setTipoDoc] = useState<"RECURSO" | "IMPUGNACAO">("RECURSO");
   const [selectedPedido, setSelectedPedido] = useState("anulacao-identificacao")
+  const [tempestividade, setTempestividade] = useState("");
   const [informarOutrosDocumentos, setInformarOutrosDocumentos] = useState(false)
-  const [defesa, setDefesa] = useState<Defesa>()
+  const [loadSalvarDefesa, setLoadSalvarDefesa] = useState<boolean>(false)
   const [abi, setAbi] = useState<Abi>()
   const [isAnexarModalOpen, setIsAnexarModalOpen] = useState(false)
   const [anexedDocuments, setAnexedDocuments] = useState<any[]>([])
   const [selectedMotivos, setSelectedMotivos] = useState<string[]>([])
+  const [text, setText] = useState<string>("")
   const [selectedComprobatorios, setSelectedComprobatorios] = useState<string[]>([])
   const [textosDefesa, setTextosDefesa] = useState<TextoDefesa[]>([])
   const [documentosComprobatorios, setDocumentosComprobatorios] = useState<DocumentoComprobatorio[]>([])
   const [detalhamentoMotivo, setDetalhamentoMotivo] = useState("")
   const [error, setError] = useState<string | null>(null)
-  const [preliminary, setPreliminary] = useState("")
   const [calculationMemory, setCalculationMemory] = useState("")
   const [supportingDocument, setSupportingDocument] = useState("")
   const [rectificationValue, setRectificationValue] = useState("")
@@ -45,26 +51,16 @@ export default function NovaDefesaPage({ params }: { params: Promise<{ id: strin
     loadDocumentosComprobatorios()
   }, [])
 
+  useEffect(() => { console.log("tipDoc: ", tipoDoc) }, [tipoDoc]);
+
   useEffect(() => {
     const textosConcatenados = textosDefesa
       .filter(t => selectedMotivos.includes(t._id))
       .map(t => t.texto)
       .join("\n\n")
 
-    setDetalhamentoMotivo(textosConcatenados)
+    setText(textosConcatenados)
   }, [selectedMotivos, textosDefesa])
-
-  const loadDefesa = async () => {
-    try {
-      const id = await params.then(p => p.id)
-      const data = await DefesasService.getById(id)
-      setDefesa(data)
-      setAbi(data.atendimento[0] as Abi)
-    } catch (err) {
-      setError("Erro ao carregar defesa. Tente novamente.")
-      console.error(err)
-    }
-  }
 
   const loadAtendimento = async () => {
     try {
@@ -131,25 +127,46 @@ export default function NovaDefesaPage({ params }: { params: Promise<{ id: strin
 
   const handleSalvarDefesa = async () => {
     try {
+
+      setLoadSalvarDefesa(true);
+
       if (!abi?._id) return
 
       const payload = mapDefesaToPayload(abi._id)
+      console.log("Payload para salvar defesa:", payload)
       const blob = await DefesasService.create(payload)
       const url = URL.createObjectURL(blob)
-      window.open(url) 
-      alert("Defesa salva com sucesso!")
-    } catch (error) {
-      console.error("Erro ao salvar defesa:", error)
-      alert("Erro ao salvar defesa. Tente novamente.")
+      window.open(url)
+      toast({
+        title: "Sucesso!",
+        description: "Defesa criada.",
+      })
+    } catch (error: any) {
+      
+      const apiMessage =
+        error?.body?.message || // mensagem do backend
+        error?.statusText ||    // fallback do HTTP
+        "Erro ao salvar defesa."; // fallback final
+
+      toast({
+        variant: "warning",
+        title: "Aviso",
+        description: apiMessage,
+      });
+
+      setError(apiMessage);
+    }
+    finally {
+      setLoadSalvarDefesa(false);
     }
   }
 
 
   function mapDefesaToPayload(abiId: string): any {
     return {
-      petitionType: selectedTipo,
-      text: detalhamentoMotivo,
-      preliminary,
+      petitionType: tipoDoc,
+      text: text,
+      tempestividade,
       calculationMemory,
       supportingDocuments: selectedComprobatorios,
       othersSupportingDocument: informarOutrosDocumentos,
@@ -158,12 +175,11 @@ export default function NovaDefesaPage({ params }: { params: Promise<{ id: strin
         selectedPedido === "retificacao"
           ? 2
           : selectedPedido === "anulacao-subsidiaria"
-          ? 3
-          : 1,
+            ? 3
+            : 1,
       rectificationValue: rectificationValue,
       defencesText: selectedMotivos,
-      atendimento: abiId,
-      id_Attendance: abiId,
+      atendimento: abiId
     }
   }
 
@@ -192,19 +208,20 @@ export default function NovaDefesaPage({ params }: { params: Promise<{ id: strin
       <DefesaCardAtendimento abi={abi} />
 
       <CardFormularioImputacao
-        selectedTipo={selectedTipo}
-        setSelectedTipo={setSelectedTipo}
+        selectedTipo={tipoDoc}
+        setSelectedTipo={setTipoDoc}
         textosDefesa={textosDefesa}
         selectedMotivos={selectedMotivos}
         setSelectedMotivos={setSelectedMotivos}
+        text={text}
+        setText={setText}
         detalhamentoMotivo={detalhamentoMotivo}
         documentosComprobatorios={documentosComprobatorios}
         selectedComprobatorios={selectedComprobatorios}
         setSelectedComprobatorios={setSelectedComprobatorios}
         informarOutrosDocumentos={informarOutrosDocumentos}
         setInformarOutrosDocumentos={setInformarOutrosDocumentos}
-        preliminary={preliminary}
-        setPreliminary={setPreliminary}
+        setTempestividade={setTempestividade}
         calculationMemory={calculationMemory}
         setCalculationMemory={setCalculationMemory}
         supportingDocument={supportingDocument}
@@ -225,8 +242,8 @@ export default function NovaDefesaPage({ params }: { params: Promise<{ id: strin
         <Button variant="outline" className="rounded-xl bg-transparent">
           <Cloud className="mr-2 h-4 w-4" /> INTEGRAR ANS
         </Button>
-        <Button className="rounded-xl" onClick={handleSalvarDefesa}>
-          <Save className="mr-2 h-4 w-4" /> SALVAR E GERAR DEFESA
+        <Button className="rounded-xl" onClick={handleSalvarDefesa} disabled={loadSalvarDefesa}>
+          <Save className="mr-2 h-4 w-4" /> {loadSalvarDefesa ? "SALVANDO..." : "SALVAR E GERAR DEFESA"}
         </Button>
       </div>
 

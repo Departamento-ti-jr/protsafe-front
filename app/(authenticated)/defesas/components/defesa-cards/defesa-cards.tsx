@@ -12,10 +12,15 @@ export function CardFormularioImputacao({
   selectedTipo,
   setSelectedTipo,
   textosDefesa,
+  tempestividade,
+  setTempestividade,
   selectedMotivos,
   setSelectedMotivos,
-  detalhamentoMotivo,
+  text,
+  setText,
   documentosComprobatorios,
+  calculationMemory,
+  setCalculationMemory,
   selectedComprobatorios,
   setSelectedComprobatorios,
   informarOutrosDocumentos,
@@ -29,13 +34,15 @@ export function CardFormularioImputacao({
       <CardContent className="space-y-6">
         <div className="space-y-2">
           <Label>Tipo de Pedido</Label>
-          <Select value={selectedTipo} onValueChange={setSelectedTipo}>
-            <SelectTrigger><SelectValue /></SelectTrigger>
-            <SelectContent>
-              <SelectItem value="1">Recurso</SelectItem>
-              <SelectItem value="2">Impugnação</SelectItem>
-            </SelectContent>
-          </Select>
+          <Select value={selectedTipo || ""} onValueChange={setSelectedTipo}>
+          <SelectTrigger>
+            <SelectValue placeholder="Selecione o tipo de pedido" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="RECURSO">Recurso</SelectItem>
+            <SelectItem value="IMPUGNACAO">Impugnação</SelectItem>
+          </SelectContent>
+        </Select>
         </div>
 
         <MultiSelectCheckbox
@@ -49,9 +56,9 @@ export function CardFormularioImputacao({
           <div className="space-y-2">
             <Label className="text-sm">Detalhamento do Motivo</Label>
             <Textarea
-              value={detalhamentoMotivo}
+              value={text}
+              onChange={(e) => setText(e.target.value)}
               className="min-h-[200px] resize-none"
-              readOnly
             />
           </div>
 
@@ -61,7 +68,10 @@ export function CardFormularioImputacao({
                 <FileText className="h-4 w-4 text-gray-500" />
                 Tempestividade e Outras Preliminares
               </Label>
-              <Input placeholder="Informe a tempestividade ou outras preliminares" />
+              <Input placeholder="Informe a tempestividade ou outras preliminares" 
+                value={tempestividade} 
+                onChange={(e) => setTempestividade(e.target.value)} 
+              />
             </div>
 
             <div className="space-y-2">
@@ -69,7 +79,10 @@ export function CardFormularioImputacao({
                 <Calculator className="h-4 w-4 text-gray-500" />
                 Memória de Cálculo
               </Label>
-              <Input placeholder="Se necessário, informe a memória de cálculo" />
+              <Input placeholder="Se necessário, informe a memória de cálculo" 
+                value={calculationMemory} 
+                onChange={(e) => setCalculationMemory(e.target.value)}
+              />
             </div>
 
             <div className="space-y-2">

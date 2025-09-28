@@ -95,7 +95,7 @@ export function ABIAtendimentoDetails({ atendimento, onBack, onViewProcedimento 
             <div>
               <p className="text-xs text-gray-600 mb-1">Valor Total</p>
               <p className="text-xs font-medium">
-                R$ {atendimento.valorTotalProcesso.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}
+                {/* R$ {atendimento?.valorTotalProcesso.toLocaleString("pt-BR", { minimumFractionDigits: 2 })} */}
               </p>
             </div>
           </div>

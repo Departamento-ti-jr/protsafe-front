@@ -47,7 +47,7 @@ export default function ABIDetalhesPage({ params }: { params: Promise<{ id: stri
   }, [params])
 
   useEffect(() => {
-    fetchAtendimentos(abi?.cnpj, abi?.numeroABI ? Number(abi.numeroABI) : null)
+    fetchAtendimentos(abi?.numeroABI ? Number(abi.numeroABI) : null)
   }, [abi, currentPage, pageSize])
 
   const fetchAbi = async (id: string) => {
@@ -65,26 +65,27 @@ export default function ABIDetalhesPage({ params }: { params: Promise<{ id: stri
   }
 
 
-  const fetchAtendimentos = async (cnpj?: string | null, abi?: number | null) => {
+  const fetchAtendimentos = async (abi?: number | null) => {
     try {
       setError(null)
       setAtendimentosLoading(true)
-      const response = await AbisService.getAll({
+
+      const response = await AbisService.getAtendimentos({
         page: currentPage,
         limit: pageSize,
-        abi: abi,
-        // cnpj: cnpj,
-        search: searchTerm || undefined,
+        numeroABI: abi != null ? String(abi) : undefined
       })
+
       console.log("Fetched atendimentos:", response)
       setAtendimentoPaginated(response)
-      setAtendimentosLoading(false)
     } catch (err) {
-      setError("Erro ao carregar ABIs. Tente novamente.")
+      setError("Erro ao carregar atendimentos. Tente novamente.")
       console.error(err)
+    } finally {
       setAtendimentosLoading(false)
     }
   }
+
 
   const handleSearch = (value: string) => {
     setSearchTerm(value)
@@ -121,15 +122,19 @@ export default function ABIDetalhesPage({ params }: { params: Promise<{ id: stri
     setSelectedProcedimento(null)
   }
 
-  const handleDefender = (idAtendimento: string) => {
+  const handleNewDefender = (idAtendimento: string) => {
     router.push(`/defesas/nova/${idAtendimento}`)
   }
 
-  useEffect(() => {
-    if (cnpj) {
-      fetchAtendimentos(cnpj)
-    }
-  }, [debouncedSearchTerm])
+  const handleEditDefender = (defenceId: string) => {
+    router.push(`/defesas/editar/${defenceId}`)
+  }
+
+  // useEffect(() => {
+  //   if (cnpj) {
+  //     fetchAtendimentos(cnpj)
+  //   }
+  // }, [debouncedSearchTerm])
 
   if (loading) {
     return <div className="p-6">Carregando...</div>
@@ -287,8 +292,8 @@ export default function ABIDetalhesPage({ params }: { params: Promise<{ id: stri
                           <TableCell>{item?.dataFinal}</TableCell>
                           <TableCell>{item.descricaoProcedimento}</TableCell>
                           <TableCell>
-                            <Badge variant="secondary" className="bg-teal-100 text-teal-800">
-                              Aberto
+                            <Badge variant={item.defenceId ? "success" : "warning"} className={item.defenceId ? "bg-green-100 text-green-800" : "bg-yellow-100 text-yellow-800"}>
+                              {item.defenceId ? "Defendido" : "Aberto"}
                             </Badge>
                           </TableCell>
                           <TableCell className="text-right">
@@ -296,7 +301,7 @@ export default function ABIDetalhesPage({ params }: { params: Promise<{ id: stri
                               <Button
                                 variant="ghost"
                                 size="icon"
-                                onClick={() => {handleDefender(item._id)}}
+                                onClick={() => { item.defenceId ? handleEditDefender(item.defenceId) : handleNewDefender(item._id)}}
                               >
                                 <ShieldCheck className="h-4 w-4" />  
                               </Button>

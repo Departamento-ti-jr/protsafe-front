@@ -1,12 +1,13 @@
 import { PaginatedResponse } from "@/hooks/use-pagination"
 import { httpClient } from "../http-client"
+import { Abi } from "./abis.service"
 
 export interface Defesa {
   _id: string
-  petitionType: string
+  petitionType: "RECURSO" | "IMPUGNACAO"
   text: string
-  preliminary: string
   calculationMemory: string
+  tempestividade?: string
   supportingDocuments: {
     _id: string
     tipo: string
@@ -22,21 +23,7 @@ export interface Defesa {
     _id: string
     nome: string
   }[]
-  atendimento: {
-    _id: string
-    registroANS: number
-    razaoSocial: string
-    CNPJ: string
-    numeroProcesso: string
-    numeroABI: string
-    municipio: string
-    codigoUF: string
-    tipo: string
-    numero: number
-    dataInicioAtendimento: string
-    dataFimAtendimento: string
-    codigoCCO: number
-  }[]
+  atendimento: Abi[],
   createdAt: string
   updatedAt: string
   __v: number
@@ -60,6 +47,15 @@ export class DefesasService {
     } catch (error) {
       console.error("Erro ao buscar defesas:", error)
       throw new Error("Falha ao carregar defesas")
+    }
+  }
+
+  static async findOneWithDocuments(id: string): Promise<Defesa> {
+    try {
+      return await httpClient.get<Defesa>(`${this.endpoint}/${id}/with-documents`)
+    } catch (error) {
+      console.error(`Erro ao buscar defesa ${id} com documentos:`, error)
+      throw new Error("Falha ao carregar defesa com documentos")
     }
   }
 

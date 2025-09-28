@@ -1,6 +1,9 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
+import { formatDateToDDMMYYYY } from "@/lib/date-helpers";
 import { Abi } from "@/lib/services/abis.service";
+import { formatDate } from "date-fns";
+import { da } from "date-fns/locale";
 
 
 interface DefesasAtendimentoProps {
@@ -8,6 +11,10 @@ interface DefesasAtendimentoProps {
 }
 
 export default function DefesaCardAtendimento({abi} : DefesasAtendimentoProps) {
+
+    const formatDate = (date: any) => {
+      return formatDateToDDMMYYYY(date)
+    }
 
     return (<Card>
         <CardHeader>
@@ -29,12 +36,12 @@ export default function DefesaCardAtendimento({abi} : DefesasAtendimentoProps) {
             </div>
             <div>
               <Label className="text-sm font-medium text-gray-500">Data Inicial</Label>
-              <p className="font-medium">{abi?.dataInicioAtendimento}</p>
+              <p className="font-medium">{formatDate(abi?.dataInicial)}</p>
             </div>
           </div>
           <div className="mt-4">
             <Label className="text-sm font-medium text-gray-500">Data Final</Label>
-            <p className="font-medium">{abi?.dataFimAtendimento}</p>
+            <p className="font-medium">{formatDate(abi?.dataFinal)}</p>
           </div>
         </CardContent>
       </Card>);

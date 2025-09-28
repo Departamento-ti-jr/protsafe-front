@@ -21,6 +21,9 @@ export interface Operadora {
 export interface Abi {
   _id: string
 
+  // apenas para saber se o atendimento está defendido
+  defenceId?: string
+
   // ===== Chaves / filtros principais =====
   cnpj?: string            // frontend pode usar minúsculo
   CNPJ?: string            // compatibilidade com dados antigos
@@ -60,7 +63,7 @@ export interface Abi {
 
   // Status/origem definidos na importação
   status?: string
-  tipoDoc?: string
+  tipoDoc: "RECURSO" | "IMPUGNACAO";
 
   // ===== Legados (opcionais) =====
   tipoTransacao?: string
@@ -90,7 +93,7 @@ export interface Abi {
   grupoMunicipios?: string
   cidades?: string
   itemDLS?: string
-  valorTotal?: number
+  valorTotal: number
   tipoProcedimento?: string
   codigoProcedimento?: number
   descricaoProcedimento?: string
@@ -103,6 +106,7 @@ export interface Abi {
 
   // ===== Relações (via include) =====
   operadora?: Operadora
+  operadoraName?: string
 
   hash?: string
   createdAt?: string
@@ -153,6 +157,27 @@ export class AbisService {
       throw new Error("Falha ao carregar ABIs")
     }
   }
+
+  static async getAtendimentos(params?: { numeroABI?: string; page?: number; limit?: number }) {
+    try {
+      const searchParams = new URLSearchParams()
+
+      if (params?.numeroABI) searchParams.append("numeroABI", params.numeroABI)
+      if (params?.page) searchParams.append("page", String(params.page))
+      if (params?.limit) searchParams.append("limit", String(params.limit))
+
+      const url = searchParams.toString()
+        ? `${this.endpoint}/atendimentos?${searchParams.toString()}`
+        : `${this.endpoint}/atendimentos`
+
+      return await httpClient.get<PaginatedResponse<Abi>>(url)
+    } catch (error) {
+      console.error("Erro ao buscar atendimentos:", error)
+      throw new Error("Falha ao carregar atendimentos")
+    }
+  }
+
+
 
   static async getById(
     id: string,

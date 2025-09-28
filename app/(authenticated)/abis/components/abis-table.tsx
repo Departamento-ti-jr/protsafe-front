@@ -38,7 +38,7 @@ export default function AbisTable({ data }: { data: Abi[] }) {
                 <TableCell>
                   <div className="space-y-1">
                     <div className="font-medium">{abi.razaoSocial}</div>
-                    <div className="text-sm text-gray-500">{abi.cnpj}</div>
+                    <div className="text-sm text-gray-500"><b>{abi.operadoraName}</b> <br /> {abi.cnpj  }</div>
                   </div>
                 </TableCell>
                 <TableCell>{abi.dataRegistroTransacao} {abi.horaRegistroTransacao}</TableCell>
