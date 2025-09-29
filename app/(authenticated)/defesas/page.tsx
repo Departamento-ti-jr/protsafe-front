@@ -31,10 +31,9 @@ export default function DefesasPage() {
           limit: pageSize,
           search: searchTerm,
         });
-        const response = await DefesasService.getAll({
+        const response = await DefesasService.getAllWithAtendimento({
           page: currentPage,
-          limit: pageSize,
-          search: searchTerm || undefined,
+          limit: pageSize
         })
         setPaginatedData(response)
         setError(null)

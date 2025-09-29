@@ -1,17 +1,13 @@
 "use client"
 
 import type React from "react"
-import { useState, useCallback } from "react"
+import { useState, useCallback, useEffect } from "react"
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { Button } from "@/components/ui/button"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { X, Upload, FileText } from "lucide-react"
 import { cn } from "@/lib/utils"
-
-interface DocumentType {
-  nome: string
-  id: number
-}
+import { AnsTiposDocumentosService, type AnsTipoDocumento } from "@/lib/services/ans-tipos-documentos.service"
 
 interface SelectedFile {
   file: File
@@ -21,85 +17,47 @@ interface SelectedFile {
 interface AnexarDocumentoModalProps {
   open: boolean
   onOpenChange: (open: boolean) => void
-  onSubmit: (files: SelectedFile[], documentType: string) => void
+  onSubmit: (files: SelectedFile[], documentType: string) => void // documentType = _id do tipo_documento
 }
-
-const documentTypes: DocumentType[] = [
-  { nome: "Anexo", id: 61 },
-  { nome: "Documento Comprobatório", id: 21 },
-  { nome: "Sumário Financeiro", id: 41 },
-  { nome: "Ofício", id: 1 },
-  { nome: "Petição", id: 2 },
-  { nome: "Aviso de Recebimento", id: 3 },
-  { nome: "Certidão", id: 4 },
-  { nome: "Contrato", id: 5 },
-  { nome: "Declaração", id: 6 },
-  { nome: "Declaração de Saúde", id: 7 },
-  { nome: "Edital", id: 8 },
-  { nome: "Edital de Notificação", id: 9 },
-  { nome: "Formulário", id: 10 },
-  { nome: "Laudo de Auditoria", id: 11 },
-  { nome: "Proposta de Adesão", id: 12 },
-  { nome: "Termo de Adesão", id: 13 },
-  { nome: "CAT", id: 14 },
-  { nome: "Comprovante de Protocolo", id: 15 },
-  { nome: "Outros", id: 16 },
-  { nome: "GRU", id: 17 },
-  { nome: "Detalhamento", id: 18 },
-  { nome: "Nota Técnica", id: 19 },
-  { nome: "Decisão", id: 20 },
-  { nome: "Parecer de Auditoria", id: 81 },
-  { nome: "Relatório da Auditoria", id: 101 },
-  { nome: "Relatório com os resultados da Pesquisa", id: 82 },
-  { nome: "Termo de Responsabilidade", id: 83 },
-  { nome: "RN 388 - OFÍCIO INTIMAÇÃO DECISÃO", id: 122 },
-  { nome: "Despacho Geral", id: 142 },
-  { nome: "RN 388 - OFICIO NOTIFICACAO PAGAMENTO ANTECIPADO 40", id: 162 },
-  { nome: "Ofício Comunicando Arquivamento", id: 163 },
-  { nome: "RN 388 - DESPACHO MANUTENCAO __DIFIS", id: 183 },
-  { nome: "Relatório de Auto de Infração", id: 164 },
-  { nome: "RN 388 - OFICIO NOTIFICACAO PAGAMENTO ANTECIPADO 40__NÚCLEOS", id: 184 },
-  { nome: "Notificação", id: 242 },
-  { nome: "Ofício - Quando o Ofício Anterior não Foi Atendido Completamente", id: 682 },
-  { nome: "Representação", id: 1422 },
-  { nome: "Ofício de Intimação de Decisão - Outros", id: 1702 },
-  { nome: "RN 483 - OFICIO NOTIFICACAO PAGAMENTO ANTECIPADO 40__NÚCLEOS", id: 1822 },
-  { nome: "RN 483 - RELATÓRIO DE ANÁLISE CONCLUSIVA - MANUTENÇÃO DA AUTUAÇÃO", id: 2222 },
-  { nome: "RN 388 - DECISÃO DE HOMOLOGAÇÃO DE PEDIDO DE PAGAMENTO ANTECIPADO COM DESCONTO (40%)", id: 2342 },
-  { nome: "RN 388 - DECISÃO PENALIZANDO", id: 102 },
-  { nome: "Relatório de Diligência por E-mail", id: 484 },
-  { nome: "RN 388 - OFÍCIO INTIMAÇÃO DE DEFESA DE A.I.", id: 182 },
-  { nome: "Relatório de Arquivamento", id: 203 },
-  { nome: "RN 388 - DECISÃO - ANULAÇÃO A.I. E ARQUIVAMENTO", id: 165 },
-  { nome: "Relatório de Abertura de Processo", id: 185 },
-  { nome: "Carta ao Cidadão Solicitando Documentos", id: 222 },
-  { nome: "RN 388 - OFICIO NOVA DECISAO_NUCLEOS", id: 342 },
-  { nome: "Ofício à Operadora Comunicando Decisão", id: 362 },
-  { nome: "CD - NÃO RESOLVIDA", id: 382 },
-  { nome: "Auto de representação", id: 482 },
-  { nome: "RN 388 - DECISÃO HOMOLOGAÇÃO REPARACAO POSTERIOR 80", id: 722 },
-  { nome: "RN 388 - OFÍCIO DE INTIMAÇÃO DE DEFESA AI - NÚCLEOS", id: 762 },
-  { nome: "Diligência no Âmbito de Outros Processos", id: 1002 },
-  { nome: "Intervenção Fiscalizatória - Despacho de Aprovação da Nota Técnica de Análise Preliminar", id: 1402 },
-  { nome: "Extrato para Publicação no Diário Oficial", id: 1582 },
-  { nome: "Informação", id: 1642 },
-  { nome: "OFICIO DE CIENCIA DE GRAVAME", id: 1643 },
-  { nome: "RN 483 - OFÍCIO INTIMAÇÃO DE DEFESA DE A.I. DIFIS", id: 1882 },
-]
 
 export function AnexarDocumentoDefesaModal({ open, onOpenChange, onSubmit }: AnexarDocumentoModalProps) {
   const [selectedFiles, setSelectedFiles] = useState<SelectedFile[]>([])
   const [selectedDocumentType, setSelectedDocumentType] = useState<string>("")
   const [isDragOver, setIsDragOver] = useState(false)
 
+  // estado p/ tipos vindos da API
+  const [docTypes, setDocTypes] = useState<AnsTipoDocumento[]>([])
+  const [loadingTypes, setLoadingTypes] = useState(false)
+  const [typesError, setTypesError] = useState<string | null>(null)
+
+  // carrega tipos quando o modal abre
+  useEffect(() => {
+    let cancelled = false
+    const loadTypes = async () => {
+      setLoadingTypes(true)
+      setTypesError(null)
+      try {
+        const data = await AnsTiposDocumentosService.getAll()
+        if (!cancelled) setDocTypes(data)
+      } catch (e: any) {
+        if (!cancelled) setTypesError("Erro ao carregar tipos de documento")
+        console.error(e)
+      } finally {
+        if (!cancelled) setLoadingTypes(false)
+      }
+    }
+    if (open) loadTypes()
+    return () => {
+      cancelled = true
+    }
+  }, [open])
+
   const handleFileSelect = useCallback((files: FileList | null) => {
     if (!files) return
-
     const newFiles: SelectedFile[] = Array.from(files).map((file) => ({
       file,
       id: Math.random().toString(36).substr(2, 9),
     }))
-
     setSelectedFiles((prev) => [...prev, ...newFiles])
   }, [])
 
@@ -136,7 +94,7 @@ export function AnexarDocumentoDefesaModal({ open, onOpenChange, onSubmit }: Ane
 
   const handleSubmit = () => {
     if (selectedFiles.length > 0 && selectedDocumentType) {
-      onSubmit(selectedFiles, selectedDocumentType)
+      onSubmit(selectedFiles, selectedDocumentType) // envia o _id do tipo selecionado
       // Reset form
       setSelectedFiles([])
       setSelectedDocumentType("")
@@ -214,18 +172,35 @@ export function AnexarDocumentoDefesaModal({ open, onOpenChange, onSubmit }: Ane
           {selectedFiles.length > 0 && (
             <div className="space-y-2">
               <label className="text-sm font-medium text-gray-700">Selecione o Tipo do Documento</label>
-              <Select value={selectedDocumentType} onValueChange={setSelectedDocumentType}>
+              <Select
+                value={selectedDocumentType}
+                onValueChange={setSelectedDocumentType}
+                disabled={loadingTypes || !!typesError}
+              >
                 <SelectTrigger>
-                  <SelectValue placeholder="Selecione o tipo do documento..." />
+                  <SelectValue
+                    placeholder={
+                      loadingTypes
+                        ? "Carregando tipos..."
+                        : typesError
+                        ? "Erro ao carregar tipos"
+                        : "Selecione o tipo do documento..."
+                    }
+                  />
                 </SelectTrigger>
-                <SelectContent className="max-h-60">
-                  {documentTypes.map((type) => (
-                    <SelectItem key={type.id} value={type.id.toString()}>
+                <SelectContent className="max-h-64">
+                  {docTypes.length === 0 && !loadingTypes && !typesError && (
+                    <div className="px-3 py-2 text-sm text-gray-500">Nenhum tipo encontrado</div>
+                  )}
+                  {docTypes.map((type) => (
+                    // value = _id (ObjectId) — o backend espera isso no upload
+                    <SelectItem key={type._id} value={type._id}>
                       {type.nome}
                     </SelectItem>
                   ))}
                 </SelectContent>
               </Select>
+              {typesError && <p className="text-xs text-red-600">{typesError}</p>}
             </div>
           )}
 

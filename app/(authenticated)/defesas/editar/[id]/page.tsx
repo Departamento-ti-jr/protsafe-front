@@ -19,6 +19,7 @@ import {
   CardDocumentosAns,
 } from "../../components/defesa-cards/defesa-cards"
 import { useToast } from "@/hooks/use-toast"
+import { da } from "date-fns/locale"
 
 export default function EditarDefesaPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = React.use(params) // id da defesa
@@ -46,16 +47,31 @@ export default function EditarDefesaPage({ params }: { params: Promise<{ id: str
   const [supportingDocument, setSupportingDocument] = useState("")
   const [rectificationValue, setRectificationValue] = useState("")
 
-  // carregar dados iniciais
   useEffect(() => {
-    loadDefesa()
-    loadTextosDefesa()
-    loadDocumentosComprobatorios()
+    const init = async () => {
+      const defesaData = await loadDefesa();
+      if (defesaData) {
+        await Promise.all([loadTextosDefesa(), loadDocumentosComprobatorios()]);
+      }
+    }
+    init()
   }, [])
 
-  const loadDefesa = async () => {
+  useEffect(() => {
+      if (abi?._id) {
+        loadDocumentosSalvos(abi._id)
+      }
+  }, [abi])
+
+  const loadDefesa = async (): Promise<Defesa | null> => {
     try {
       const data = await DefesasService.findOneWithDocuments(id)
+      if (!data) {
+        setDefesa(null)
+        setError("Defesa não encontrada.")
+        return null
+      }
+
       setDefesa(data)
 
       // preencher estados iniciais
@@ -67,11 +83,18 @@ export default function EditarDefesaPage({ params }: { params: Promise<{ id: str
       setSelectedMotivos(data.defencesText?.map((d: any) => d._id) || [])
       setSelectedComprobatorios(data.supportingDocuments?.map((d: any) => d._id) || [])
       setInformarOutrosDocumentos(data.othersSupportingDocument || false)
-      setAbi(data.atendimento?.[0])
+      setAbi(data.atendimento)
       setText(data.text || "")
-    } catch (err) {
-      setError("Erro ao carregar defesa.")
-      console.error(err)
+
+      return data
+    } catch (err: any) {
+      if (err?.status == 404) {
+        setDefesa(null)
+        setError("Defesa não encontrada.")
+      } else {
+        setError("Erro ao carregar defesa.")
+      }
+      return null
     }
   }
 
@@ -82,6 +105,29 @@ export default function EditarDefesaPage({ params }: { params: Promise<{ id: str
     } catch (err) {
       setError("Erro ao carregar textos de defesa.")
       console.error(err)
+    }
+  }
+
+  const loadDocumentosSalvos = async (idAtendimento: string) => {
+    try {
+      const { protsafe } = await AnsDocumentosService.getDocumentosByAtendimento(idAtendimento)
+
+      // Mapeia os docs salvos no Mongo no mesmo formato que anexedDocuments espera
+      const mapped = protsafe.map((doc: any) => ({
+        id: doc._id,
+        name: doc.nome,
+        size: null, // você não tem o tamanho do S3 aqui, mas pode deixar null
+        type: doc.tipo_documento?.descricao || "Documento",
+        url: doc.caminho?.startsWith("http")
+          ? doc.caminho
+          : `${process.env.NEXT_PUBLIC_AWS_BASE_URL}/${doc.caminho}`, // monta a URL se só tiver key
+        caminho: doc.caminho,
+      }))
+
+      setAnexedDocuments(mapped)
+    } catch (err) {
+      console.error("Erro ao carregar documentos salvos:", err)
+      setError("Falha ao carregar documentos salvos.")
     }
   }
 
@@ -96,35 +142,58 @@ export default function EditarDefesaPage({ params }: { params: Promise<{ id: str
   }
 
   const handleAnexarDocumento = async (files: any[], documentType: string) => {
-    const id_defesa = id
-    const tipo_documento = documentType
-    const id_protocolo = "0"
+
+    if (!abi?._id) {
+      toast({
+        variant: "warning",
+        title: "Aviso",
+        description: "Atendimento não associado. Não é possível anexar documentos.",
+      })
+      return;
+    }
+
+    const id_atendimento = abi._id;
+    const id_protocolo = 0;
+    const tipo_documento = documentType;
 
     try {
       const uploadedDocs = await Promise.all(
         files.map(async (fileData) => {
-          if (!fileData.file) throw new Error("Arquivo inválido")
-          const url = await AnsDocumentosService.uploadDocument(
-            fileData.file,
-            id_defesa,
-            tipo_documento,
-            id_protocolo
-          )
+          const file: File | undefined = fileData?.file;
+          if (!file) throw new Error("Arquivo inválido");
+
+          const { url, caminho } = await AnsDocumentosService.uploadDocument(
+            file,
+            {
+              id_atendimento,
+              tipo_documento,
+              id_protocolo,
+              nome: file.name
+            }
+          );
+
           return {
-            id: Math.random().toString(36).substr(2, 9),
-            name: fileData.file.name,
-            size: fileData.file.size,
+            id: Math.random().toString(36).slice(2),
+            name: file.name,
+            size: file.size,
             type: documentType,
             url,
-          }
+            caminho: url
+          };
         })
-      )
-      setAnexedDocuments((prev) => [...prev, ...uploadedDocs])
-    } catch (error) {
-      setError("Erro ao enviar documento(s). Tente novamente.")
-      console.error(error)
+      );
+
+      setAnexedDocuments((prev) => [...prev, ...uploadedDocs]);
+
+      toast({
+        title: "Documento(s) anexado(s)",
+        description: `${uploadedDocs.length} arquivo(s) enviado(s) com sucesso.`,
+      });
+    } catch (err) {
+      console.error(err);
+      setError("Erro ao enviar documento(s). Tente novamente.");
     }
-  }
+  };
 
   const handleAtualizarDefesa = async () => {
     try {
@@ -172,8 +241,8 @@ export default function EditarDefesaPage({ params }: { params: Promise<{ id: str
         selectedPedido === "retificacao"
           ? 2
           : selectedPedido === "anulacao-subsidiaria"
-          ? 3
-          : 1,
+            ? 3
+            : 1,
       rectificationValue,
       defencesText: selectedMotivos,
       atendimento: abiId,
@@ -194,51 +263,66 @@ export default function EditarDefesaPage({ params }: { params: Promise<{ id: str
         </div>
       </div>
 
-      {abi && <DefesaCardAtendimento abi={abi} />}
+      {/* 🔴 Se deu erro inesperado */}
+      {error && (
+        <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-6 text-center">
+          <p className="text-yellow-700 font-medium">{error}</p>
+        </div>
+      )}
 
-      <CardFormularioImputacao
-        selectedTipo={tipoDoc}
-        setSelectedTipo={setTipoDoc}
-        textosDefesa={textosDefesa}
-        selectedMotivos={selectedMotivos}
-        setSelectedMotivos={setSelectedMotivos}
-        text={text}
-        setText={setText}
-        detalhamentoMotivo={detalhamentoMotivo}
-        documentosComprobatorios={documentosComprobatorios}
-        selectedComprobatorios={selectedComprobatorios}
-        setSelectedComprobatorios={setSelectedComprobatorios}
-        informarOutrosDocumentos={informarOutrosDocumentos}
-        setInformarOutrosDocumentos={setInformarOutrosDocumentos}
-        tempestividade={tempestividade}
-        setTempestividade={setTempestividade}
-        calculationMemory={calculationMemory}
-        setCalculationMemory={setCalculationMemory}
-        supportingDocument={supportingDocument}
-        setSupportingDocument={setSupportingDocument}
-      />
+      {/* 🟢 Só renderiza o formulário se a defesa existir */}
+      {defesa && (
+        <>
+          {abi && <DefesaCardAtendimento abi={abi} />}
 
-      <CardPedidos selectedPedido={selectedPedido} setSelectedPedido={setSelectedPedido} />
+          <CardFormularioImputacao
+            selectedTipo={tipoDoc}
+            setSelectedTipo={setTipoDoc}
+            textosDefesa={textosDefesa}
+            selectedMotivos={selectedMotivos}
+            setSelectedMotivos={setSelectedMotivos}
+            text={text}
+            setText={setText}
+            detalhamentoMotivo={detalhamentoMotivo}
+            documentosComprobatorios={documentosComprobatorios}
+            selectedComprobatorios={selectedComprobatorios}
+            setSelectedComprobatorios={setSelectedComprobatorios}
+            informarOutrosDocumentos={informarOutrosDocumentos}
+            setInformarOutrosDocumentos={setInformarOutrosDocumentos}
+            tempestividade={tempestividade}
+            setTempestividade={setTempestividade}
+            calculationMemory={calculationMemory}
+            setCalculationMemory={setCalculationMemory}
+            supportingDocument={supportingDocument}
+            setSupportingDocument={setSupportingDocument}
+          />
 
-      <CardDocumentosAnexados anexedDocuments={anexedDocuments} />
-      <CardDocumentosAns />
+          <CardPedidos selectedPedido={selectedPedido} setSelectedPedido={setSelectedPedido} />
+          <CardDocumentosAnexados anexedDocuments={anexedDocuments} />
+          <CardDocumentosAns />
 
-      <div className="flex justify-end gap-4">
-        <Button
-          className="rounded-xl"
-          onClick={handleAtualizarDefesa}
-          disabled={loadSalvarDefesa}
-        >
-          <Save className="mr-2 h-4 w-4" />{" "}
-          {loadSalvarDefesa ? "ATUALIZANDO..." : "ATUALIZAR DEFESA"}
-        </Button>
-      </div>
+          <div className="flex justify-end gap-4">
+            <Button variant="outline" className="rounded-xl bg-transparent" onClick={() => setIsAnexarModalOpen(true)}>
+              <Upload className="mr-2 h-4 w-4" /> ANEXAR DOCUMENTO
+            </Button>
+            <Button
+              className="rounded-xl"
+              onClick={handleAtualizarDefesa}
+              disabled={loadSalvarDefesa}
+            >
+              <Save className="mr-2 h-4 w-4" />
+              {loadSalvarDefesa ? "ATUALIZANDO..." : "ATUALIZAR DEFESA"}
+            </Button>
+          </div>
 
-      <AnexarDocumentoDefesaModal
-        open={isAnexarModalOpen}
-        onOpenChange={setIsAnexarModalOpen}
-        onSubmit={handleAnexarDocumento}
-      />
+          <AnexarDocumentoDefesaModal
+            open={isAnexarModalOpen}
+            onOpenChange={setIsAnexarModalOpen}
+            onSubmit={handleAnexarDocumento}
+          />
+        </>
+      )}
     </div>
   )
+
 }

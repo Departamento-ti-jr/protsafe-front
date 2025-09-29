@@ -5,8 +5,9 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Textarea } from "@/components/ui/textarea"
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
 import { Checkbox } from "@/components/ui/checkbox"
-import { FileText, Calculator, FolderOpen } from "lucide-react"
+import { FileText, Calculator, FolderOpen, Download } from "lucide-react"
 import { MultiSelectCheckbox } from "@/components/multi-select-checkbox"
+import { Button } from "@/components/ui/button"
 
 export function CardFormularioImputacao({
   selectedTipo,
@@ -146,7 +147,10 @@ export function CardDocumentosAnexados({ anexedDocuments }: any) {
         {anexedDocuments.length > 0 ? (
           <div className="space-y-2">
             {anexedDocuments.map((doc: any) => (
-              <div key={doc.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+              <div
+                key={doc.id}
+                className="flex items-center justify-between p-3 bg-gray-50 rounded-lg"
+              >
                 <div className="flex items-center space-x-3">
                   <FileText className="h-5 w-5 text-gray-500" />
                   <div>
@@ -154,6 +158,25 @@ export function CardDocumentosAnexados({ anexedDocuments }: any) {
                     <p className="text-xs text-gray-500">Tipo: {doc.type}</p>
                   </div>
                 </div>
+
+                {/* Botão de download */}
+                {doc.caminho && (
+                  <Button
+                    asChild
+                    size="icon"
+                    variant="outline"
+                    className="rounded-full"
+                  >
+                    <a
+                      href={doc.caminho}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      download={doc.name || "documento.pdf"}
+                    >
+                      <Download className="h-4 w-4" />
+                    </a>
+                  </Button>
+                )}
               </div>
             ))}
           </div>

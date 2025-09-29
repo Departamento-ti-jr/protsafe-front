@@ -23,7 +23,7 @@ export interface Defesa {
     _id: string
     nome: string
   }[]
-  atendimento: Abi[],
+  atendimento: Abi,
   createdAt: string
   updatedAt: string
   __v: number
@@ -49,15 +49,30 @@ export class DefesasService {
       throw new Error("Falha ao carregar defesas")
     }
   }
+  
 
   static async findOneWithDocuments(id: string): Promise<Defesa> {
     try {
       return await httpClient.get<Defesa>(`${this.endpoint}/${id}/with-documents`)
     } catch (error) {
-      console.error(`Erro ao buscar defesa ${id} com documentos:`, error)
-      throw new Error("Falha ao carregar defesa com documentos")
+      return Promise.reject(error)
     }
   }
+
+  static async getAllWithAtendimento(params: { page?: number; limit?: number } = {}): Promise<PaginatedResponse<Defesa>> {
+    try {
+      const searchParams = new URLSearchParams();
+      if (params.page)  searchParams.append("page", params.page.toString());
+      if (params.limit) searchParams.append("limit", params.limit.toString());
+
+      const url = `${this.endpoint}/all?${searchParams.toString()}`;
+      return await httpClient.get<PaginatedResponse<Defesa>>(url);
+    } catch (error) {
+      console.error("Erro ao buscar defesas com atendimento:", error);
+      throw new Error("Falha ao carregar defesas com atendimento");
+    }
+  }
+
 
   static async getById(id: string): Promise<Defesa> {
     try {

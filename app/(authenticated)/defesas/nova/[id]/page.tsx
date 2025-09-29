@@ -9,7 +9,7 @@ import { AnexarDocumentoDefesaModal } from "@/components/anexar-documento-defesa
 import { TextoDefesa, TextosDefesaService } from "@/lib/services/textos-defesa.service"
 import { DocumentoComprobatorio, DocumentosComprobatoriosService } from "@/lib/services/documentos-comprobatorios.service"
 import { AnsDocumentosService } from "@/lib/services/ans-documentos.service"
-import { Defesa, DefesasService } from "@/lib/services/defesas.service"
+import { DefesasService } from "@/lib/services/defesas.service"
 import DefesaCardAtendimento from "../../components/defesas-card-atendimento"
 import { Abi, AbisService } from "@/lib/services/abis.service"
 import {
@@ -51,8 +51,6 @@ export default function NovaDefesaPage({ params }: { params: Promise<{ id: strin
     loadDocumentosComprobatorios()
   }, [])
 
-  useEffect(() => { console.log("tipDoc: ", tipoDoc) }, [tipoDoc]);
-
   useEffect(() => {
     const textosConcatenados = textosDefesa
       .filter(t => selectedMotivos.includes(t._id))
@@ -61,6 +59,35 @@ export default function NovaDefesaPage({ params }: { params: Promise<{ id: strin
 
     setText(textosConcatenados)
   }, [selectedMotivos, textosDefesa])
+
+  useEffect(() => {
+    if (abi?._id) {
+      loadDocumentosSalvos(abi._id)
+    }
+  }, [abi])
+
+  const loadDocumentosSalvos = async (idAtendimento: string) => {
+    try {
+      const { protsafe } = await AnsDocumentosService.getDocumentosByAtendimento(idAtendimento)
+
+      // Mapeia os docs salvos no Mongo no mesmo formato que anexedDocuments espera
+      const mapped = protsafe.map((doc: any) => ({
+        id: doc._id,
+        name: doc.nome,
+        size: null, // você não tem o tamanho do S3 aqui, mas pode deixar null
+        type: doc.tipo_documento?.descricao || "Documento",
+        url: doc.caminho?.startsWith("http")
+          ? doc.caminho
+          : `${process.env.NEXT_PUBLIC_AWS_BASE_URL}/${doc.caminho}`, // monta a URL se só tiver key
+        caminho: doc.caminho,
+      }))
+
+      setAnexedDocuments(mapped)
+    } catch (err) {
+      console.error("Erro ao carregar documentos salvos:", err)
+      setError("Falha ao carregar documentos salvos.")
+    }
+  }
 
   const loadAtendimento = async () => {
     try {
@@ -94,36 +121,53 @@ export default function NovaDefesaPage({ params }: { params: Promise<{ id: strin
   }
 
   const handleAnexarDocumento = async (files: any[], documentType: string) => {
-    const id_defesa = id
-    const tipo_documento = documentType
-    const id_protocolo = "0"
+    if (!abi?._id) {
+      setError("Atendimento não carregado.");
+      return;
+    }
+
+    const id_atendimento = abi._id;
+    const id_protocolo = 0;        
+    const tipo_documento = documentType;
 
     try {
       const uploadedDocs = await Promise.all(
         files.map(async (fileData) => {
-          if (!fileData.file) throw new Error("Arquivo inválido")
-          const url = await AnsDocumentosService.uploadDocument(
-            fileData.file,
-            id_defesa,
-            tipo_documento,
-            id_protocolo
-          )
-          return {
-            id: Math.random().toString(36).substr(2, 9),
-            name: fileData.file.name,
-            size: fileData.file.size,
-            type: documentType,
-            url
-          }
-        })
-      )
+          const file: File | undefined = fileData?.file;
+          if (!file) throw new Error("Arquivo inválido");
 
-      setAnexedDocuments((prev) => [...prev, ...uploadedDocs])
-    } catch (error) {
-      setError("Erro ao enviar documento(s). Tente novamente.")
-      console.error(error)
+          const { url, caminho } = await AnsDocumentosService.uploadDocument(
+            file,
+            {
+              id_atendimento,
+              tipo_documento,
+              id_protocolo,
+              nome: file.name
+            }
+          );
+
+          return {
+            id: Math.random().toString(36).slice(2),
+            name: file.name,
+            size: file.size,
+            type: documentType,
+            url,
+            caminho
+          };
+        })
+      );
+
+      setAnexedDocuments((prev) => [...prev, ...uploadedDocs]);
+
+      toast({
+        title: "Documento(s) anexado(s)",
+        description: `${uploadedDocs.length} arquivo(s) enviado(s) com sucesso.`,
+      });
+    } catch (err) {
+      console.error(err);
+      setError("Erro ao enviar documento(s). Tente novamente.");
     }
-  }
+  };
 
   const handleSalvarDefesa = async () => {
     try {
@@ -142,7 +186,7 @@ export default function NovaDefesaPage({ params }: { params: Promise<{ id: strin
         description: "Defesa criada.",
       })
     } catch (error: any) {
-      
+
       const apiMessage =
         error?.body?.message || // mensagem do backend
         error?.statusText ||    // fallback do HTTP
@@ -160,7 +204,6 @@ export default function NovaDefesaPage({ params }: { params: Promise<{ id: strin
       setLoadSalvarDefesa(false);
     }
   }
-
 
   function mapDefesaToPayload(abiId: string): any {
     return {
@@ -182,8 +225,6 @@ export default function NovaDefesaPage({ params }: { params: Promise<{ id: strin
       atendimento: abiId
     }
   }
-
-
 
   return (
     <div className="p-6 space-y-6">

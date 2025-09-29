@@ -9,7 +9,7 @@ import {
   TableHeader,
   TableRow
 } from "@/components/ui/table"
-import { PenSquare } from "lucide-react"
+import { PenSquare, FileText } from "lucide-react"
 import Link from "next/link"
 import type { Defesa } from "@/lib/services/defesas.service"
 
@@ -18,7 +18,7 @@ interface DefesasTableProps {
 }
 
 export default function DefesasTable({ data }: DefesasTableProps) {
-    
+
   if (!data.length) {
     return (
       <div className="text-center text-gray-500 py-10">
@@ -41,36 +41,55 @@ export default function DefesasTable({ data }: DefesasTableProps) {
             <TableHead className="font-medium text-gray-900 text-right">Ações</TableHead>
           </TableRow>
         </TableHeader>
-       <TableBody>
-  {data.map((defesa) => {
-    const info = defesa.atendimento[0]
-    return (
-      <TableRow key={defesa._id} className="hover:bg-gray-50">
-        <TableCell className="font-medium text-gray-900">{info?.numeroABI}</TableCell>
-        <TableCell className="text-gray-600">{info?.numeroProcesso}</TableCell>
-        <TableCell>
-          <div className="space-y-1">
-            <div className="font-medium text-gray-900">{info?.razaoSocial}</div>
-            <div className="text-sm text-gray-500">{info?.CNPJ}</div>
-          </div>
-        </TableCell>
-        <TableCell className="text-gray-600">{defesa.orderOption}</TableCell>
-        <TableCell className="font-mono text-sm text-gray-600">{info?.numero}</TableCell>
-        <TableCell className="text-sm text-gray-600">
-          {new Date(defesa.createdAt).toLocaleString("pt-BR")}
-        </TableCell>
-        <TableCell className="text-right">
-          <Link href={`/defesas/editar/${defesa._id}`}>
-            <Button variant="ghost" size="icon">
-              <PenSquare className="h-4 w-4" />
-            </Button>
-          </Link>
-        </TableCell>
-      </TableRow>
-    )
-  })}
-</TableBody>
 
+        <TableBody>
+          {data.map((defesa) => {
+            const info = (defesa as any).atendimento
+            const pdfUrl = (defesa as any).s3PdfPath as string | undefined
+            const rawUrl = (defesa as any).s3PdfPath as string | undefined;
+            const version = (defesa as any).updatedAt ?? Date.now();
+            const pdfHref = rawUrl ? `${rawUrl}?v=${encodeURIComponent(version)}` : undefined;
+
+            return (
+              <TableRow key={defesa._id} className="hover:bg-gray-50">
+                <TableCell className="font-medium text-gray-900">{info?.numeroABI}</TableCell>
+                <TableCell className="text-gray-600"></TableCell>
+                <TableCell>
+                  <div className="space-y-1">
+                    <div className="text-sm text-gray-500">
+                      <b>{info?.operadora?.name}</b><br /> {info?.operadora?.CNPJ}
+                    </div>
+                  </div>
+                </TableCell>
+                <TableCell className="text-gray-600">{(defesa as any).orderOption}</TableCell>
+                <TableCell className="font-mono text-sm text-gray-600">{info?.numeroAihApac}</TableCell>
+                <TableCell className="text-sm text-gray-600">
+                  {new Date((defesa as any).createdAt).toLocaleString("pt-BR")}
+                </TableCell>
+                <TableCell className="text-right">
+                  <div className="flex items-center justify-end gap-2">
+                    {pdfUrl ? (
+                      <a href={pdfHref} target="_blank" rel="noopener noreferrer" title="Abrir PDF">
+                        <Button variant="ghost" size="icon">
+                          <FileText className="h-4 w-4" />
+                        </Button>
+                      </a>
+                    ) : (
+                      <Button variant="ghost" size="icon" title="PDF não disponível" disabled>
+                        <FileText className="h-4 w-4" />
+                      </Button>
+                    )}
+                     <Link href={`/defesas/editar/${defesa._id}`}>
+                      <Button variant="ghost" size="icon" title="Editar">
+                        <PenSquare className="h-4 w-4" />
+                      </Button>
+                    </Link>
+                  </div>
+                </TableCell>
+              </TableRow>
+            )
+          })}
+        </TableBody>
       </Table>
     </div>
   )
