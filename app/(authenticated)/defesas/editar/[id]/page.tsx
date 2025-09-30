@@ -58,6 +58,15 @@ export default function EditarDefesaPage({ params }: { params: Promise<{ id: str
   }, [])
 
   useEffect(() => {
+      const textosConcatenados = textosDefesa
+        .filter(t => selectedMotivos.includes(t._id))
+        .map(t => t.texto)
+        .join("\n\n")
+  
+      setText(textosConcatenados)
+    }, [selectedMotivos, textosDefesa])
+
+  useEffect(() => {
       if (abi?._id) {
         loadDocumentosSalvos(abi._id)
       }
@@ -229,6 +238,7 @@ export default function EditarDefesaPage({ params }: { params: Promise<{ id: str
   }
 
   function mapDefesaToPayload(abiId: string): any {
+    console.log(selectedMotivos)
     return {
       petitionType: tipoDoc,
       text,
