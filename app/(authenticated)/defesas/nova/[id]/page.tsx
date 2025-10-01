@@ -1,6 +1,6 @@
 "use client"
 
-import React, { useEffect, useState } from "react"
+import React, { useEffect, useRef, useState } from "react"
 import { Button } from "@/components/ui/button"
 import { ArrowLeft, Upload, FileText, Save, Cloud } from "lucide-react"
 import Link from "next/link"
@@ -19,6 +19,7 @@ import {
   CardDocumentosAns,
 } from "../../components/defesa-cards/defesa-cards"
 import { useToast } from "@/hooks/use-toast"
+import RichTextEditor, { RichTextEditorHandle } from "@/components/rich-text-editor"
 
 export default function NovaDefesaPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = React.use(params)
@@ -44,6 +45,8 @@ export default function NovaDefesaPage({ params }: { params: Promise<{ id: strin
   const [calculationMemory, setCalculationMemory] = useState("")
   const [supportingDocument, setSupportingDocument] = useState("")
   const [rectificationValue, setRectificationValue] = useState("")
+  const editorRef = useRef<RichTextEditorHandle>(null);
+  const [editorContent, setEditorContent] = useState<string>('');
 
   useEffect(() => {
     loadAtendimento()
@@ -205,10 +208,11 @@ export default function NovaDefesaPage({ params }: { params: Promise<{ id: strin
     }
   }
 
+
   function mapDefesaToPayload(abiId: string): any {
-    return {
+  return {
       petitionType: tipoDoc,
-      text: text,
+      text, // texto concatenado dos motivos selecionados
       tempestividade,
       calculationMemory,
       supportingDocuments: selectedComprobatorios,
@@ -218,13 +222,14 @@ export default function NovaDefesaPage({ params }: { params: Promise<{ id: strin
         selectedPedido === "retificacao"
           ? 2
           : selectedPedido === "anulacao-subsidiaria"
-            ? 3
-            : 1,
+          ? 3
+          : 1,
       rectificationValue: rectificationValue,
       defencesText: selectedMotivos,
-      atendimento: abiId
-    }
+      atendimento: abiId,
+    };
   }
+
 
   return (
     <div className="p-6 space-y-6">
@@ -248,6 +253,14 @@ export default function NovaDefesaPage({ params }: { params: Promise<{ id: strin
 
       <DefesaCardAtendimento abi={abi} />
 
+      {/* <div className="space-y-4 p-4 bg-gray-50 rounded-lg border border-gray-200">
+          <div className="space-y-2">
+            <Label className="text-sm">Detalhamento do Motivo</Label>
+            <RichTextEditor ref={editorRef} />      
+          </div>
+      </div> */}
+      
+
       <CardFormularioImputacao
         selectedTipo={tipoDoc}
         setSelectedTipo={setTipoDoc}
@@ -267,6 +280,7 @@ export default function NovaDefesaPage({ params }: { params: Promise<{ id: strin
         setCalculationMemory={setCalculationMemory}
         supportingDocument={supportingDocument}
         setSupportingDocument={setSupportingDocument}
+        editorRef={editorRef}
       />
 
 

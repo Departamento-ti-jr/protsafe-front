@@ -8,7 +8,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Badge } from "@/components/ui/badge"
 import { Input } from "@/components/ui/input"
-import { ArrowLeft, Eye, FileText, Search, Shield, ShieldCheck } from "lucide-react"
+import { ArrowLeft, Eye, FileText, Search, Shield, ShieldBanIcon, ShieldCheck } from "lucide-react"
 import Link from "next/link"
 import { PaginationControls } from "@/components/ui/pagination-controls"
 import { useDebounce } from "@/hooks/use-debounce"
@@ -16,6 +16,18 @@ import { usePagination } from "@/hooks/use-pagination"
 import { ABINavigationBreadcrumb } from "../components/abi-navigation-breadcrumb"
 import { ABIAtendimentoDetails } from "../components/abi-atendimento-details"
 import { ABIProcedimentoDetails } from "../components/abi-procedimento-details"
+
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog"
 
 type ViewMode = "abi" | "atendimento" | "procedimento"
 
@@ -128,6 +140,17 @@ export default function ABIDetalhesPage({ params }: { params: Promise<{ id: stri
 
   const handleEditDefender = (defenceId: string) => {
     router.push(`/defesas/editar/${defenceId}`)
+  }
+
+  const handleMarkAsSemDefesa = (abiId: string) => {
+    AbisService.markAsSemDefesa(abiId)
+      .then(() => {
+        fetchAtendimentos(abi?.numeroABI ? Number(abi.numeroABI) : null)
+      })
+      .catch((error) => {
+        console.error("Erro ao marcar atendimento como 'Sem Defesa':", error)
+        alert("Falha ao marcar atendimento como 'Sem Defesa'. Tente novamente.")
+      })
   }
 
   // useEffect(() => {
@@ -277,69 +300,110 @@ export default function ABIDetalhesPage({ params }: { params: Promise<{ id: stri
                           </TableCell>
                         </TableRow>
                       ) : (
-                      atendimentosPaginated.data.map((item, index) => {
-                        console.log("Rendering atendimento item:", item);
-                        const pdfUrl = (item as any).s3PdfPath as string | undefined
-                        const rawUrl = (item as any).s3PdfPath as string | undefined;
-                        const version = (item as any).updatedAt ?? Date.now();
-                        const pdfHref = rawUrl ? `${rawUrl}?v=${encodeURIComponent(version)}` : undefined;
-                        return (
-                          <TableRow key={item._id}>
-                            <TableCell>{(currentPage - 1) * pageSize + index + 1}</TableCell>
-                            <TableCell>{item.tipo}</TableCell>
-                            <TableCell className="font-mono">{item.numeroProcesso}</TableCell>
-                            <TableCell>{item.numeroAihApac}</TableCell>
-                            <TableCell>
-                              {String(item.comp)
-                                .padStart(6, "0")
-                                .replace(/^(\d{2})(\d{4})$/, "$1/$2")}
-                            </TableCell>
-                            <TableCell>{item?.dataInicial}</TableCell>
-                            <TableCell>{item?.dataFinal}</TableCell>
-                            <TableCell>{item.descricaoProcedimento}</TableCell>
-                            <TableCell>
-                              <Badge variant={item.defenceId ? "success" : "warning"} className={item.defenceId ? "bg-green-100 text-green-800" : "bg-yellow-100 text-yellow-800"}>
-                                {item.defenceId ? "Defendido" : "Aberto"}
-                              </Badge>
-                            </TableCell>
-                            <TableCell className="text-right">
-                              <div className="flex items-center justify-end">
-                                {pdfUrl ? (
+                        atendimentosPaginated.data.map((item: any, index) => {
+
+                          let pdfUrl = null;
+                          let rawUrl = null;
+                          let version = null;
+                          let pdfHref = null;
+
+                          const defesa = item?.defesa;
+                          console.log("item: ", item);
+                          console.log("defesa: ", defesa);
+
+                          if (defesa) {
+                            pdfUrl = defesa.s3PdfPath as string | undefined
+                            rawUrl = defesa.s3PdfPath as string | undefined;
+                            version = defesa.updatedAt ?? Date.now();
+                            pdfHref = rawUrl ? `${rawUrl}?v=${encodeURIComponent(version)}` : undefined;
+                          }
+
+                          return (
+                            <TableRow key={item._id}>
+                              <TableCell>{(currentPage - 1) * pageSize + index + 1}</TableCell>
+                              <TableCell>{item.tipo}</TableCell>
+                              <TableCell className="font-mono">{item.numeroProcesso}</TableCell>
+                              <TableCell>{item.numeroAihApac}</TableCell>
+                              <TableCell>
+                                {String(item.comp)
+                                  .padStart(6, "0")
+                                  .replace(/^(\d{2})(\d{4})$/, "$1/$2")}
+                              </TableCell>
+                              <TableCell>{item?.dataInicial}</TableCell>
+                              <TableCell>{item?.dataFinal}</TableCell>
+                              <TableCell>{item.descricaoProcedimento}</TableCell>
+                              <TableCell>
+                                <Badge variant={item.semDefesa ? "destructive" : (item.defesa ? "success" : "warning")} className={item.semDefesa ? "text-white" : (item.defesa ? "bg-green-100 text-green-800" : "bg-yellow-100 text-yellow-800")}>
+                                  {  item.semDefesa ? "Sem Defesa" : (item.defesa ? "Defendido" : "Aberto")}
+                                </Badge>
+                              </TableCell>
+                              <TableCell className="text-right">
+                                <div className="flex items-center justify-end">
+                                  {pdfUrl ? (
                                     <a href={pdfHref} target="_blank" rel="noopener noreferrer" title="Abrir PDF">
                                       <Button variant="ghost" size="icon">
                                         <FileText className="h-4 w-4" />
                                       </Button>
                                     </a>
                                   ) : (
+
                                     <Button variant="ghost" size="icon" title="PDF não disponível" disabled>
                                       <FileText className="h-4 w-4" />
                                     </Button>
                                   )}
-                                <Button
-                                  variant="ghost"
-                                  size="icon"
-                                  onClick={() => { item.defenceId ? handleEditDefender(item.defenceId) : handleNewDefender(item._id)}}
-                                >
-                                  <ShieldCheck className="h-4 w-4" />  
-                                </Button>
-                                <Button
-                                  variant="ghost"
-                                  size="icon"
-                                  onClick={() => {}}
-                                >
-                                  <Shield className="h-4 w-4" />  
-                                </Button>
-                                <Button 
-                                  variant="ghost" 
-                                  size="icon" 
-                                  onClick={() => handleViewAtendimento(item)}>
-                                  <Eye className="h-4 w-4" />
-                                </Button>
-                              </div>
-                            </TableCell>
-                          </TableRow>
-                        )
-                      }))}
+                                  <Button
+                                    variant="ghost"
+                                    size="icon"
+                                    onClick={() => { item.defenceId ? handleEditDefender(item.defenceId) : handleNewDefender(item._id) }}
+                                  >
+                                    <ShieldCheck className="h-4 w-4" />
+                                  </Button>
+
+                                  <AlertDialog>
+                                    <AlertDialogTrigger asChild>
+                                      <Button
+                                        variant="ghost"
+                                        size="icon"
+                                        title="Sem Defesa"
+                                        disabled={item.semDefesa}
+                                      >
+                                        <ShieldBanIcon className="h-4 w-4" />
+                                      </Button>
+                                    </AlertDialogTrigger>
+                                    <AlertDialogContent>
+                                      <AlertDialogHeader>
+                                        <AlertDialogTitle>Excluir documento</AlertDialogTitle>
+                                        <AlertDialogDescription>
+                                          Tem certeza de que deseja marcar este atendimento como “sem defesa”?
+                                        </AlertDialogDescription>
+                                      </AlertDialogHeader>
+                                      <AlertDialogFooter>
+                                        <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                                        <AlertDialogAction
+                                          onClick={async () => {
+                                            try {
+                                              handleMarkAsSemDefesa(item._id)
+                                            } catch (error) {
+                                              alert("Erro ao excluir documento");
+                                            }
+                                          }}
+                                        >
+                                          Confirmar
+                                        </AlertDialogAction>
+                                      </AlertDialogFooter>
+                                    </AlertDialogContent>
+                                  </AlertDialog>
+                                  <Button
+                                    variant="ghost"
+                                    size="icon"
+                                    onClick={() => handleViewAtendimento(item)}>
+                                    <Eye className="h-4 w-4" />
+                                  </Button>
+                                </div>
+                              </TableCell>
+                            </TableRow>
+                          )
+                        }))}
                     </TableBody>
                   </Table>
                 </div>

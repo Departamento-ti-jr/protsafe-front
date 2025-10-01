@@ -177,7 +177,15 @@ export class AbisService {
     }
   }
 
-
+  static async markAsSemDefesa(id: string): Promise<Abi> {
+    try {
+      const url = `${this.endpoint}/${id}/sem-defesa`
+      return await httpClient.put<Abi>(url)
+    } catch (error) {
+      console.error(`Erro ao marcar atendimento ${id} como sem defesa:`, error)
+      throw new Error("Falha ao marcar atendimento como sem defesa")
+    }
+  }
 
   static async getById(
     id: string,

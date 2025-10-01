@@ -2,8 +2,6 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { formatDateToDDMMYYYY } from "@/lib/date-helpers";
 import { Abi } from "@/lib/services/abis.service";
-import { formatDate } from "date-fns";
-import { da } from "date-fns/locale";
 
 
 interface DefesasAtendimentoProps {

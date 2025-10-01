@@ -38,6 +38,14 @@ export class AnsDocumentosService {
     );
   }
 
+  static async deleteDocument(id: string): Promise<void> {
+    try {
+      await httpClient.delete(`${this.endpoint}/${id}`);
+    } catch (error) {
+      console.error(`Erro ao deletar documento ${id}:`, error);
+      throw new Error("Falha ao deletar documento");
+    }
+  }
 
   static async getDocumentosByDefesaId(id_defesa: string): Promise<any[]> {
     try {
@@ -47,7 +55,7 @@ export class AnsDocumentosService {
       console.error("Erro ao buscar documentos por ID de defesa:", error);
       throw new Error("Falha ao carregar documentos");
     }
-  } 
+  }
 
   static async getDocumentosByAtendimento(id_atendimento: string) {
     const data = await httpClient.get<{ protsafe: any[]; ans: any[] }>(

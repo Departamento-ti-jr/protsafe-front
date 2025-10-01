@@ -1,6 +1,6 @@
 "use client"
 
-import React, { useEffect, useState } from "react"
+import React, { useEffect, useRef, useState } from "react"
 import { Button } from "@/components/ui/button"
 import { ArrowLeft, Upload, Save } from "lucide-react"
 import Link from "next/link"
@@ -20,11 +20,17 @@ import {
 } from "../../components/defesa-cards/defesa-cards"
 import { useToast } from "@/hooks/use-toast"
 import { da } from "date-fns/locale"
+import RichTextEditor, { RichTextEditorHandle } from "@/components/rich-text-editor"
+import { Label } from "recharts"
+
 
 export default function EditarDefesaPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = React.use(params) // id da defesa
   const router = useRouter()
   const { toast } = useToast()
+
+  const editorRef = useRef<RichTextEditorHandle>(null);
+  const [editorContent, setEditorContent] = useState<string>('');
 
   // estados
   const [defesa, setDefesa] = useState<Defesa | null>(null)
@@ -116,6 +122,13 @@ export default function EditarDefesaPage({ params }: { params: Promise<{ id: str
       console.error(err)
     }
   }
+
+  const handleGetContent = () => {
+    if (editorRef.current) {
+      const content = editorRef.current.getContent(); // Get the editor content
+      setEditorContent(content); // Update the state with the content
+    }
+  };
 
   const loadDocumentosSalvos = async (idAtendimento: string) => {
     try {
@@ -305,10 +318,15 @@ export default function EditarDefesaPage({ params }: { params: Promise<{ id: str
             setCalculationMemory={setCalculationMemory}
             supportingDocument={supportingDocument}
             setSupportingDocument={setSupportingDocument}
+            editorRef={editorRef}
           />
 
           <CardPedidos selectedPedido={selectedPedido} setSelectedPedido={setSelectedPedido} />
-          <CardDocumentosAnexados anexedDocuments={anexedDocuments} />
+          <CardDocumentosAnexados
+            onDelete={(id: string) => {
+              setAnexedDocuments((prev: any[]) => prev.filter(doc => doc._id !== id));
+            }}
+          anexedDocuments={anexedDocuments} />
           <CardDocumentosAns />
 
           <div className="flex justify-end gap-4">

@@ -1,63 +1,81 @@
-"use client"
+"use client";
 
-import type React from "react"
+import React, {
+  useEffect,
+  useRef,
+  forwardRef,
+  useImperativeHandle,
+} from "react";
+import Quill from "quill";
+import "quill/dist/quill.snow.css";
 
-import { useState } from "react"
-import { Button } from "@/components/ui/button"
-import { Bold, Italic, Underline, List, ListOrdered, AlignLeft, AlignCenter, AlignRight } from "lucide-react"
+export type RichTextEditorHandle = {
+  getContent: () => string;
+  setContent: (value: string) => void;
+};
 
-interface RichTextEditorProps {
-  initialValue: string
-  onChange: (value: string) => void
-}
+type Props = {
+  value?: string;
+  onChange?: (content: string) => void;
+};
 
-export function RichTextEditor({ initialValue, onChange }: RichTextEditorProps) {
-  const [value, setValue] = useState(initialValue)
+const RichTextEditor = forwardRef<RichTextEditorHandle, Props>(
+  ({ value, onChange }, ref) => {
+    const editorRef = useRef<HTMLDivElement>(null);
+    const quillRef = useRef<Quill | null>(null);
 
-  const handleChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
-    const newValue = e.target.value
-    setValue(newValue)
-    onChange(newValue)
+    useEffect(() => {
+      if (editorRef.current && !quillRef.current) {
+        quillRef.current = new Quill(editorRef.current, {
+          theme: "snow",
+          modules: {
+            toolbar: [
+              [{ header: [1, 2, 3, false] }],
+              ["bold", "italic", "underline", "strike"],
+              [{ list: "ordered" }, { list: "bullet" }],
+              ["link", "image"],
+              ["clean"],
+            ],
+          },
+          placeholder: "Write something...",
+        });
+
+        // dispara onChange sempre que muda
+        quillRef.current.on("text-change", () => {
+          const content = quillRef.current?.root.innerHTML || "";
+          if (onChange) onChange(content);
+        });
+      }
+
+      return () => {
+        quillRef.current = null;
+      };
+    }, [onChange]);
+
+    // sincroniza valor vindo da prop
+    useEffect(() => {
+      if (quillRef.current && value !== undefined) {
+        const currentContent = quillRef.current.root.innerHTML;
+        if (value !== currentContent) {
+          quillRef.current.root.innerHTML = value;
+        }
+      }
+    }, [value]);
+
+    useImperativeHandle(ref, () => ({
+      getContent: () => {
+        return quillRef.current?.root.innerHTML || "";
+      },
+      setContent: (val: string) => {
+        if (quillRef.current) {
+          quillRef.current.root.innerHTML = val;
+        }
+      },
+    }));
+
+    return <div ref={editorRef} style={{ height: "300px" }} />;
   }
+);
 
-  // Em uma implementação real, aqui teríamos a lógica para formatar o texto
-  // com negrito, itálico, etc. usando uma biblioteca como TinyMCE, CKEditor ou Quill
-  const applyFormat = (format: string) => {
-    console.log(`Aplicando formato: ${format}`)
-    // Implementação simplificada para demonstração
-  }
-
-  return (
-    <div className="border rounded-md">
-      <div className="flex flex-wrap gap-1 p-2 border-b bg-gray-50">
-        <Button variant="ghost" size="icon" onClick={() => applyFormat("bold")} className="h-8 w-8">
-          <Bold className="h-4 w-4" />
-        </Button>
-        <Button variant="ghost" size="icon" onClick={() => applyFormat("italic")} className="h-8 w-8">
-          <Italic className="h-4 w-4" />
-        </Button>
-        <Button variant="ghost" size="icon" onClick={() => applyFormat("underline")} className="h-8 w-8">
-          <Underline className="h-4 w-4" />
-        </Button>
-        <div className="w-px h-8 bg-gray-300 mx-1"></div>
-        <Button variant="ghost" size="icon" onClick={() => applyFormat("list")} className="h-8 w-8">
-          <List className="h-4 w-4" />
-        </Button>
-        <Button variant="ghost" size="icon" onClick={() => applyFormat("ordered-list")} className="h-8 w-8">
-          <ListOrdered className="h-4 w-4" />
-        </Button>
-        <div className="w-px h-8 bg-gray-300 mx-1"></div>
-        <Button variant="ghost" size="icon" onClick={() => applyFormat("align-left")} className="h-8 w-8">
-          <AlignLeft className="h-4 w-4" />
-        </Button>
-        <Button variant="ghost" size="icon" onClick={() => applyFormat("align-center")} className="h-8 w-8">
-          <AlignCenter className="h-4 w-4" />
-        </Button>
-        <Button variant="ghost" size="icon" onClick={() => applyFormat("align-right")} className="h-8 w-8">
-          <AlignRight className="h-4 w-4" />
-        </Button>
-      </div>
-      <textarea value={value} onChange={handleChange} className="w-full p-3 min-h-[200px] focus:outline-none" />
-    </div>
-  )
-}
+RichTextEditor.displayName = "RichTextEditor";
+export default RichTextEditor;

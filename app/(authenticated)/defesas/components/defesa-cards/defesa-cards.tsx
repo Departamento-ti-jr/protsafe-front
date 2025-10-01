@@ -5,9 +5,23 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Textarea } from "@/components/ui/textarea"
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
 import { Checkbox } from "@/components/ui/checkbox"
-import { FileText, Calculator, FolderOpen, Download } from "lucide-react"
+import { FileText, Calculator, FolderOpen, Download, Eye, Trash } from "lucide-react"
 import { MultiSelectCheckbox } from "@/components/multi-select-checkbox"
 import { Button } from "@/components/ui/button"
+import RichTextEditor from "@/components/rich-text-editor"
+import { AnsDocumentosService } from "@/lib/services/ans-documentos.service"
+
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog"
 
 export function CardFormularioImputacao({
   selectedTipo,
@@ -25,7 +39,8 @@ export function CardFormularioImputacao({
   selectedComprobatorios,
   setSelectedComprobatorios,
   informarOutrosDocumentos,
-  setInformarOutrosDocumentos
+  setInformarOutrosDocumentos,
+  editorRef
 }: any) {
   return (
     <Card>
@@ -36,14 +51,14 @@ export function CardFormularioImputacao({
         <div className="space-y-2">
           <Label>Tipo de Pedido</Label>
           <Select value={selectedTipo || ""} onValueChange={setSelectedTipo}>
-          <SelectTrigger>
-            <SelectValue placeholder="Selecione o tipo de pedido" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="RECURSO">Recurso</SelectItem>
-            <SelectItem value="IMPUGNACAO">Impugnação</SelectItem>
-          </SelectContent>
-        </Select>
+            <SelectTrigger>
+              <SelectValue placeholder="Selecione o tipo de pedido" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="RECURSO">Recurso</SelectItem>
+              <SelectItem value="IMPUGNACAO">Impugnação</SelectItem>
+            </SelectContent>
+          </Select>
         </div>
 
         <MultiSelectCheckbox
@@ -54,12 +69,12 @@ export function CardFormularioImputacao({
         />
 
         <div className="space-y-4 p-4 bg-gray-50 rounded-lg border border-gray-200">
-          <div className="space-y-2">
+          <div id="rich-text" className="space-y-2">
             <Label className="text-sm">Detalhamento do Motivo</Label>
-            <Textarea
+            <RichTextEditor
+              ref={editorRef}
               value={text}
-              onChange={(e) => setText(e.target.value)}
-              className="min-h-[200px] resize-none"
+              onChange={setText}
             />
           </div>
 
@@ -69,9 +84,9 @@ export function CardFormularioImputacao({
                 <FileText className="h-4 w-4 text-gray-500" />
                 Tempestividade e Outras Preliminares
               </Label>
-              <Input placeholder="Informe a tempestividade ou outras preliminares" 
-                value={tempestividade} 
-                onChange={(e) => setTempestividade(e.target.value)} 
+              <Input placeholder="Informe a tempestividade ou outras preliminares"
+                value={tempestividade}
+                onChange={(e) => setTempestividade(e.target.value)}
               />
             </div>
 
@@ -80,8 +95,8 @@ export function CardFormularioImputacao({
                 <Calculator className="h-4 w-4 text-gray-500" />
                 Memória de Cálculo
               </Label>
-              <Input placeholder="Se necessário, informe a memória de cálculo" 
-                value={calculationMemory} 
+              <Input placeholder="Se necessário, informe a memória de cálculo"
+                value={calculationMemory}
                 onChange={(e) => setCalculationMemory(e.target.value)}
               />
             </div>
@@ -139,7 +154,7 @@ export function CardPedidos({ selectedPedido, setSelectedPedido }: any) {
   )
 }
 
-export function CardDocumentosAnexados({ anexedDocuments }: any) {
+export function CardDocumentosAnexados({ anexedDocuments, onDelete }: any) {
   return (
     <Card>
       <CardHeader><CardTitle>Documentos Anexados</CardTitle></CardHeader>
@@ -159,23 +174,63 @@ export function CardDocumentosAnexados({ anexedDocuments }: any) {
                   </div>
                 </div>
 
-                {/* Botão de download */}
                 {doc.caminho && (
-                  <Button
-                    asChild
-                    size="icon"
-                    variant="outline"
-                    className="rounded-full"
-                  >
-                    <a
-                      href={doc.caminho}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      download={doc.name || "documento.pdf"}
+                  <div className="flex justify-end gap-2">
+                    {/* Botão de visualizar */}
+                    <Button
+                      asChild
+                      size="icon"
+                      variant="outline"
+                      className="rounded-full"
                     >
-                      <Download className="h-4 w-4" />
-                    </a>
-                  </Button>
+                      <a
+                        href={doc.caminho}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        download={doc.name || "documento.pdf"}
+                      >
+                        <Eye className="h-4 w-4" />
+                      </a>
+                    </Button>
+
+                    {/* Botão de deletar com popup */}
+                    <AlertDialog>
+                      <AlertDialogTrigger asChild>
+                        <Button
+                          size="icon"
+                          variant="destructive"
+                          className="rounded-full"
+                        >
+                          <Trash className="h-4 w-4" />
+                        </Button>
+                      </AlertDialogTrigger>
+                      <AlertDialogContent>
+                        <AlertDialogHeader>
+                          <AlertDialogTitle>Excluir documento</AlertDialogTitle>
+                          <AlertDialogDescription>
+                            Tem certeza que deseja excluir o documento{" "}
+                            <span className="font-semibold">{doc.name}</span>?
+                            Essa ação não poderá ser desfeita.
+                          </AlertDialogDescription>
+                        </AlertDialogHeader>
+                        <AlertDialogFooter>
+                          <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                          <AlertDialogAction
+                            onClick={async () => {
+                              try {
+                                await AnsDocumentosService.deleteDocument(doc.id);
+                                onDelete?.(doc._id);
+                              } catch (error) {
+                                alert("Erro ao excluir documento");
+                              }
+                            }}
+                          >
+                            Confirmar
+                          </AlertDialogAction>
+                        </AlertDialogFooter>
+                      </AlertDialogContent>
+                    </AlertDialog>
+                  </div>
                 )}
               </div>
             ))}
@@ -189,6 +244,7 @@ export function CardDocumentosAnexados({ anexedDocuments }: any) {
     </Card>
   )
 }
+
 
 export function CardDocumentosAns() {
   return (
