@@ -6,6 +6,7 @@ import { Eye } from "lucide-react"
 import Link from "next/link"
 import { Badge } from "@/components/ui/badge"
 import type { Abi } from "@/lib/services/abis.service"
+import { formatDateTimeToDDMMYYYYHHMMSS } from "@/lib/date-helpers"
 
 export default function AbisTable({ data }: { data: Abi[] }) {
   return (
@@ -41,7 +42,7 @@ export default function AbisTable({ data }: { data: Abi[] }) {
                     <div className="text-sm text-gray-500"><b>{abi.operadoraName}</b> <br /> {abi.cnpj  }</div>
                   </div>
                 </TableCell>
-                <TableCell>{abi.dataRegistroTransacao} {abi.horaRegistroTransacao}</TableCell>
+                <TableCell>{formatDateTimeToDDMMYYYYHHMMSS(abi.createdAt)}</TableCell>
                 <TableCell>
                   <Badge className="bg-teal-100 text-teal-800">Aberto</Badge>
                 </TableCell>
