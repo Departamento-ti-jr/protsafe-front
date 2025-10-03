@@ -8,6 +8,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Badge } from "@/components/ui/badge"
 import { Input } from "@/components/ui/input"
+import { Tooltip, TooltipContent } from "@/components/ui/tooltip"
 import { ArrowLeft, Eye, FileText, Search, Shield, ShieldBanIcon, ShieldCheck } from "lucide-react"
 import Link from "next/link"
 import { PaginationControls } from "@/components/ui/pagination-controls"
@@ -28,6 +29,10 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog"
+import { formatDateToDDMMYYYY } from "@/lib/date-helpers"
+import { TooltipTrigger } from "@/components/ui/tooltip"
+import { TooltipButton } from "@/components/button-with-tooltip"
+import { ButtonWithTooltip } from "@/components/disabled-button-with-tooltip"
 
 type ViewMode = "abi" | "atendimento" | "procedimento"
 
@@ -329,38 +334,64 @@ export default function ABIDetalhesPage({ params }: { params: Promise<{ id: stri
                                   .padStart(6, "0")
                                   .replace(/^(\d{2})(\d{4})$/, "$1/$2")}
                               </TableCell>
-                              <TableCell>{item?.dataInicial}</TableCell>
-                              <TableCell>{item?.dataFinal}</TableCell>
+                              <TableCell>{formatDateToDDMMYYYY(item?.dataInicial)}</TableCell>
+                              <TableCell>{formatDateToDDMMYYYY(item?.dataFinal)}</TableCell>
                               <TableCell>{item.descricaoProcedimento}</TableCell>
                               <TableCell>
-                                <Badge variant={item.semDefesa ? "destructive" : (item.defesa ? "success" : "warning")} className={item.semDefesa ? "text-white" : (item.defesa ? "bg-green-100 text-green-800" : "bg-yellow-100 text-yellow-800")}>
-                                  {  item.semDefesa ? "Sem Defesa" : (item.defesa ? "Defendido" : "Aberto")}
-                                </Badge>
+                                <p
+                                  className={
+                                    item.semDefesa && item.defesa
+                                      ? "text-red-600 font-bold" // caso 1
+                                      : !item.semDefesa && item.defesa
+                                      ? "text-green-600 font-bold" // caso 2
+                                      : "text-yellow-500 font-bold" // caso 3
+                                  }
+                                >
+                                  {item.semDefesa && item.defesa
+                                    ? "Sem Defesa"
+                                    : !item.semDefesa && item.defesa
+                                    ? "Defendido"
+                                    : "Aberto"}
+                                </p>
                               </TableCell>
                               <TableCell className="text-right">
                                 <div className="flex items-center justify-end">
                                   {pdfUrl ? (
                                     <a href={pdfHref} target="_blank" rel="noopener noreferrer" title="Abrir PDF">
-                                      <Button variant="ghost" size="icon">
-                                        <FileText className="h-4 w-4" />
-                                      </Button>
+                                      <Tooltip>
+                                        <TooltipTrigger asChild>
+                                          <Button variant="ghost" size="icon">
+                                            <FileText className="h-4 w-4" />
+                                          </Button>
+                                        </TooltipTrigger>
+                                        <TooltipContent>Visualizar Documento</TooltipContent>
+                                      </Tooltip>
                                     </a>
                                   ) : (
-
-                                    <Button variant="ghost" size="icon" title="PDF não disponível" disabled>
-                                      <FileText className="h-4 w-4" />
-                                    </Button>
+                                    <TooltipButton tooltip="Documento não disponível" disabled>
+                                      <Button variant="ghost" size="icon" disabled>
+                                        <FileText className="h-4 w-4" />
+                                      </Button>
+                                    </TooltipButton>
                                   )}
-                                  <Button
-                                    variant="ghost"
-                                    size="icon"
-                                    onClick={() => { item.defenceId ? handleEditDefender(item.defenceId) : handleNewDefender(item._id) }}
-                                  >
-                                    <ShieldCheck className="h-4 w-4" />
-                                  </Button>
 
+                                  <Tooltip>
+                                      <TooltipTrigger asChild>
+                                        <span>
+                                          <Button
+                                            variant="ghost"
+                                            size="icon"
+                                            onClick={() => { item?.defesa ? handleEditDefender(item?.defesa) : handleNewDefender(item?._id) }}
+                                          >
+                                            <ShieldCheck className="h-4 w-4" />
+                                          </Button>
+                                        </span>
+                                      </TooltipTrigger>
+                                      <TooltipContent>{item?.defesa ? 'Editar Defesa' : 'Defender'}</TooltipContent>
+                                  </Tooltip>
                                   <AlertDialog>
                                     <AlertDialogTrigger asChild>
+                                      <TooltipButton tooltip={item.semDefesa ? "Atendimento já está marcado como 'Sem Defesa'" : "Marcar como 'Sem Defesa'"} disabled={item.semDefesa}>
                                       <Button
                                         variant="ghost"
                                         size="icon"
@@ -369,6 +400,7 @@ export default function ABIDetalhesPage({ params }: { params: Promise<{ id: stri
                                       >
                                         <ShieldBanIcon className="h-4 w-4" />
                                       </Button>
+                                      </TooltipButton>
                                     </AlertDialogTrigger>
                                     <AlertDialogContent>
                                       <AlertDialogHeader>
@@ -393,12 +425,14 @@ export default function ABIDetalhesPage({ params }: { params: Promise<{ id: stri
                                       </AlertDialogFooter>
                                     </AlertDialogContent>
                                   </AlertDialog>
+                                <TooltipButton tooltip="Ver detalhes do atendimento">
                                   <Button
-                                    variant="ghost"
-                                    size="icon"
-                                    onClick={() => handleViewAtendimento(item)}>
-                                    <Eye className="h-4 w-4" />
-                                  </Button>
+                                      variant="ghost"
+                                      size="icon"
+                                      onClick={() => handleViewAtendimento(item)}>
+                                      <Eye className="h-4 w-4" />
+                                    </Button>
+                                  </TooltipButton>
                                 </div>
                               </TableCell>
                             </TableRow>
