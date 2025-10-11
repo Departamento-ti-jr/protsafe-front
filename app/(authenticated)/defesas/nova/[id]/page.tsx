@@ -64,6 +64,9 @@ export default function NovaDefesaPage({ params }: { params: Promise<{ id: strin
   }, [selectedMotivos, textosDefesa])
 
   useEffect(() => {
+    if (abi?.memoriaCalculo) {
+      setCalculationMemory(abi.memoriaCalculo);
+    }
     if (abi?._id) {
       loadDocumentosSalvos(abi._id)
     }
@@ -96,6 +99,7 @@ export default function NovaDefesaPage({ params }: { params: Promise<{ id: strin
     try {
       const id = await params.then(p => p.id)
       const data = await AbisService.getById(id)
+      console.log(data)
       setAbi(data)
     } catch (err) {
       setError("Erro ao carregar defesa. Tente novamente.")
@@ -240,7 +244,7 @@ export default function NovaDefesaPage({ params }: { params: Promise<{ id: strin
           </Button>
         </Link>
         <div>
-          <h1 className="text-2xl font-bold tracking-tight">Editar Defesa</h1>
+          <h1 className="text-2xl font-bold tracking-tight">Nova Defesa</h1>
           <p className="text-gray-600">Defesa de uma "APAC"</p>
         </div>
       </div>
@@ -275,6 +279,7 @@ export default function NovaDefesaPage({ params }: { params: Promise<{ id: strin
         setSelectedComprobatorios={setSelectedComprobatorios}
         informarOutrosDocumentos={informarOutrosDocumentos}
         setInformarOutrosDocumentos={setInformarOutrosDocumentos}
+        tempestividade={tempestividade}
         setTempestividade={setTempestividade}
         calculationMemory={calculationMemory}
         setCalculationMemory={setCalculationMemory}

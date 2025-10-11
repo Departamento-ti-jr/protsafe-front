@@ -22,8 +22,13 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog"
+import MarkdownEditor from "@/components/MarkdownEditor"
+import HtmlEditor from "@/components/MarkdownEditor"
+import HtmlRenderer from "@/components/HtmlRenderer"
+import RichTextEditorWithPreview from "@/components/RichTextEditorWithPreview"
+import React from "react"
 
-export function CardFormularioImputacao({
+export const CardFormularioImputacao = React.memo(function CardFormularioImputacao({
   selectedTipo,
   setSelectedTipo,
   textosDefesa,
@@ -42,6 +47,9 @@ export function CardFormularioImputacao({
   setInformarOutrosDocumentos,
   editorRef
 }: any) {
+
+  console.log("Renderizando CardFormularioImputacao com text:", text);
+
   return (
     <Card>
       <CardHeader>
@@ -71,11 +79,17 @@ export function CardFormularioImputacao({
         <div className="space-y-4 p-4 bg-gray-50 rounded-lg border border-gray-200">
           <div id="rich-text" className="space-y-2">
             <Label className="text-sm">Detalhamento do Motivo</Label>
-            <RichTextEditor
-              ref={editorRef}
-              value={text}
-              onChange={setText}
+            <RichTextEditorWithPreview
+              initialValue={text}
+              onChange={(htmlComNbsp: string) => {
+                setText((prev: string) => {
+                  // ⚠️ evita re-render se o valor for idêntico
+                  if (prev === htmlComNbsp) return prev;
+                  return htmlComNbsp;
+                });
+              }}
             />
+
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -84,8 +98,9 @@ export function CardFormularioImputacao({
                 <FileText className="h-4 w-4 text-gray-500" />
                 Tempestividade e Outras Preliminares
               </Label>
-              <Input placeholder="Informe a tempestividade ou outras preliminares"
-                value={tempestividade}
+              <Input
+                placeholder="Informe a tempestividade ou outras preliminares"
+                value={tempestividade ?? ""}
                 onChange={(e) => setTempestividade(e.target.value)}
               />
             </div>
@@ -95,8 +110,9 @@ export function CardFormularioImputacao({
                 <Calculator className="h-4 w-4 text-gray-500" />
                 Memória de Cálculo
               </Label>
-              <Input placeholder="Se necessário, informe a memória de cálculo"
-                value={calculationMemory}
+              <Input
+                placeholder="Se necessário, informe a memória de cálculo"
+                value={calculationMemory ?? ""}
                 onChange={(e) => setCalculationMemory(e.target.value)}
               />
             </div>
@@ -126,7 +142,7 @@ export function CardFormularioImputacao({
       </CardContent>
     </Card>
   )
-}
+});
 
 export function CardPedidos({ selectedPedido, setSelectedPedido }: any) {
   return (

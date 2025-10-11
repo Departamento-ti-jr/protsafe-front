@@ -28,7 +28,7 @@ export default function DefesasTable({ data }: DefesasTableProps) {
   }
 
   return (
-    <div className="rounded-lg border border-gray-200 overflow-hidden">
+    <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
       <Table>
         <TableHeader>
           <TableRow className="bg-gray-50">

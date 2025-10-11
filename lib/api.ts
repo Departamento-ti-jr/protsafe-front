@@ -1,4 +1,4 @@
-const API_BASE_URL = "https://resus-api.codebeat.com.br"
+const API_BASE_URL = "http://localhost:8080"
 
 export interface TextoDefesa {
   _id: string

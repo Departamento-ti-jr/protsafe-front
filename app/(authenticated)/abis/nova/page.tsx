@@ -8,6 +8,8 @@ import { ArrowLeft, UploadCloud } from "lucide-react"
 import Link from "next/link"
 import { useDropzone } from "react-dropzone"
 import { Badge } from "@/components/ui/badge"
+import { Label } from "@/components/ui/label"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { AbisService } from "@/lib/services/abis.service"
 
 export default function NovaABIPage() {
@@ -15,6 +17,7 @@ export default function NovaABIPage() {
   const [uploading, setUploading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [success, setSuccess] = useState<string | null>(null)
+  const [tipoDoc, setTipoDoc] = useState<"IMPUGNACAO" | "RECURSO" | "">("")
   const router = useRouter()
 
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
@@ -32,18 +35,23 @@ export default function NovaABIPage() {
       setError("Selecione um arquivo .csv para enviar.")
       return
     }
+    if (!tipoDoc) {
+      setError("Selecione o tipo de documento (IMPUGNAÇÃO ou RECURSO).")
+      return
+    }
+
     try {
       setUploading(true)
       setError(null)
       setSuccess(null)
 
-      const tipoDoc = "AMAZONAS_FINAL_PROTSAFE" // ajuste se quiser tornar editável
       const upsert = true
       const batchSize = 1000
 
       const res = await AbisService.uploadCsv(files[0], { tipoDoc, upsert, batchSize })
       setSuccess(`Importado: total=${res.total}, inseridos=${res.inserted}, upserts=${res.upserted}, matched=${res.matched}`)
       setFiles([])
+      setTipoDoc("")
       setTimeout(() => router.push("/abis"), 1200)
     } catch (e: any) {
       setError(e?.message || "Erro ao enviar CSV da ABI.")
@@ -61,11 +69,26 @@ export default function NovaABIPage() {
         <h1 className="text-3xl font-bold tracking-tight">Nova ABI</h1>
       </div>
 
-      <p className="text-sm text-muted-foreground">Importe o arquivo <b>.csv</b> da ABI.</p>
+      <p className="text-sm text-muted-foreground">Importe o arquivo <b>.csv</b> da ABI e escolha o tipo de documento.</p>
 
       <Card>
         <CardHeader><CardTitle>Upload de ABI (CSV)</CardTitle></CardHeader>
-        <CardContent>
+        <CardContent className="space-y-6">
+          {/* Seletor do tipoDoc */}
+          <div className="space-y-2">
+            <Label>Tipo de Documento</Label>
+            <Select value={tipoDoc} onValueChange={(v) => setTipoDoc(v as any)}>
+              <SelectTrigger className="w-full">
+                <SelectValue placeholder="Selecione o tipo de documento" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="IMPUGNACAO">IMPUGNAÇÃO</SelectItem>
+                <SelectItem value="RECURSO">RECURSO</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+
+          {/* Dropzone */}
           <div
             {...getRootProps()}
             className={`border-2 border-dashed rounded-xl p-10 flex flex-col items-center justify-center cursor-pointer transition-colors ${
@@ -74,7 +97,9 @@ export default function NovaABIPage() {
           >
             <input {...getInputProps()} />
             <UploadCloud className="w-8 h-8 text-primary mb-2" />
-            <p className="text-muted-foreground"><span className="font-semibold text-foreground">Adicione</span> ou arraste o .csv aqui.</p>
+            <p className="text-muted-foreground">
+              <span className="font-semibold text-foreground">Adicione</span> ou arraste o .csv aqui.
+            </p>
           </div>
 
           {files.length > 0 && (
@@ -87,7 +112,7 @@ export default function NovaABIPage() {
           {error && <p className="mt-4 text-sm text-destructive">{error}</p>}
           {success && <p className="mt-4 text-sm text-green-600">{success}</p>}
 
-          <div className="mt-6 flex justify-end">
+          <div className="flex justify-end pt-4">
             <Button onClick={handleSubmit} disabled={uploading || files.length === 0}>
               {uploading ? "Enviando..." : "Cadastrar ABI"}
             </Button>

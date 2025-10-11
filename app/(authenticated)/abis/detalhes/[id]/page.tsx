@@ -227,7 +227,7 @@ export default function ABIDetalhesPage({ params }: { params: Promise<{ id: stri
                   </div>
                   <div>
                     <p className="text-sm font-medium text-gray-500">CNPJ</p>
-                    <p>{abi.cnpj}</p>
+                    <p>{abi.operadora?.CNPJ}</p>
                   </div>
                   <div>
                     <p className="text-sm font-medium text-gray-500">Data / Hora registro da transação</p>
@@ -336,23 +336,23 @@ export default function ABIDetalhesPage({ params }: { params: Promise<{ id: stri
                               </TableCell>
                               <TableCell>{formatDateToDDMMYYYY(item?.dataInicial)}</TableCell>
                               <TableCell>{formatDateToDDMMYYYY(item?.dataFinal)}</TableCell>
-                              <TableCell>{item.descricaoProcedimento}</TableCell>
+                              <TableCell>{item.descricao}</TableCell>
                               <TableCell>
-                                <p
+                                <Badge
                                   className={
                                     item.semDefesa && item.defesa
-                                      ? "text-red-600 font-bold" // caso 1
+                                      ? "bg-red-200 text-red-500" // caso 1
                                       : !item.semDefesa && item.defesa
-                                      ? "text-green-600 font-bold" // caso 2
-                                      : "text-yellow-500 font-bold" // caso 3
+                                      ? "bg-teal-100 text-teal-800" // caso 2
+                                      : "bg-yellow-100 text-yellow-500" // caso 3
                                   }
                                 >
                                   {item.semDefesa && item.defesa
-                                    ? "Sem Defesa"
+                                    ? "S/ Defesa"
                                     : !item.semDefesa && item.defesa
                                     ? "Defendido"
                                     : "Aberto"}
-                                </p>
+                                </Badge>
                               </TableCell>
                               <TableCell className="text-right">
                                 <div className="flex items-center justify-end">

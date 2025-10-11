@@ -117,7 +117,7 @@ export function PaginationControls({
             onValueChange={(value) => onPageSizeChange(Number(value))}
             disabled={disabled}
           >
-            <SelectTrigger className="w-20">
+            <SelectTrigger className="w-20 bg-white">
               <SelectValue />
             </SelectTrigger>
             <SelectContent>

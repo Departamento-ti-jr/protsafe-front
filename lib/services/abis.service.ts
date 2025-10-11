@@ -60,6 +60,7 @@ export interface Abi {
   nomeUPS?: string
   municipio?: string
   codigoUF?: string
+  memoriaCalculo?: string
 
   // Status/origem definidos na importação
   status?: string
@@ -107,6 +108,7 @@ export interface Abi {
   // ===== Relações (via include) =====
   operadora?: Operadora
   operadoraName?: string
+  operadoraCnpj?: string
 
   hash?: string
   createdAt?: string
@@ -216,21 +218,21 @@ export class AbisService {
 
   /** Upload de CSV conforme controller Nest: POST /abis/upload-csv?tipoDoc&upsert&batchSize */
   static async uploadCsv(
-    file: File,
-    opts?: { tipoDoc?: string; upsert?: boolean; batchSize?: number }
-  ): Promise<{ total: number; inserted: number; upserted: number; matched: number }> {
-    const form = new FormData()
-    form.append("file", file)
+  file: File,
+  opts?: { tipoDoc?: string; upsert?: boolean; batchSize?: number }
+): Promise<any> {
+  const form = new FormData()
+  form.append("file", file)
 
-    const params = new URLSearchParams()
-    if (opts?.tipoDoc) params.append("tipoDoc", opts.tipoDoc)
-    if (typeof opts?.upsert === "boolean") params.append("upsert", String(opts.upsert))
-    if (opts?.batchSize) params.append("batchSize", String(opts.batchSize))
+  // ✅ enviar os campos dentro do FormData (não na URL)
+  if (opts?.tipoDoc) form.append("tipoDoc", opts.tipoDoc)
+  if (typeof opts?.upsert === "boolean") form.append("upsert", String(opts.upsert))
+  if (opts?.batchSize) form.append("batchSize", String(opts.batchSize))
 
-    const url = params.toString()
-      ? `${this.endpoint}/upload-csv?${params.toString()}`
-      : `${this.endpoint}/upload-csv`
+  const url = `${this.endpoint}/upload-csv`
 
-    return await httpClient.post(url, form)
-  }
+  return await httpClient.post(url, form);
+}
+
+
 }
