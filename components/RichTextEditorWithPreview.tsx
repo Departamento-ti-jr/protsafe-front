@@ -58,7 +58,7 @@ export default function RichTextEditorWithPreview({
     });
 
   onChange?.(htmlComNbsp);
-};
+};  
 
   const modules = {
     toolbar: [

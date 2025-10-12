@@ -10,6 +10,7 @@ import { MultiSelectCheckbox } from "@/components/multi-select-checkbox"
 import { Button } from "@/components/ui/button"
 import RichTextEditor from "@/components/rich-text-editor"
 import { AnsDocumentosService } from "@/lib/services/ans-documentos.service"
+import RichTextEditorWrapper from "@/components/RichTextEditorWrapper";
 
 import {
   AlertDialog,
@@ -79,7 +80,15 @@ export const CardFormularioImputacao = React.memo(function CardFormularioImputac
         <div className="space-y-4 p-4 bg-gray-50 rounded-lg border border-gray-200">
           <div id="rich-text" className="space-y-2">
             <Label className="text-sm">Detalhamento do Motivo</Label>
-            <RichTextEditorWithPreview
+
+            <RichTextEditorWrapper
+              initialValue={text}
+              onChange={(html: string) => {
+                setText((prev: string) => (prev === html ? prev : html));
+              }}
+            />
+
+            {/* <RichTextEditorWithPreview
               initialValue={text}
               onChange={(htmlComNbsp: string) => {
                 setText((prev: string) => {
@@ -88,7 +97,7 @@ export const CardFormularioImputacao = React.memo(function CardFormularioImputac
                   return htmlComNbsp;
                 });
               }}
-            />
+            /> */}
 
           </div>
 
