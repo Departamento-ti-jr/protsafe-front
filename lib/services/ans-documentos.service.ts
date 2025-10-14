@@ -64,6 +64,21 @@ export class AnsDocumentosService {
     return data
   }
 
+  static async enviarDocumentosParaAns(id_atendimento: string) {
+    try {
+      const data  = await httpClient.post<{ message: string; detalhes?: any }>(
+        `${this.endpoint}/enviar/${id_atendimento}`
+      );
+      return data;
+    } catch (error: any) {
+      console.error("Erro ao enviar documentos para ANS:", error);
+      throw new Error(
+        error?.response?.data?.message ||
+        "Falha ao enviar documentos para ANS."
+      );
+    }
+  }
+
 
   // static async getDocumentosByAtendimento(id_atendimento: string) {
   //   const { data } = await httpClient.get<{ protsafe: any[]; ans: any[] }>(

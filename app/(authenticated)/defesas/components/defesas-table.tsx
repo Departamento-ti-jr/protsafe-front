@@ -45,6 +45,8 @@ export default function DefesasTable({ data }: DefesasTableProps) {
         <TableBody>
           {data.map((defesa) => {
             const info = (defesa as any).atendimento
+            const operadora = (defesa as any).operadora
+            console.log(operadora);
             const pdfUrl = (defesa as any).s3PdfPath as string | undefined
             const rawUrl = (defesa as any).s3PdfPath as string | undefined;
             const version = (defesa as any).updatedAt ?? Date.now();
@@ -57,7 +59,7 @@ export default function DefesasTable({ data }: DefesasTableProps) {
                 <TableCell>
                   <div className="space-y-1">
                     <div className="text-sm text-gray-500">
-                      <b>{info?.operadora?.name}</b><br /> {info?.operadora?.CNPJ}
+                      <b>{operadora?.name}</b><br /> {operadora?.CNPJ}
                     </div>
                   </div>
                 </TableCell>

@@ -2,7 +2,7 @@
 
 import React, { useEffect, useRef, useState } from "react"
 import { Button } from "@/components/ui/button"
-import { ArrowLeft, Upload, Save } from "lucide-react"
+import { ArrowLeft, Upload, Save, Cloud } from "lucide-react"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
 import { AnexarDocumentoDefesaModal } from "@/components/anexar-documento-defesa-modal"
@@ -19,9 +19,15 @@ import {
   CardDocumentosAns,
 } from "../../components/defesa-cards/defesa-cards"
 import { useToast } from "@/hooks/use-toast"
-import { da } from "date-fns/locale"
-import RichTextEditor, { RichTextEditorHandle } from "@/components/rich-text-editor"
-import { Label } from "recharts"
+import { RichTextEditorHandle } from "@/components/rich-text-editor"
+
+import {
+  AlertDialog,
+  AlertDialogContent,
+  AlertDialogTitle,
+  AlertDialogDescription,
+} from "@/components/ui/alert-dialog";
+
 
 
 export default function EditarDefesaPage({ params }: { params: Promise<{ id: string }> }) {
@@ -31,6 +37,7 @@ export default function EditarDefesaPage({ params }: { params: Promise<{ id: str
 
   const editorRef = useRef<RichTextEditorHandle>(null);
   const [editorContent, setEditorContent] = useState<string>('');
+  const [isConfirmDialogOpen, setIsConfirmDialogOpen] = useState<boolean>(false);
 
   // estados
   const [defesa, setDefesa] = useState<Defesa | null>(null)
@@ -64,18 +71,18 @@ export default function EditarDefesaPage({ params }: { params: Promise<{ id: str
   }, [])
 
   useEffect(() => {
-      const textosConcatenados = textosDefesa
-        .filter(t => selectedMotivos.includes(t._id))
-        .map(t => t.texto)
-        .join("\n\n")
-  
-      setText(textosConcatenados)
-    }, [selectedMotivos, textosDefesa])
+    const textosConcatenados = textosDefesa
+      .filter(t => selectedMotivos.includes(t._id))
+      .map(t => t.texto)
+      .join("\n\n")
+
+    setText(textosConcatenados)
+  }, [selectedMotivos, textosDefesa])
 
   useEffect(() => {
-      if (abi?._id) {
-        loadDocumentosSalvos(abi._id)
-      }
+    if (abi?._id) {
+      loadDocumentosSalvos(abi._id)
+    }
   }, [abi])
 
   const loadDefesa = async (): Promise<Defesa | null> => {
@@ -217,6 +224,55 @@ export default function EditarDefesaPage({ params }: { params: Promise<{ id: str
     }
   };
 
+  const handleEnviarParaAns = async () => {
+    console.log("abi: ", abi);
+
+    if (!abi?._id) {
+      toast({
+        variant: "warning",
+        title: "Aviso",
+        description: "Atendimento não encontrado.",
+      });
+      return;
+    }
+
+    // ✅ 1. Verifica se há documentos anexados
+    if (!anexedDocuments || anexedDocuments.length === 0) {
+      const confirmar = window.confirm(
+        "Não existem documentos anexados. Deseja enviar mesmo assim?"
+      );
+      if (!confirmar) {
+        toast({
+          variant: "warning",
+          title: "Envio cancelado",
+          description: "O envio foi cancelado pelo usuário.",
+        });
+        return;
+      }
+    }
+
+    try {
+      toast({
+        title: "Enviando...",
+        description: `Enviando documentos da ABI para a ANS...`,
+      });
+
+      const result = await AnsDocumentosService.enviarDocumentosParaAns(abi._id);
+
+      toast({
+        title: "Sucesso!",
+        description: result?.message || "Documentos enviados com sucesso à ANS.",
+      });
+    } catch (error: any) {
+      toast({
+        variant: "destructive",
+        title: "Erro",
+        description: error?.message || "Falha ao enviar documentos para a ANS.",
+      });
+    }
+  };
+
+
   const handleAtualizarDefesa = async () => {
     try {
       setLoadSalvarDefesa(true)
@@ -326,13 +382,27 @@ export default function EditarDefesaPage({ params }: { params: Promise<{ id: str
             onDelete={(id: string) => {
               setAnexedDocuments((prev: any[]) => prev.filter(doc => doc._id !== id));
             }}
-          anexedDocuments={anexedDocuments} />
+            anexedDocuments={anexedDocuments} />
           <CardDocumentosAns />
 
           <div className="flex justify-end gap-4">
             <Button variant="outline" className="rounded-xl bg-transparent" onClick={() => setIsAnexarModalOpen(true)}>
               <Upload className="mr-2 h-4 w-4" /> ANEXAR DOCUMENTO
             </Button>
+            <Button
+              variant="outline"
+              className="rounded-xl bg-transparent"
+              onClick={() => {
+                if (!anexedDocuments || anexedDocuments.length === 0) {
+                  setIsConfirmDialogOpen(true);
+                } else {
+                  handleEnviarParaAns();
+                }
+              }}
+            >
+              <Cloud className="mr-2 h-4 w-4" /> INTEGRAR ANS
+            </Button>
+
             <Button
               className="rounded-xl"
               onClick={handleAtualizarDefesa}
@@ -350,6 +420,29 @@ export default function EditarDefesaPage({ params }: { params: Promise<{ id: str
           />
         </>
       )}
+
+      <AlertDialog open={isConfirmDialogOpen} onOpenChange={setIsConfirmDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogTitle>Atenção</AlertDialogTitle>
+          <AlertDialogDescription>
+            Não existem documentos anexados. Deseja enviar mesmo assim?
+          </AlertDialogDescription>
+          <div className="flex justify-end gap-3 mt-4">
+            <Button variant="outline" onClick={() => setIsConfirmDialogOpen(false)}>
+              Cancelar
+            </Button>
+            <Button
+              onClick={() => {
+                setIsConfirmDialogOpen(false);
+                handleEnviarParaAns();
+              }}
+            >
+              Enviar mesmo assim
+            </Button>
+          </div>
+        </AlertDialogContent>
+      </AlertDialog>
+
     </div>
   )
 

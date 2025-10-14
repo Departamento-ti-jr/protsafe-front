@@ -127,6 +127,37 @@ export default function NovaDefesaPage({ params }: { params: Promise<{ id: strin
     }
   }
 
+  const handleEnviarParaAns = async () => {
+    if (!abi?.numeroABI) {
+      toast({
+        variant: "warning",
+        title: "Aviso",
+        description: "Número da ABI não encontrado.",
+      });
+      return;
+    }
+
+    try {
+      toast({
+        title: "Enviando...",
+        description: `Enviando documentos da ABI ${abi.numeroABI} para a ANS...`,
+      });
+
+      const result = await AnsDocumentosService.enviarDocumentosParaAns(abi._id);
+
+      toast({
+        title: "Sucesso!",
+        description: result?.message || "Documentos enviados com sucesso à ANS.",
+      });
+    } catch (error: any) {
+      toast({
+        variant: "destructive",
+        title: "Erro",
+        description: error?.message || "Falha ao enviar documentos para a ANS.",
+      });
+    }
+  };
+
   const handleAnexarDocumento = async (files: any[], documentType: string) => {
     if (!abi?._id) {
       setError("Atendimento não carregado.");
@@ -134,7 +165,7 @@ export default function NovaDefesaPage({ params }: { params: Promise<{ id: strin
     }
 
     const id_atendimento = abi._id;
-    const id_protocolo = 0;        
+    const id_protocolo = 0;
     const tipo_documento = documentType;
 
     try {
@@ -214,7 +245,7 @@ export default function NovaDefesaPage({ params }: { params: Promise<{ id: strin
 
 
   function mapDefesaToPayload(abiId: string): any {
-  return {
+    return {
       petitionType: tipoDoc,
       text, // texto concatenado dos motivos selecionados
       tempestividade,
@@ -226,8 +257,8 @@ export default function NovaDefesaPage({ params }: { params: Promise<{ id: strin
         selectedPedido === "retificacao"
           ? 2
           : selectedPedido === "anulacao-subsidiaria"
-          ? 3
-          : 1,
+            ? 3
+            : 1,
       rectificationValue: rectificationValue,
       defencesText: selectedMotivos,
       atendimento: abiId,
@@ -263,7 +294,7 @@ export default function NovaDefesaPage({ params }: { params: Promise<{ id: strin
             <RichTextEditor ref={editorRef} />      
           </div>
       </div> */}
-      
+
 
       <CardFormularioImputacao
         selectedTipo={tipoDoc}
@@ -299,7 +330,11 @@ export default function NovaDefesaPage({ params }: { params: Promise<{ id: strin
         <Button variant="outline" className="rounded-xl bg-transparent" onClick={() => setIsAnexarModalOpen(true)}>
           <Upload className="mr-2 h-4 w-4" /> ANEXAR DOCUMENTO
         </Button>
-        <Button variant="outline" className="rounded-xl bg-transparent">
+        <Button
+          variant="outline"
+          className="rounded-xl bg-transparent"
+          onClick={handleEnviarParaAns}
+        >
           <Cloud className="mr-2 h-4 w-4" /> INTEGRAR ANS
         </Button>
         <Button className="rounded-xl" onClick={handleSalvarDefesa} disabled={loadSalvarDefesa}>
