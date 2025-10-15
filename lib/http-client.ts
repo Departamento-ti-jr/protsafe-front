@@ -133,4 +133,4 @@ class HttpClient {
   }
 }
 
-export const httpClient = new HttpClient("http://localhost:8080")
+export const httpClient = new HttpClient(process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:8080")
