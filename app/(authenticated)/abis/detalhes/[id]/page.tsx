@@ -381,7 +381,7 @@ export default function ABIDetalhesPage({ params }: { params: Promise<{ id: stri
                                           <Button
                                             variant="ghost"
                                             size="icon"
-                                            onClick={() => { item?.defesa ? handleEditDefender(item?.defesa) : handleNewDefender(item?._id) }}
+                                            onClick={() => { item?.defesa ? handleEditDefender(defesa?._id) : handleNewDefender(item?._id) }}
                                           >
                                             <ShieldCheck className="h-4 w-4" />
                                           </Button>

@@ -5,7 +5,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Textarea } from "@/components/ui/textarea"
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
 import { Checkbox } from "@/components/ui/checkbox"
-import { FileText, Calculator, FolderOpen, Download, Eye, Trash } from "lucide-react"
+import { FileText, Calculator, FolderOpen, Download, Eye, Trash, Loader2 } from "lucide-react"
 import { MultiSelectCheckbox } from "@/components/multi-select-checkbox"
 import { Button } from "@/components/ui/button"
 import RichTextEditor from "@/components/rich-text-editor"
@@ -27,7 +27,7 @@ import MarkdownEditor from "@/components/MarkdownEditor"
 import HtmlEditor from "@/components/MarkdownEditor"
 import HtmlRenderer from "@/components/HtmlRenderer"
 import RichTextEditorWithPreview from "@/components/RichTextEditorWithPreview"
-import React from "react"
+import React, { useState } from "react"
 
 export const CardFormularioImputacao = React.memo(function CardFormularioImputacao({
   selectedTipo,
@@ -48,8 +48,6 @@ export const CardFormularioImputacao = React.memo(function CardFormularioImputac
   setInformarOutrosDocumentos,
   editorRef
 }: any) {
-
-  console.log("Renderizando CardFormularioImputacao com text:", text);
 
   return (
     <Card>
@@ -83,10 +81,9 @@ export const CardFormularioImputacao = React.memo(function CardFormularioImputac
 
             <RichTextEditorWrapper
               initialValue={text}
-              onChange={(html: string) => {
-                setText((prev: string) => (prev === html ? prev : html));
-              }}
+              onChange={(html) => setText((prev: any) => (prev === html ? prev : html))}
             />
+
 
             {/* <RichTextEditorWithPreview
               initialValue={text}
@@ -180,9 +177,15 @@ export function CardPedidos({ selectedPedido, setSelectedPedido }: any) {
 }
 
 export function CardDocumentosAnexados({ anexedDocuments, onDelete }: any) {
+  
+  const [deletingId, setDeletingId] = useState<string | null>(null)
+
   return (
     <Card>
-      <CardHeader><CardTitle>Documentos Anexados</CardTitle></CardHeader>
+      <CardHeader>
+        <CardTitle>Documentos Anexados</CardTitle>
+      </CardHeader>
+
       <CardContent>
         {anexedDocuments.length > 0 ? (
           <div className="space-y-2">
@@ -226,27 +229,36 @@ export function CardDocumentosAnexados({ anexedDocuments, onDelete }: any) {
                           variant="destructive"
                           className="rounded-full"
                         >
-                          <Trash className="h-4 w-4" />
+                          {deletingId === doc.id ? (
+                            <Loader2 className="h-4 w-4 animate-spin" />
+                          ) : (
+                            <Trash className="h-4 w-4" />
+                          )}
                         </Button>
                       </AlertDialogTrigger>
+
                       <AlertDialogContent>
                         <AlertDialogHeader>
                           <AlertDialogTitle>Excluir documento</AlertDialogTitle>
                           <AlertDialogDescription>
-                            Tem certeza que deseja excluir o documento{" "}
-                            <span className="font-semibold">{doc.name}</span>?
-                            Essa ação não poderá ser desfeita.
+                            Tem certeza que deseja excluir{" "}
+                            <span className="font-semibold">{doc.name}</span>? Essa
+                            ação não poderá ser desfeita.
                           </AlertDialogDescription>
                         </AlertDialogHeader>
+
                         <AlertDialogFooter>
                           <AlertDialogCancel>Cancelar</AlertDialogCancel>
                           <AlertDialogAction
                             onClick={async () => {
                               try {
-                                await AnsDocumentosService.deleteDocument(doc.id);
-                                onDelete?.(doc._id);
+                                setDeletingId(doc.id)
+                                await AnsDocumentosService.deleteDocument(doc.id)
+                                onDelete?.(doc.id)
                               } catch (error) {
-                                alert("Erro ao excluir documento");
+                                alert("Erro ao excluir documento")
+                              } finally {
+                                setDeletingId(null)
                               }
                             }}
                           >
@@ -269,7 +281,6 @@ export function CardDocumentosAnexados({ anexedDocuments, onDelete }: any) {
     </Card>
   )
 }
-
 
 export function CardDocumentosAns() {
   return (

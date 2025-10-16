@@ -10,49 +10,84 @@ type Props = {
 
 export default function RichTextEditorClient({ initialValue = "", onChange }: Props) {
   const editorRef = useRef<any>(null);
-  const readyRef = useRef(false);
+  const containerRef = useRef<HTMLDivElement>(null);
+  const lastExternalValue = useRef(initialValue);
 
-  // inicializa editor quando o script carrega
-  const handleReady = () => {
-    if (typeof window !== "undefined" && (window as any).RichTextEditor) {
-      const cfg = { toolbar: "basic" };
-      editorRef.current = new (window as any).RichTextEditor("#div_editor1", cfg);
+  const initEditor = () => {
+    if (typeof window === "undefined") return;
+    const RTE = (window as any).RichTextEditor;
+    if (!RTE || !containerRef.current) return;
 
-      // valor inicial
-      if (initialValue) {
-        editorRef.current.setHTMLCode(initialValue);
-      }
-
-      // escuta mudanças
-      editorRef.current.attachEvent("change", () => {
-        const html = editorRef.current.getHTMLCode();
-        onChange?.(html);
-      });
-
-      readyRef.current = true;
-      console.log("✅ RichTextEditor inicializado");
-    } else {
-      console.warn("⚠️ RichTextEditor ainda não disponível");
+    if (editorRef.current?.dispose) {
+      try {
+        editorRef.current.dispose();
+      } catch {}
     }
+
+    const cfg = { toolbar: "basic" };
+    editorRef.current = new RTE(containerRef.current, cfg);
+
+    // ⚙️ Define valor inicial apenas uma vez
+    if (initialValue) {
+      editorRef.current.setHTMLCode(initialValue);
+      lastExternalValue.current = initialValue;
+    }
+
+    // 🧩 Escuta alterações do usuário
+    editorRef.current.attachEvent("change", () => {
+      const html = editorRef.current.getHTMLCode();
+      if (html !== lastExternalValue.current) {
+        onChange?.(html);
+      }
+    });
+
+    console.log("✅ RichTextEditor inicializado");
   };
 
-  // atualiza conteúdo do editor quando initialValue muda
   useEffect(() => {
-    if (readyRef.current && editorRef.current) {
-      const currentHtml = editorRef.current.getHTMLCode();
-      if (initialValue && initialValue !== currentHtml) {
-        editorRef.current.setHTMLCode(initialValue);
-        console.log("🔄 RichTextEditor sincronizado com React");
+    if (typeof window === "undefined") return;
+    const RTE = (window as any).RichTextEditor;
+
+    if (RTE) {
+      initEditor();
+    } else {
+      const interval = setInterval(() => {
+        if ((window as any).RichTextEditor) {
+          clearInterval(interval);
+          initEditor();
+        }
+      }, 200);
+      return () => clearInterval(interval);
+    }
+
+    // limpa ao desmontar
+    return () => {
+      if (editorRef.current?.dispose) {
+        try {
+          editorRef.current.dispose();
+          editorRef.current = null;
+          console.log("🧹 Editor destruído ao desmontar");
+        } catch {}
       }
+    };
+  }, []); // ← ⚠️ apenas na montagem, não depende de initialValue
+
+  // 🔹 Sincroniza editor com valor externo apenas se mudou externamente
+  useEffect(() => {
+    if (!editorRef.current) return;
+    if (initialValue !== lastExternalValue.current) {
+      editorRef.current.setHTMLCode(initialValue);
+      lastExternalValue.current = initialValue;
+      console.log("🔄 Atualizado com novo initialValue externo");
     }
   }, [initialValue]);
 
   return (
     <>
       <link rel="stylesheet" href="/richtexteditor/rte_theme_default.css" />
-      <Script src="/richtexteditor/rte.js" strategy="afterInteractive" onLoad={handleReady} />
+      <Script src="/richtexteditor/rte.js" strategy="afterInteractive" />
       <Script src="/richtexteditor/plugins/all_plugins.js" strategy="afterInteractive" />
-      <div id="div_editor1" />
+      <div ref={containerRef} />
     </>
   );
 }

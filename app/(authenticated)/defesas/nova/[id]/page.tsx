@@ -20,6 +20,9 @@ import {
 } from "../../components/defesa-cards/defesa-cards"
 import { useToast } from "@/hooks/use-toast"
 import RichTextEditor, { RichTextEditorHandle } from "@/components/rich-text-editor"
+import { useDocumentosAns } from "@/hooks/use-anexar-documento"
+import { DefesaAcoes } from "../../components/defesa-acoes"
+
 
 export default function NovaDefesaPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = React.use(params)
@@ -46,7 +49,8 @@ export default function NovaDefesaPage({ params }: { params: Promise<{ id: strin
   const [supportingDocument, setSupportingDocument] = useState("")
   const [rectificationValue, setRectificationValue] = useState("")
   const editorRef = useRef<RichTextEditorHandle>(null);
-  const [editorContent, setEditorContent] = useState<string>('');
+
+  const { loadDocumentosSalvos, handleAnexarDocumento, isLoading } = useDocumentosAns(abi, setAnexedDocuments, setError)
 
   useEffect(() => {
     loadAtendimento()
@@ -71,29 +75,6 @@ export default function NovaDefesaPage({ params }: { params: Promise<{ id: strin
       loadDocumentosSalvos(abi._id)
     }
   }, [abi])
-
-  const loadDocumentosSalvos = async (idAtendimento: string) => {
-    try {
-      const { protsafe } = await AnsDocumentosService.getDocumentosByAtendimento(idAtendimento)
-
-      // Mapeia os docs salvos no Mongo no mesmo formato que anexedDocuments espera
-      const mapped = protsafe.map((doc: any) => ({
-        id: doc._id,
-        name: doc.nome,
-        size: null, // você não tem o tamanho do S3 aqui, mas pode deixar null
-        type: doc.tipo_documento?.descricao || "Documento",
-        url: doc.caminho?.startsWith("http")
-          ? doc.caminho
-          : `${process.env.NEXT_PUBLIC_AWS_BASE_URL}/${doc.caminho}`, // monta a URL se só tiver key
-        caminho: doc.caminho,
-      }))
-
-      setAnexedDocuments(mapped)
-    } catch (err) {
-      console.error("Erro ao carregar documentos salvos:", err)
-      setError("Falha ao carregar documentos salvos.")
-    }
-  }
 
   const loadAtendimento = async () => {
     try {
@@ -158,77 +139,40 @@ export default function NovaDefesaPage({ params }: { params: Promise<{ id: strin
     }
   };
 
-  const handleAnexarDocumento = async (files: any[], documentType: string) => {
-    if (!abi?._id) {
-      setError("Atendimento não carregado.");
-      return;
-    }
-
-    const id_atendimento = abi._id;
-    const id_protocolo = 0;
-    const tipo_documento = documentType;
-
-    try {
-      const uploadedDocs = await Promise.all(
-        files.map(async (fileData) => {
-          const file: File | undefined = fileData?.file;
-          if (!file) throw new Error("Arquivo inválido");
-
-          const { url, caminho } = await AnsDocumentosService.uploadDocument(
-            file,
-            {
-              id_atendimento,
-              tipo_documento,
-              id_protocolo,
-              nome: file.name
-            }
-          );
-
-          return {
-            id: Math.random().toString(36).slice(2),
-            name: file.name,
-            size: file.size,
-            type: documentType,
-            url,
-            caminho
-          };
-        })
-      );
-
-      setAnexedDocuments((prev) => [...prev, ...uploadedDocs]);
-
-      toast({
-        title: "Documento(s) anexado(s)",
-        description: `${uploadedDocs.length} arquivo(s) enviado(s) com sucesso.`,
-      });
-    } catch (err) {
-      console.error(err);
-      setError("Erro ao enviar documento(s). Tente novamente.");
-    }
-  };
 
   const handleSalvarDefesa = async () => {
     try {
-
       setLoadSalvarDefesa(true);
 
-      if (!abi?._id) return
+      if (!abi?._id) {
+        toast({
+          variant: "warning",
+          title: "Aviso",
+          description: "Atendimento não encontrado.",
+        });
+        return;
+      }
 
-      const payload = mapDefesaToPayload(abi._id)
-      console.log("Payload para salvar defesa:", payload)
-      const blob = await DefesasService.create(payload)
-      const url = URL.createObjectURL(blob)
-      window.open(url)
+      const payload = mapDefesaToPayload(abi._id);
+      console.log("Payload para salvar defesa:", payload);
+
+      const blob = await DefesasService.create(payload);
+
+      const url = URL.createObjectURL(blob);
+      window.open(url);
+
       toast({
         title: "Sucesso!",
-        description: "Defesa criada.",
-      })
-    } catch (error: any) {
+        description: "Defesa criada com sucesso.",
+      });
 
+      router.push(`/defesas`);
+
+    } catch (error: any) {
       const apiMessage =
-        error?.body?.message || // mensagem do backend
-        error?.statusText ||    // fallback do HTTP
-        "Erro ao salvar defesa."; // fallback final
+        error?.body?.message ||
+        error?.statusText ||
+        "Erro ao salvar defesa.";
 
       toast({
         variant: "warning",
@@ -237,12 +181,10 @@ export default function NovaDefesaPage({ params }: { params: Promise<{ id: strin
       });
 
       setError(apiMessage);
-    }
-    finally {
+    } finally {
       setLoadSalvarDefesa(false);
     }
-  }
-
+  };
 
   function mapDefesaToPayload(abiId: string): any {
     return {
@@ -288,14 +230,6 @@ export default function NovaDefesaPage({ params }: { params: Promise<{ id: strin
 
       <DefesaCardAtendimento abi={abi} />
 
-      {/* <div className="space-y-4 p-4 bg-gray-50 rounded-lg border border-gray-200">
-          <div className="space-y-2">
-            <Label className="text-sm">Detalhamento do Motivo</Label>
-            <RichTextEditor ref={editorRef} />      
-          </div>
-      </div> */}
-
-
       <CardFormularioImputacao
         selectedTipo={tipoDoc}
         setSelectedTipo={setTipoDoc}
@@ -319,28 +253,27 @@ export default function NovaDefesaPage({ params }: { params: Promise<{ id: strin
         editorRef={editorRef}
       />
 
-
       <CardPedidos selectedPedido={selectedPedido} setSelectedPedido={setSelectedPedido} />
 
-      <CardDocumentosAnexados anexedDocuments={anexedDocuments} />
+      <CardDocumentosAnexados
+        onDelete={(id: string) => {
+          console.log("id-> ", id);
+          setAnexedDocuments((prev: any[]) => prev.filter(doc => doc.id !== id));
+        }}
+        anexedDocuments={anexedDocuments}
+      />
 
       <CardDocumentosAns />
 
-      <div className="flex justify-end gap-4">
-        <Button variant="outline" className="rounded-xl bg-transparent" onClick={() => setIsAnexarModalOpen(true)}>
-          <Upload className="mr-2 h-4 w-4" /> ANEXAR DOCUMENTO
-        </Button>
-        <Button
-          variant="outline"
-          className="rounded-xl bg-transparent"
-          onClick={handleEnviarParaAns}
-        >
-          <Cloud className="mr-2 h-4 w-4" /> INTEGRAR ANS
-        </Button>
-        <Button className="rounded-xl" onClick={handleSalvarDefesa} disabled={loadSalvarDefesa}>
-          <Save className="mr-2 h-4 w-4" /> {loadSalvarDefesa ? "SALVANDO..." : "SALVAR E GERAR DEFESA"}
-        </Button>
-      </div>
+      <DefesaAcoes
+        anexedDocuments={anexedDocuments}
+        isLoading={isLoading}
+        loadSalvarDefesa={loadSalvarDefesa}
+        onAnexarDocumento={() => setIsAnexarModalOpen(true)}
+        onEnviarParaAns={handleEnviarParaAns}
+        onSalvarOuAtualizar={handleSalvarDefesa}
+        salvarLabel="SALVAR E GERAR DEFESA"
+      />
 
       <AnexarDocumentoDefesaModal
         open={isAnexarModalOpen}
