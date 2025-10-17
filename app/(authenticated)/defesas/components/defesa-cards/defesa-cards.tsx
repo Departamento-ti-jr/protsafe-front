@@ -8,7 +8,7 @@ import { Checkbox } from "@/components/ui/checkbox"
 import { FileText, Calculator, FolderOpen, Download, Eye, Trash, Loader2 } from "lucide-react"
 import { MultiSelectCheckbox } from "@/components/multi-select-checkbox"
 import { Button } from "@/components/ui/button"
-import RichTextEditor from "@/components/rich-text-editor"
+
 import { AnsDocumentosService } from "@/lib/services/ans-documentos.service"
 import RichTextEditorWrapper from "@/components/RichTextEditorWrapper";
 
@@ -27,9 +27,11 @@ import MarkdownEditor from "@/components/MarkdownEditor"
 import HtmlEditor from "@/components/MarkdownEditor"
 import HtmlRenderer from "@/components/HtmlRenderer"
 import RichTextEditorWithPreview from "@/components/RichTextEditorWithPreview"
-import React, { useState } from "react"
+import React, { useCallback, useState } from "react"
+import { RichTextEditor } from "@/components/rich-text-editor/rich-text-editor"
+import { RichText } from "@/components/rich-text-editor/rich-text"
 
-export const CardFormularioImputacao = React.memo(function CardFormularioImputacao({
+export function CardFormularioImputacao({
   selectedTipo,
   setSelectedTipo,
   textosDefesa,
@@ -46,9 +48,12 @@ export const CardFormularioImputacao = React.memo(function CardFormularioImputac
   setSelectedComprobatorios,
   informarOutrosDocumentos,
   setInformarOutrosDocumentos,
-  editorRef
+  editorRef,
+  setOthersSupportingDocument,
+  othersSupportingDocument
 }: any) {
 
+  console.log(text)
   return (
     <Card>
       <CardHeader>
@@ -79,11 +84,12 @@ export const CardFormularioImputacao = React.memo(function CardFormularioImputac
           <div id="rich-text" className="space-y-2">
             <Label className="text-sm">Detalhamento do Motivo</Label>
 
-            <RichTextEditorWrapper
+            {/* <RichTextEditorWrapper
               initialValue={text}
               onChange={(html) => setText((prev: any) => (prev === html ? prev : html))}
-            />
+            /> */}
 
+            <RichTextEditor value={text} onChange={setText} />
 
             {/* <RichTextEditorWithPreview
               initialValue={text}
@@ -141,29 +147,65 @@ export const CardFormularioImputacao = React.memo(function CardFormularioImputac
               onCheckedChange={setInformarOutrosDocumentos}
             />
             <Label htmlFor="outros-documentos" className="text-sm">
-              Informar outros documentos comprobatórios.
+              Outros Documentos Comprobatórios
             </Label>
           </div>
+
+          {(informarOutrosDocumentos) && (
+            <div className="mt-7 space-y-2">
+              <Input
+                placeholder="Informe documentos comprobatórios que não estão listados à cima"
+                value={othersSupportingDocument}
+                onChange={(e) => setOthersSupportingDocument(e.target.value)}
+              />
+            </div>
+          )}
         </div>
       </CardContent>
     </Card>
   )
-});
+};
 
-export function CardPedidos({ selectedPedido, setSelectedPedido }: any) {
+export function CardPedidos({ selectedPedido, setSelectedPedido, valorAbatido, setValorAbatido }: any) {
+  const formatCurrency = useCallback((value: string) => {
+    // Remove tudo que não for número
+    const numericValue = value.replace(/\D/g, "")
+
+    // Converte para centavos
+    const floatValue = parseFloat(numericValue) / 100
+
+    // Formata no padrão brasileiro
+    if (isNaN(floatValue)) return ""
+    return floatValue.toLocaleString("pt-BR", { style: "currency", currency: "BRL" })
+  }, [])
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value
+    setValorAbatido(formatCurrency(value))
+  }
+
   return (
     <Card>
-      <CardHeader><CardTitle>Pedidos</CardTitle></CardHeader>
+      <CardHeader>
+        <CardTitle>Pedidos</CardTitle>
+      </CardHeader>
+
       <CardContent>
-        <RadioGroup value={selectedPedido} onValueChange={setSelectedPedido} className="space-y-4">
+        <RadioGroup
+          value={selectedPedido}
+          onValueChange={setSelectedPedido}
+          className="space-y-4"
+        >
           <div className="flex items-center space-x-3">
             <RadioGroupItem value="anulacao-identificacao" id="anulacao-identificacao" />
             <Label htmlFor="anulacao-identificacao">Anulação da identificação do atendimento.</Label>
           </div>
+
           <div className="flex items-center space-x-3">
             <RadioGroupItem value="retificacao" id="retificacao" />
             <Label htmlFor="retificacao">Retificação do valor a ser ressarcido.</Label>
           </div>
+
           <div className="flex items-center space-x-3">
             <RadioGroupItem value="anulacao-subsidiaria" id="anulacao-subsidiaria" />
             <Label htmlFor="anulacao-subsidiaria">
@@ -171,13 +213,27 @@ export function CardPedidos({ selectedPedido, setSelectedPedido }: any) {
             </Label>
           </div>
         </RadioGroup>
+
+        {(selectedPedido === "retificacao" ||
+          selectedPedido === "anulacao-subsidiaria") && (
+            <div className="mt-7 space-y-2">
+              <Label className="text-sm flex items-center gap-2">
+                Valor Ressarcido
+              </Label>
+              <Input
+                placeholder="Valor ressarcido em reais (R$)"
+                value={valorAbatido}
+                onChange={handleChange}
+              />
+            </div>
+          )}
       </CardContent>
     </Card>
   )
 }
 
 export function CardDocumentosAnexados({ anexedDocuments, onDelete }: any) {
-  
+
   const [deletingId, setDeletingId] = useState<string | null>(null)
 
   return (

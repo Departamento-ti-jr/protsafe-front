@@ -15,7 +15,7 @@ export interface Defesa {
     updatedAt: string
     __v: number
   }[]
-  othersSupportingDocument: boolean
+  othersSupportingDocument?: string
   supportingDocument: string
   orderOption: number
   rectificationValue: string
@@ -26,6 +26,7 @@ export interface Defesa {
   atendimento: Abi,
   createdAt: string
   updatedAt: string
+  valorAbatido: string
   __v: number
 }
 

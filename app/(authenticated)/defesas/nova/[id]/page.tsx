@@ -49,6 +49,8 @@ export default function NovaDefesaPage({ params }: { params: Promise<{ id: strin
   const [supportingDocument, setSupportingDocument] = useState("")
   const [rectificationValue, setRectificationValue] = useState("")
   const editorRef = useRef<RichTextEditorHandle>(null);
+  const [valorAbatido, setValorAbatido] = useState("");
+  const [othersSupportingDocument, setOthersSupportingDocument] = useState("");
 
   const { loadDocumentosSalvos, handleAnexarDocumento, isLoading } = useDocumentosAns(abi, setAnexedDocuments, setError)
 
@@ -193,7 +195,7 @@ export default function NovaDefesaPage({ params }: { params: Promise<{ id: strin
       tempestividade,
       calculationMemory,
       supportingDocuments: selectedComprobatorios,
-      othersSupportingDocument: informarOutrosDocumentos,
+      othersSupportingDocument: informarOutrosDocumentos ? othersSupportingDocument : "",
       supportingDocument,
       orderOption:
         selectedPedido === "retificacao"
@@ -204,9 +206,9 @@ export default function NovaDefesaPage({ params }: { params: Promise<{ id: strin
       rectificationValue: rectificationValue,
       defencesText: selectedMotivos,
       atendimento: abiId,
+      valorAbatido: valorAbatido
     };
   }
-
 
   return (
     <div className="p-6 space-y-6">
@@ -251,9 +253,16 @@ export default function NovaDefesaPage({ params }: { params: Promise<{ id: strin
         supportingDocument={supportingDocument}
         setSupportingDocument={setSupportingDocument}
         editorRef={editorRef}
+        setOthersSupportingDocument={setOthersSupportingDocument}
+        othersSupportingDocument={othersSupportingDocument}
       />
 
-      <CardPedidos selectedPedido={selectedPedido} setSelectedPedido={setSelectedPedido} />
+      <CardPedidos
+        selectedPedido={selectedPedido}
+        setSelectedPedido={setSelectedPedido}
+        valorAbatido={valorAbatido}
+        setValorAbatido={setValorAbatido}
+      />
 
       <CardDocumentosAnexados
         onDelete={(id: string) => {

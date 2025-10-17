@@ -62,9 +62,10 @@ export default function EditarDefesaPage({ params }: { params: Promise<{ id: str
   const [calculationMemory, setCalculationMemory] = useState("")
   const [supportingDocument, setSupportingDocument] = useState("")
   const [rectificationValue, setRectificationValue] = useState("")
+  const [valorAbatido, setValorAbatido] = useState("");
+  const [othersSupportingDocument, setOthersSupportingDocument] = useState("");
 
   const { loadDocumentosSalvos, handleAnexarDocumento, isLoading } = useDocumentosAns(abi, setAnexedDocuments, setError)
-
 
   useEffect(() => {
     const init = async () => {
@@ -102,7 +103,6 @@ export default function EditarDefesaPage({ params }: { params: Promise<{ id: str
 
       setDefesa(data)
 
-      // preencher estados iniciais
       setTipoDoc(data.petitionType)
       setTempestividade(data.tempestividade || "")
       setCalculationMemory(data.calculationMemory || "")
@@ -110,9 +110,18 @@ export default function EditarDefesaPage({ params }: { params: Promise<{ id: str
       setRectificationValue(data.rectificationValue || "")
       setSelectedMotivos(data.defencesText?.map((d: any) => d._id) || [])
       setSelectedComprobatorios(data.supportingDocuments?.map((d: any) => d._id) || [])
-      setInformarOutrosDocumentos(data.othersSupportingDocument || false)
+      setInformarOutrosDocumentos(String(data?.othersSupportingDocument) ? true : false);
+      setOthersSupportingDocument(String(data?.othersSupportingDocument));
       setAbi(data.atendimento)
       setText(data.text || "")
+      setSelectedPedido(
+        data.orderOption === 2
+          ? 'retificacao'
+          : data.orderOption === 3
+            ? 'anulacao-subsidiaria'
+            : 'anulacao-identificacao'
+      )
+      setValorAbatido(data.valorAbatido);
 
       return data
     } catch (err: any) {
@@ -135,35 +144,6 @@ export default function EditarDefesaPage({ params }: { params: Promise<{ id: str
       console.error(err)
     }
   }
-
-  const handleGetContent = () => {
-    if (editorRef.current) {
-      const content = editorRef.current.getContent(); // Get the editor content
-      setEditorContent(content); // Update the state with the content
-    }
-  };
-
-  // const loadDocumentosSalvos = async (idAtendimento: string) => {
-  //   try {
-  //     const { protsafe } = await AnsDocumentosService.getDocumentosByAtendimento(idAtendimento)
-
-  //     const mapped = protsafe.map((doc: any) => ({
-  //       id: doc._id,
-  //       name: doc.nome,
-  //       size: null, // você não tem o tamanho do S3 aqui, mas pode deixar null
-  //       type: doc.tipo_documento?.descricao || "Documento",
-  //       url: doc.caminho?.startsWith("http")
-  //         ? doc.caminho
-  //         : `${process.env.NEXT_PUBLIC_AWS_BASE_URL}/${doc.caminho}`, // monta a URL se só tiver key
-  //       caminho: doc.caminho,
-  //     }))
-
-  //     setAnexedDocuments(mapped)
-  //   } catch (err) {
-  //     console.error("Erro ao carregar documentos salvos:", err)
-  //     setError("Falha ao carregar documentos salvos.")
-  //   }
-  // }
 
   const loadDocumentosComprobatorios = async () => {
     try {
@@ -222,7 +202,6 @@ export default function EditarDefesaPage({ params }: { params: Promise<{ id: str
     }
   };
 
-
   const handleAtualizarDefesa = async () => {
     try {
       setLoadSalvarDefesa(true)
@@ -264,7 +243,7 @@ export default function EditarDefesaPage({ params }: { params: Promise<{ id: str
       tempestividade,
       calculationMemory,
       supportingDocuments: selectedComprobatorios,
-      othersSupportingDocument: informarOutrosDocumentos,
+      othersSupportingDocument: informarOutrosDocumentos ? othersSupportingDocument : "",
       supportingDocument,
       orderOption:
         selectedPedido === "retificacao"
@@ -275,6 +254,7 @@ export default function EditarDefesaPage({ params }: { params: Promise<{ id: str
       rectificationValue,
       defencesText: selectedMotivos,
       atendimento: abiId,
+      valorAbatido: valorAbatido
     }
   }
 
@@ -325,9 +305,17 @@ export default function EditarDefesaPage({ params }: { params: Promise<{ id: str
             supportingDocument={supportingDocument}
             setSupportingDocument={setSupportingDocument}
             editorRef={editorRef}
+            setOthersSupportingDocument={setOthersSupportingDocument}
+            othersSupportingDocument={othersSupportingDocument}
           />
 
-          <CardPedidos selectedPedido={selectedPedido} setSelectedPedido={setSelectedPedido} />
+          <CardPedidos
+            selectedPedido={selectedPedido}
+            setSelectedPedido={setSelectedPedido}
+            valorAbatido={valorAbatido}
+            setValorAbatido={setValorAbatido}
+          />
+
           <CardDocumentosAnexados
             onDelete={(id: string) => {
               setAnexedDocuments((prev: any[]) => prev.filter(doc => doc.id !== id));

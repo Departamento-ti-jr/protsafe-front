@@ -1,0 +1,11 @@
+#rich-text-editor .ProseMirror {
+  min-height: 120px !important;
+  font-size: 0.875rem;
+  line-height: 1.25rem;
+}
+
+#rich-text-editor p,
+#rich-text-editor div {
+  display: block !important;
+  width: 100% !important;
+}
