@@ -19,8 +19,6 @@ import {
   CardDocumentosAns,
 } from "../../components/defesa-cards/defesa-cards"
 import { useToast } from "@/hooks/use-toast"
-import { RichTextEditorHandle } from "@/components/rich-text-editor"
-
 import { useDocumentosAns } from "@/hooks/use-anexar-documento"
 
 import {
@@ -31,18 +29,12 @@ import {
 } from "@/components/ui/alert-dialog";
 
 
-
 export default function EditarDefesaPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = React.use(params) // id da defesa
-  const router = useRouter()
+
   const { toast } = useToast()
 
-  const editorRef = useRef<RichTextEditorHandle>(null);
-  const [editorContent, setEditorContent] = useState<string>('');
   const [isConfirmDialogOpen, setIsConfirmDialogOpen] = useState<boolean>(false);
-  
-
-  // estados
   const [defesa, setDefesa] = useState<Defesa | null>(null)
   const [tipoDoc, setTipoDoc] = useState<"RECURSO" | "IMPUGNACAO">("RECURSO")
   const [selectedPedido, setSelectedPedido] = useState("anulacao-identificacao")
@@ -64,31 +56,37 @@ export default function EditarDefesaPage({ params }: { params: Promise<{ id: str
   const [rectificationValue, setRectificationValue] = useState("")
   const [valorAbatido, setValorAbatido] = useState("");
   const [othersSupportingDocument, setOthersSupportingDocument] = useState("");
+  const [isTextLoadedFromDefesa, setIsTextLoadedFromDefesa] = useState(false);
+  const [hasUserChangedMotivos, setHasUserChangedMotivos] = useState(false);
 
   const { loadDocumentosSalvos, handleAnexarDocumento, isLoading } = useDocumentosAns(abi, setAnexedDocuments, setError)
 
   useEffect(() => {
-    const init = async () => {
-      const defesaData = await loadDefesa();
-      if (defesaData) {
-        await Promise.all([loadTextosDefesa(), loadDocumentosComprobatorios()]);
-      }
+  const init = async () => {
+    const defesaData = await loadDefesa();
+    if (defesaData) {
+      await Promise.all([loadTextosDefesa(), loadDocumentosComprobatorios()]);
+      setIsTextLoadedFromDefesa(true);
     }
-    init()
-  }, [])
+  };
+  init();
+}, []);
 
-  useEffect(() => {
-    const textosConcatenados = textosDefesa
-      .filter(t => selectedMotivos.includes(t._id))
-      .map(t => t.texto)
-      .join("\n\n")
+// ✅ Esse useEffect só atualiza o texto se o usuário mexer no dropdown
+useEffect(() => {
+  if (!hasUserChangedMotivos) return;
 
-    setText(textosConcatenados)
-  }, [selectedMotivos, textosDefesa])
+  const textosConcatenados = textosDefesa
+    .filter(t => selectedMotivos.includes(t._id))
+    .map(t => t.texto)
+    .join("\n\n");
+
+  setText(textosConcatenados);
+}, [selectedMotivos, textosDefesa, hasUserChangedMotivos]);
 
   useEffect(() => {
     if (abi?._id) {
-      loadDocumentosSalvos(abi._id)
+      // loadDocumentosSalvos(abi._id)
     }
   }, [abi])
 
@@ -101,8 +99,8 @@ export default function EditarDefesaPage({ params }: { params: Promise<{ id: str
         return null
       }
 
+      console.log("data: ", data);
       setDefesa(data)
-
       setTipoDoc(data.petitionType)
       setTempestividade(data.tempestividade || "")
       setCalculationMemory(data.calculationMemory || "")
@@ -112,7 +110,7 @@ export default function EditarDefesaPage({ params }: { params: Promise<{ id: str
       setSelectedComprobatorios(data.supportingDocuments?.map((d: any) => d._id) || [])
       setInformarOutrosDocumentos(String(data?.othersSupportingDocument) ? true : false);
       setOthersSupportingDocument(String(data?.othersSupportingDocument));
-      setAbi(data.atendimento)
+      setAbi({...data.atendimento, operadora: data.operadora} );
       setText(data.text || "")
       setSelectedPedido(
         data.orderOption === 2
@@ -156,7 +154,7 @@ export default function EditarDefesaPage({ params }: { params: Promise<{ id: str
   }
 
   const handleEnviarParaAns = async () => {
-    
+
     if (!abi?._id) {
       toast({
         variant: "warning",
@@ -218,7 +216,6 @@ export default function EditarDefesaPage({ params }: { params: Promise<{ id: str
         description: "Defesa atualizada.",
       })
 
-      // router.push("/defesas")
     } catch (error: any) {
       const apiMessage =
         error?.body?.message || error?.statusText || "Erro ao atualizar defesa."
@@ -272,14 +269,13 @@ export default function EditarDefesaPage({ params }: { params: Promise<{ id: str
         </div>
       </div>
 
-      {/* 🔴 Se deu erro inesperado */}
+      
       {error && (
         <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-6 text-center">
           <p className="text-yellow-700 font-medium">{error}</p>
         </div>
       )}
 
-      {/* 🟢 Só renderiza o formulário se a defesa existir */}
       {defesa && (
         <>
           {abi && <DefesaCardAtendimento abi={abi} />}
@@ -292,6 +288,7 @@ export default function EditarDefesaPage({ params }: { params: Promise<{ id: str
             setSelectedMotivos={setSelectedMotivos}
             text={text}
             setText={setText}
+            setHasUserChangedMotivos={setHasUserChangedMotivos}
             detalhamentoMotivo={detalhamentoMotivo}
             documentosComprobatorios={documentosComprobatorios}
             selectedComprobatorios={selectedComprobatorios}
@@ -304,7 +301,6 @@ export default function EditarDefesaPage({ params }: { params: Promise<{ id: str
             setCalculationMemory={setCalculationMemory}
             supportingDocument={supportingDocument}
             setSupportingDocument={setSupportingDocument}
-            editorRef={editorRef}
             setOthersSupportingDocument={setOthersSupportingDocument}
             othersSupportingDocument={othersSupportingDocument}
           />
@@ -320,7 +316,7 @@ export default function EditarDefesaPage({ params }: { params: Promise<{ id: str
             onDelete={(id: string) => {
               setAnexedDocuments((prev: any[]) => prev.filter(doc => doc.id !== id));
             }}
-            anexedDocuments={anexedDocuments} 
+            anexedDocuments={anexedDocuments}
           />
           <CardDocumentosAns />
 

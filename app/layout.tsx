@@ -11,7 +11,7 @@ import { QueryProvider } from "./providers/query-provider"
 const inter = Inter({ subsets: ["latin"] })
 
 export const metadata: Metadata = {
-  title: "ReSUS - Sistema Jurídico",
+  title: "Protsafe - Sistema Jurídico",
   description: "Sistema para elaboração de defesas jurídicas contra pedidos de ressarcimento do SUS",
     generator: 'v0.dev'
 }

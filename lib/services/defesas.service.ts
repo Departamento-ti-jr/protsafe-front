@@ -1,6 +1,6 @@
 import { PaginatedResponse } from "@/hooks/use-pagination"
 import { httpClient } from "../http-client"
-import { Abi } from "./abis.service"
+import { Abi, Operadora } from "./abis.service"
 
 export interface Defesa {
   _id: string
@@ -27,6 +27,7 @@ export interface Defesa {
   createdAt: string
   updatedAt: string
   valorAbatido: string
+  operadora?: Operadora
   __v: number
 }
 
@@ -74,7 +75,6 @@ export class DefesasService {
     }
   }
 
-
   static async getById(id: string): Promise<Defesa> {
     try {
       return await httpClient.get<Defesa>(`${this.endpoint}?id=${id}`)
@@ -84,9 +84,14 @@ export class DefesasService {
     }
   }
 
-  static async create(data: Partial<Defesa>): Promise<Blob> {
-    return await httpClient.post("/defesa", data, "blob");
+  static async create(data: Partial<Defesa>): Promise<{ message: string; data: Defesa }> {
+    return await httpClient.post<{ message: string; data: Defesa }>("/defesa", data);
   }
+
+  static async generatePdf(id: string): Promise<Blob> {
+    return await httpClient.post(`/defesa/${id}/pdf`, null, "blob");
+  }
+
 
   static async update(id: string, data: Partial<Defesa>): Promise<Defesa> {
     try {

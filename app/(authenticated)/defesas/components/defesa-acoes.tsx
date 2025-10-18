@@ -2,18 +2,20 @@
 
 import React from "react"
 import { Button } from "@/components/ui/button"
-import { Upload, Save, Cloud } from "lucide-react"
+import { Upload, Save, Cloud, Loader2 } from "lucide-react"
 import {
   AlertDialog,
   AlertDialogContent,
   AlertDialogTitle,
   AlertDialogDescription,
 } from "@/components/ui/alert-dialog"
+import { cn } from "@/lib/utils"
 
 interface DefesaAcoesProps {
+  disableButtonSendAns?: boolean
   anexedDocuments: any[]
   isLoading: boolean
-  loadSalvarDefesa: boolean
+  loadSalvarDefesa: "salvando" | "gerando-pdf" | null
   onAnexarDocumento: () => void
   onEnviarParaAns: () => void
   onSalvarOuAtualizar: () => void
@@ -21,6 +23,7 @@ interface DefesaAcoesProps {
 }
 
 export function DefesaAcoes({
+  disableButtonSendAns,
   anexedDocuments,
   isLoading,
   loadSalvarDefesa,
@@ -34,6 +37,7 @@ export function DefesaAcoes({
   return (
     <>
       <div className="flex justify-end gap-4">
+        {/* Botão de anexar */}
         <Button
           disabled={isLoading}
           variant="outline"
@@ -44,27 +48,44 @@ export function DefesaAcoes({
           {isLoading ? "Enviando..." : "ANEXAR DOCUMENTO"}
         </Button>
 
-        <Button
-          variant="outline"
-          className="rounded-xl bg-transparent"
-          onClick={() => {
-            if (!anexedDocuments || anexedDocuments.length === 0) {
-              setIsConfirmDialogOpen(true)
-            } else {
-              onEnviarParaAns()
-            }
-          }}
-        >
-          <Cloud className="mr-2 h-4 w-4" /> INTEGRAR ANS
-        </Button>
+        {/* Botão de integrar com ANS */}
+        {!disableButtonSendAns && (
+          <Button
+            variant="outline"
+            className="rounded-xl bg-transparent"
+            onClick={() => {
+              if (!anexedDocuments || anexedDocuments.length === 0) {
+                setIsConfirmDialogOpen(true)
+              } else {
+                onEnviarParaAns()
+              }
+            }}
+          >
+            <Cloud className="mr-2 h-4 w-4" /> INTEGRAR ANS
+          </Button>
+        )}
 
+        {/* Botão de salvar/gerar defesa */}
         <Button
-          className="rounded-xl"
+          disabled={!!loadSalvarDefesa}
           onClick={onSalvarOuAtualizar}
-          disabled={loadSalvarDefesa}
+          className={cn(
+            "rounded-xl min-w-[200px]",
+            loadSalvarDefesa === "salvando" && "bg-yellow-500 hover:bg-yellow-600",
+            loadSalvarDefesa === "gerando-pdf" && "bg-blue-600 hover:bg-blue-700"
+          )}
         >
-          <Save className="mr-2 h-4 w-4" />
-          {loadSalvarDefesa ? "SALVANDO..." : salvarLabel}
+          {loadSalvarDefesa ? (
+            <>
+              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              {loadSalvarDefesa === "salvando" ? "Salvando..." : "Gerando PDF..."}
+            </>
+          ) : (
+            <>
+              <Save className="mr-2 h-4 w-4" />
+              {salvarLabel}
+            </>
+          )}
         </Button>
       </div>
 

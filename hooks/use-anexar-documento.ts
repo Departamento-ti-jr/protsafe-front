@@ -82,8 +82,8 @@ export function useDocumentosAns(
             name: file.name,
             size: file.size,
             type: documentType,
-            url,
-            caminho,
+            url: created?.caminho || caminho,
+            caminho: created?.caminho || caminho,
           }
         })
       )

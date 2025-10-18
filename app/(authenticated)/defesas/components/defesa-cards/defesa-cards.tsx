@@ -2,7 +2,6 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Label } from "@/components/ui/label"
 import { Input } from "@/components/ui/input"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Textarea } from "@/components/ui/textarea"
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
 import { Checkbox } from "@/components/ui/checkbox"
 import { FileText, Calculator, FolderOpen, Download, Eye, Trash, Loader2 } from "lucide-react"
@@ -10,7 +9,6 @@ import { MultiSelectCheckbox } from "@/components/multi-select-checkbox"
 import { Button } from "@/components/ui/button"
 
 import { AnsDocumentosService } from "@/lib/services/ans-documentos.service"
-import RichTextEditorWrapper from "@/components/RichTextEditorWrapper";
 
 import {
   AlertDialog,
@@ -23,13 +21,8 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog"
-import MarkdownEditor from "@/components/MarkdownEditor"
-import HtmlEditor from "@/components/MarkdownEditor"
-import HtmlRenderer from "@/components/HtmlRenderer"
-import RichTextEditorWithPreview from "@/components/RichTextEditorWithPreview"
 import React, { useCallback, useState } from "react"
 import { RichTextEditor } from "@/components/rich-text-editor/rich-text-editor"
-import { RichText } from "@/components/rich-text-editor/rich-text"
 
 export function CardFormularioImputacao({
   selectedTipo,
@@ -48,9 +41,9 @@ export function CardFormularioImputacao({
   setSelectedComprobatorios,
   informarOutrosDocumentos,
   setInformarOutrosDocumentos,
-  editorRef,
   setOthersSupportingDocument,
-  othersSupportingDocument
+  othersSupportingDocument,
+  setHasUserChangedMotivos
 }: any) {
 
   console.log(text)
@@ -76,32 +69,17 @@ export function CardFormularioImputacao({
         <MultiSelectCheckbox
           options={textosDefesa.map((texto: any) => ({ label: texto.nome, value: texto._id }))}
           value={selectedMotivos}
-          onChange={setSelectedMotivos}
+          onChange={(values) => {
+            setHasUserChangedMotivos(true);
+            setSelectedMotivos(values);
+          }}
           label="Motivo de impugnação/recurso"
         />
 
         <div className="space-y-4 p-4 bg-gray-50 rounded-lg border border-gray-200">
           <div id="rich-text" className="space-y-2">
             <Label className="text-sm">Detalhamento do Motivo</Label>
-
-            {/* <RichTextEditorWrapper
-              initialValue={text}
-              onChange={(html) => setText((prev: any) => (prev === html ? prev : html))}
-            /> */}
-
             <RichTextEditor value={text} onChange={setText} />
-
-            {/* <RichTextEditorWithPreview
-              initialValue={text}
-              onChange={(htmlComNbsp: string) => {
-                setText((prev: string) => {
-                  // ⚠️ evita re-render se o valor for idêntico
-                  if (prev === htmlComNbsp) return prev;
-                  return htmlComNbsp;
-                });
-              }}
-            /> */}
-
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
