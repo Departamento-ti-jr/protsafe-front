@@ -27,6 +27,7 @@ import {
   AlertDialogTitle,
   AlertDialogDescription,
 } from "@/components/ui/alert-dialog";
+import DefesaCardProtocolo from "../../components/defesas-card-protocolo"
 
 
 export default function EditarDefesaPage({ params }: { params: Promise<{ id: string }> }) {
@@ -279,6 +280,8 @@ useEffect(() => {
       {defesa && (
         <>
           {abi && <DefesaCardAtendimento abi={abi} />}
+
+          {defesa && <DefesaCardProtocolo defesa={defesa} />}
 
           <CardFormularioImputacao
             selectedTipo={tipoDoc}

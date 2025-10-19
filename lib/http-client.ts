@@ -118,6 +118,21 @@ class HttpClient {
     return text ? (JSON.parse(text) as T) : ({} as T)
   }
 
+  async patch<T>(endpoint: string, data?: any): Promise<T> {
+    const response = await fetch(`${this.baseURL}${endpoint}`, {
+      method: "PATCH",
+      headers: this.getAuthHeaders(false),
+      body: data ? JSON.stringify(data) : undefined,
+    })
+
+    if (!response.ok) {
+      throw await this.buildHttpError(response)
+    }
+
+    const text = await response.text().catch(() => "")
+    return text ? (JSON.parse(text) as T) : ({} as T)
+  }
+
   async delete<T>(endpoint: string): Promise<T> {
     const response = await fetch(`${this.baseURL}${endpoint}`, {
       method: "DELETE",

@@ -28,6 +28,7 @@ export interface Defesa {
   updatedAt: string
   valorAbatido: string
   operadora?: Operadora
+  numProtocoloAns?: string
   __v: number
 }
 
