@@ -277,6 +277,7 @@ useEffect(() => {
         </div>
       )}
 
+
       {defesa && (
         <>
           {abi && <DefesaCardAtendimento abi={abi} />}
