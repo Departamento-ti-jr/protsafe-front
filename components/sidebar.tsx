@@ -66,6 +66,11 @@ export function Sidebar({ className }: SidebarProps) {
       icon: Shield,
     },
     {
+      name: "Automação",
+      href: "/automacao",
+      icon: Shield,
+    },
+    {
       name: "Recolhimentos",
       href: "/recolhimentos",
       icon: Receipt,
