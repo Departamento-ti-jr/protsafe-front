@@ -3,10 +3,10 @@
 import { useState, useEffect } from "react"
 import { type Abi } from "@/lib/services/abis.service"
 import type { PaginatedResponse } from "@/components/ui/pagination-controls"
-import AbisFilters from "./components/automacao-filters"
-import AbisTable from "./components/automacao-table"
-import AbisPagination from "./components/automacao-pagination"
-import AbisLoaderOrError from "./components/automacaos-loader-or-error"
+import AbisFilters from "./_components/automacao-filters"
+import AbisTable from "./_components/automacao-table"
+import AbisPagination from "./_components/automacao-pagination"
+import AbisLoaderOrError from "./_components/automacaos-loader-or-error"
 import { DefesaBaseService } from "@/lib/services/defesa-base.service"
 
 export default function AutomacaoPage() {
@@ -28,15 +28,17 @@ export default function AutomacaoPage() {
     const loadGroupedHeaders = async () => {
       setLoading(true);
       try {
+        console.log("Loading grouped headers with page:", currentPage, "and pageSize:", pageSize);
         const response = await DefesaBaseService.getGroupedHeaders({
           page: currentPage,
           limit: pageSize,
         });
+        console.log("Fetched grouped headers:", response);
         setPaginatedData(response);
         setError(null);
       } catch (err) {
         console.error(err);
-        setError("Erro ao carregar defesas agrupadas.");
+        setError("Erro ao carregar defesas.");
       } finally {
         setLoading(false);
       }

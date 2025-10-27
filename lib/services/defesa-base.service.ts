@@ -183,7 +183,13 @@ export class DefesaBaseService {
     }
   }
 
-  static async getAtendimentos(params?: { numeroABI?: string; page?: number; limit?: number; search?: string }) {
+  static async getAtendimentos(params?: {
+    numeroABI?: string
+    page?: number
+    limit?: number
+    search?: string
+    status?: string[] // 👈 novo parâmetro
+  }) {
     try {
       const searchParams = new URLSearchParams()
 
@@ -191,6 +197,14 @@ export class DefesaBaseService {
       if (params?.page) searchParams.append("page", String(params.page))
       if (params?.limit) searchParams.append("limit", String(params.limit))
       if (params?.search) searchParams.append("search", params.search)
+
+      // 👇 novo bloco: adiciona um ou mais status ao querystring
+      if (params?.status && params.status.length > 0) {
+        // envia cada status separadamente (?status=A&status=B)
+        params.status.forEach((s) => searchParams.append("status", s))
+        // se preferir vírgulas, troque por:
+        // searchParams.append("status", params.status.join(","))
+      }
 
       const url = searchParams.toString()
         ? `${this.endpoint}?${searchParams.toString()}`
