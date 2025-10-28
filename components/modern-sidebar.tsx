@@ -15,6 +15,7 @@ import {
   FileTerminal,
   LogOut,
   ChevronRight,
+  Bot,
 } from "lucide-react"
 import SignOut from "@/components/sign-out"
 import { handleSignOut } from "@/app/actions/auth"
@@ -34,7 +35,7 @@ export function ModernSidebar({ className }: ModernSidebarProps) {
     { name: "Textos de defesa", href: "/textos-defesa", icon: FileText },
     { name: "Documentos comprob.", href: "/documentos-comprobatorios", icon: FileCheck },
     { name: "ABIs", href: "/abis", icon: FileSpreadsheet },
-    { name: "Automação", href: "/automacao", icon: FileSpreadsheet },
+    { name: "Automação", href: "/automacao", icon: Bot },
     { name: "Defesas", href: "/defesas", icon: Shield },
     { name: "Recolhimentos", href: "/recolhimentos", icon: Receipt },
     { name: "Logs", href: "/logs", icon: History },

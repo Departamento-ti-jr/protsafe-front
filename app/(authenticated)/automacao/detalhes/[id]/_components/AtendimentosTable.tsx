@@ -23,8 +23,7 @@ export function AtendimentosTable({ atendimentos, loading }: AtendimentosTablePr
                 <TableHead>N° Processo</TableHead>
                 <TableHead>N° Atendimento</TableHead>
                 <TableHead>Competência</TableHead>
-                <TableHead>Qtd Docs Req.</TableHead>
-                <TableHead>Qtd Docs Receb.</TableHead>
+                <TableHead>Qtd. Requerida / Recebida</TableHead>
                 <TableHead>Primeira Alegação</TableHead>
                 <TableHead>Segunda Alegação</TableHead>
                 <TableHead>Status</TableHead>
@@ -55,8 +54,7 @@ export function AtendimentosTable({ atendimentos, loading }: AtendimentosTablePr
                         .padStart(6, "0")
                         .replace(/^(\d{2})(\d{4})$/, "$1/$2")}
                     </TableCell>
-                    <TableCell>{item?.requiredDocsCount}</TableCell>
-                    <TableCell>{item?.docsReceivedCount}</TableCell>
+                    <TableCell className="text-center">{item?.requiredDocsCount} / {item?.docsReceivedCount}</TableCell>
                     <TableCell>{item?.primeiraAlegacao}</TableCell>
                     <TableCell>{item?.segundaAlegacao}</TableCell>
                     <TableCell>
