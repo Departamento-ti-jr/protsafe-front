@@ -64,7 +64,12 @@ export default function ABIDetalhesPage({ params }: { params: Promise<{ id: stri
   }, [params])
 
   useEffect(() => {
-    fetchAtendimentos(abi?.numeroABI ? Number(abi.numeroABI) : null)
+    let numberAbi = abi?.numeroABI ? Number(abi.numeroABI) : null;
+    let registroAns = abi?.registroAns ? Number(abi?.registroAns) : null;
+
+    if(numberAbi && registroAns) {
+      fetchAtendimentos(numberAbi, registroAns);
+    }
   }, [abi, currentPage, pageSize])
 
   const fetchAbi = async (id: string) => {
@@ -82,7 +87,7 @@ export default function ABIDetalhesPage({ params }: { params: Promise<{ id: stri
   }
 
 
-  const fetchAtendimentos = async (abi?: number | null) => {
+  const fetchAtendimentos = async (abi?: number | null, registroAns?: number | null) => {
     try {
       setError(null)
       setAtendimentosLoading(true)
@@ -90,7 +95,8 @@ export default function ABIDetalhesPage({ params }: { params: Promise<{ id: stri
       const response = await AbisService.getAtendimentos({
         page: currentPage,
         limit: pageSize,
-        numeroABI: abi != null ? String(abi) : undefined
+        numeroABI: abi != null ? String(abi) : undefined,
+        registroAns: abi != null ? String(registroAns) : undefined
       })
 
       console.log("Fetched atendimentos:", response)

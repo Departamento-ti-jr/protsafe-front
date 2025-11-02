@@ -160,11 +160,12 @@ export class AbisService {
     }
   }
 
-  static async getAtendimentos(params?: { numeroABI?: string; page?: number; limit?: number }) {
+  static async getAtendimentos(params?: { numeroABI?: string; registroAns?: string, page?: number; limit?: number }) {
     try {
       const searchParams = new URLSearchParams()
 
       if (params?.numeroABI) searchParams.append("numeroABI", params.numeroABI)
+      if (params?.registroAns) searchParams.append("registroAns", params.registroAns)
       if (params?.page) searchParams.append("page", String(params.page))
       if (params?.limit) searchParams.append("limit", String(params.limit))
 
