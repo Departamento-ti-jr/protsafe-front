@@ -165,21 +165,6 @@ useEffect(() => {
       return;
     }
 
-    // ✅ 1. Verifica se há documentos anexados
-    if (!anexedDocuments || anexedDocuments.length === 0) {
-      const confirmar = window.confirm(
-        "Não existem documentos anexados. Deseja enviar mesmo assim?"
-      );
-      if (!confirmar) {
-        toast({
-          variant: "warning",
-          title: "Envio cancelado",
-          description: "O envio foi cancelado pelo usuário.",
-        });
-        return;
-      }
-    }
-
     try {
       toast({
         title: "Enviando...",
