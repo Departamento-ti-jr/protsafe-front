@@ -1,208 +1,102 @@
-"use client";
+"use client"
 
-import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
-import { AbisService, type Abi } from "@/lib/services/abis.service";
+import React, { useMemo, useState } from "react"
+import Link from "next/link"
+import { useRouter } from "next/navigation"
+import { ArrowLeft } from "lucide-react"
+import { Button } from "@/components/ui/button"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { PaginationControls } from "@/components/ui/pagination-controls"
+import { formatDateToDDMMYYYY } from "@/lib/date-helpers"
+import { AbisService } from "@/lib/services/abis.service"
+import type { Atendimento } from "@/lib/services/atendimentos.service"
+import { useAbiDetails } from "../../hooks/use-abi-details"
+import { ABINavigationBreadcrumb } from "../components/abi-navigation-breadcrumb"
+import { ABIAtendimentoDetails } from "../components/abi-atendimento-details"
+import { ABIProcedimentoDetails } from "../components/abi-procedimento-details"
+import { AtendimentosTable } from "../components/abi-atendimentos-table"
 
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Input } from "@/components/ui/input";
+type ViewMode = "abi" | "atendimento" | "procedimento"
+type AtendimentoDetalhado = Atendimento;
 
-import Link from "next/link";
+export default function ABIDetalhesPage({ params }: { params: Promise<{ id: string }> }) {
+  const { id } = React.use(params)
+  const router = useRouter()
 
-import { PaginationControls } from "@/components/ui/pagination-controls";
-import { useDebounce } from "@/hooks/use-debounce";
-import { usePagination } from "@/hooks/use-pagination";
+  const [viewMode, setViewMode] = useState<ViewMode>("abi")
+  const [selectedAtendimento, setSelectedAtendimento] = useState<Atendimento | null>(null)
+  const [selectedProcedimento, setSelectedProcedimento] = useState<any>(null)
 
-import { ABINavigationBreadcrumb } from "../components/abi-navigation-breadcrumb";
-import { ABIAtendimentoDetails } from "../components/abi-atendimento-details";
-import { ABIProcedimentoDetails } from "../components/abi-procedimento-details";
+  const {
+    abi,
+    abiLoading,
+    error,
+    atendimentos,
+    atendimentosLoading,
+    searchTerm,
+    handleSearch,
+    pagination,
+    handlePageChange,
+    handlePageSizeChange,
+    refetchAtendimentos,
+  } = useAbiDetails(id, { initialPageSize: 5 })
 
-import { formatDateToDDMMYYYY } from "@/lib/date-helpers";
+  const breadcrumbStep = useMemo(() => viewMode, [viewMode])
 
-import { AtendimentosTable } from "../components/abi-atendimentos-table";
-import { ArrowLeft } from "lucide-react";
-import { Atendimento, AtendimentosService } from "@/lib/services/atendimentos.service";
-
-type ViewMode = "abi" | "atendimento" | "procedimento";
-
-interface AtendimentoItem {
-  _id: string;
-  tipo: string;
-  numeroAihApac: string;
-  numeroProcesso: string;
-  comp: number | string | null;
-  descricao: string;
-  dataInicial: string;
-  dataFinal: string;
-  defesa?: any;
-  semDefesa?: boolean;
-}
-
-export default function ABIDetalhesPage({
-  params,
-}: {
-  params: Promise<{ id: number }>;
-}) {
-  const router = useRouter();
-
-  const { pagination: atendimentosPaginated, setPagination: setAtendimentoPaginated } =
-    usePagination<Atendimento>();
-
-  const [currentPage, setCurrentPage] = useState(1);
-  const [pageSize, setPageSize] = useState(5);
-
-  const [searchTerm, setSearchTerm] = useState("");
-  const debouncedSearchTerm = useDebounce(searchTerm, 500);
-
-  const [abi, setAbi] = useState<Abi | null>(null);
-  const [id, setId] = useState<string | null>(null);
-
-  const [loading, setLoading] = useState(true);
-  const [atendimentosLoading, setAtendimentosLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-
-  // navegação
-  const [viewMode, setViewMode] = useState<ViewMode>("abi");
-  const [selectedAtendimento, setSelectedAtendimento] =
-    useState<AtendimentoItem | null>(null);
-  const [selectedProcedimento, setSelectedProcedimento] = useState<any>(null);
-
-  // carregar ID da URL
-  useEffect(() => {
-    params.then((resolved) => {
-      setId(String(resolved.id));
-      fetchAbi(String(resolved.id));
-    });
-  }, [params]);
-
-  useEffect(() => {
-    console.log("atendimentosPaginated mudou:", atendimentosPaginated);
-  }, [atendimentosPaginated]);
-
-  useEffect(() => {
-    if (!abi) return;
-    const abiId = Number(abi.id);
-    if (abiId) {
-      fetchAtendimentos(abiId);
-    }
-  }, [abi, currentPage, pageSize]);
-
-  // ================================
-  // BUSCAR ABI
-  // ================================
-  const fetchAbi = async (id: string) => {
-    try {
-      const result = await AbisService.getById(id, { include: ["operadora"] });
-      setAbi(result);
-    } catch (err) {
-      setError("Erro ao carregar ABI.");
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  // ================================
-  // BUSCAR ATENDIMENTOS
-  // ================================
-  const fetchAtendimentos = async (abiId?: number, registroAns?: number) => {
-    try {
-      setError(null);
-      setAtendimentosLoading(true);
-
-      const response = await AtendimentosService.getAll({
-        page: currentPage,
-        limit: pageSize,
-        abiId: abiId,
-        registroAns: registroAns ? String(registroAns) : undefined,
-      });
-
-      setAtendimentoPaginated(response);
-      console.log("Fetched atendimentos:", atendimentosPaginated);
-    } catch (err) {
-      setError("Erro ao carregar atendimentos.");
-    } finally {
-      setAtendimentosLoading(false);
-    }
-  };
-
-  // ================================
-  // HANDLERS
-  // ================================
-  const handleSearch = (value: string) => {
-    setSearchTerm(value);
-    setCurrentPage(1);
-  };
-
-  const handlePageChange = (page: number) => {
-    setCurrentPage(page);
-  };
-
-  const handlePageSizeChange = (newPageSize: number) => {
-    setPageSize(newPageSize);
-    setCurrentPage(1);
-  };
-
-  const handleViewAtendimento = (atendimento: AtendimentoItem) => {
-    setSelectedAtendimento(atendimento);
-    setViewMode("atendimento");
-  };
+  const handleViewAtendimento = (atendimento: AtendimentoDetalhado) => {
+    atendimento.abi = abi ?? undefined; 
+    setSelectedAtendimento(atendimento)
+    setViewMode("atendimento")
+  }
 
   const handleViewProcedimento = (procedimento: any) => {
-    setSelectedProcedimento(procedimento);
-    setViewMode("procedimento");
-  };
+    setSelectedProcedimento(procedimento)
+    setViewMode("procedimento")
+  }
 
   const handleBackToAbi = () => {
-    setSelectedAtendimento(null);
-    setSelectedProcedimento(null);
-    setViewMode("abi");
-  };
+    setSelectedAtendimento(null)
+    setSelectedProcedimento(null)
+    setViewMode("abi")
+  }
 
   const handleBackToAtendimento = () => {
-    setSelectedProcedimento(null);
-    setViewMode("atendimento");
-  };
+    setSelectedProcedimento(null)
+    setViewMode("atendimento")
+  }
 
   const handleNewDefender = (idAtendimento: string) => {
-    router.push(`/defesas/nova/${idAtendimento}`);
-  };
+    router.push(`/defesas/nova/${idAtendimento}`)
+  }
 
   const handleEditDefender = (defenceId: string) => {
-    router.push(`/defesas/editar/${defenceId}`);
-  };
+    router.push(`/defesas/editar/${defenceId}`)
+  }
 
-  const handleMarkAsSemDefesa = async (idAtendimento: string) => {
+  const handleMarkAsSemDefesa = async (atendimentoId: string) => {
     try {
-      await AbisService.markAsSemDefesa(idAtendimento);
-      fetchAtendimentos(Number(abi?.numeroAbi), Number(abi?.registroAns));
+      await AbisService.markAsSemDefesa(atendimentoId)
+      refetchAtendimentos()
     } catch (err) {
-      console.error(err);
-      alert("Erro ao marcar como sem defesa.");
+      console.error(err)
+      alert("Erro ao marcar como sem defesa.")
     }
-  };
+  }
 
-  if (loading) return <div className="p-6">Carregando...</div>;
+  if (abiLoading) {
+    return <div className="p-6 text-sm text-muted-foreground">Carregando ABI...</div>
+  }
 
-  if (error || !abi)
-    return (
-      <div className="p-6 text-red-600">
-        {error || "Não foi possível carregar a ABI."}
-      </div>
-    );
+  if (error || !abi) {
+    return <div className="p-6 text-sm text-red-600">{error || "Não foi possível carregar a ABI."}</div>
+  }
 
-  const getCurrentStep = (): ViewMode => viewMode;
-
-  // ====================================================
-  // RENDER
-  // ====================================================
   return (
     <div className="flex min-h-screen bg-gray-50">
       <ABINavigationBreadcrumb
-        currentStep={getCurrentStep()}
-        abiId={id ?? undefined}
-        atendimentoId={selectedAtendimento?._id}
+        currentStep={breadcrumbStep}
+        abiId={id}
+        atendimentoId={selectedAtendimento?._id ?? selectedAtendimento?.id?.toString()}
         procedimentoId={selectedProcedimento?.id}
         onNavigateToAbi={handleBackToAbi}
         onNavigateToAtendimento={selectedAtendimento ? handleBackToAtendimento : undefined}
@@ -211,7 +105,6 @@ export default function ABIDetalhesPage({
       <div className="flex-1 p-6 space-y-6">
         {viewMode === "abi" && (
           <>
-            {/* HEADER */}
             <div className="flex items-center gap-4">
               <Link href="/abis">
                 <Button variant="outline" size="icon">
@@ -220,68 +113,54 @@ export default function ABIDetalhesPage({
               </Link>
 
               <div>
-                <h1 className="text-2xl font-bold">
-                  ABI {abi.numeroAbi}
-                </h1>
-                <p className="text-sm text-gray-600">
-                  Detalhes da ABI {abi.numeroAbi}
-                </p>
+                <h1 className="text-2xl font-bold">ABI {abi.numeroAbi}</h1>
+                <p className="text-sm text-gray-600">Detalhes da ABI {abi.numeroAbi}</p>
               </div>
             </div>
 
-            {/* CARD - DETALHES */}
             <Card>
               <CardHeader>
                 <CardTitle>Detalhes da ABI</CardTitle>
               </CardHeader>
-              <CardContent className="space-y-4">
-
-                <div className="grid grid-cols-3 gap-4">
-                  <div>
-                    <p className="text-sm text-gray-500">Número da ABI</p>
-                    <p className="font-semibold">{abi.numeroAbi}</p>
-                  </div>
-
-                  <div>
-                    <p className="text-sm text-gray-500">Número Processo</p>
-                    <p className="font-mono">{abi.numeroProcesso}</p>
-                  </div>
-
-                  <div>
-                    <p className="text-sm text-gray-500">Operadora</p>
-                    <p>{abi?.operadora?.razaoSocial}</p>
-                  </div>
-
-                  <div>
-                    <p className="text-sm text-gray-500">CNPJ</p>
-                    <p>{abi?.operadora?.cnpj}</p>
-                  </div>
+              <CardContent className="grid grid-cols-2 gap-4">
+                <div>
+                  <p className="text-sm text-gray-500">Número da ABI</p>
+                  <p className="font-semibold">{abi.numeroAbi}</p>
                 </div>
-
+                <div>
+                  <p className="text-sm text-gray-500">Número Processo</p>
+                  <p className="font-mono">{abi.numeroProcesso}</p>
+                </div>
+                <div>
+                  <p className="text-sm text-gray-500">Operadora</p>
+                  <p>{abi?.operadora?.razaoSocial}</p>
+                </div>
+                <div>
+                  <p className="text-sm text-gray-500">CNPJ</p>
+                  <p>{abi?.operadora?.cnpj}</p>
+                </div>
               </CardContent>
             </Card>
 
-            {/* TABELA DE ATENDIMENTOS */}
             <AtendimentosTable
               searchTerm={searchTerm}
-              handleSearch={handleSearch}
-              atendimentosLoading={atendimentosLoading}
-              atendimentosPaginated={atendimentosPaginated}
-              currentPage={currentPage}
-              pageSize={pageSize}
-              formatDateToDDMMYYYY={formatDateToDDMMYYYY}
-              handleEditDefender={handleEditDefender}
-              handleNewDefender={handleNewDefender}
-              handleMarkAsSemDefesa={handleMarkAsSemDefesa}
-              handleViewAtendimento={handleViewAtendimento}
+              onSearch={handleSearch}
+              loading={atendimentosLoading}
+              paginatedData={atendimentos}
+              currentPage={pagination.page}
+              pageSize={pagination.pageSize}
+              formatDate={formatDateToDDMMYYYY}
+              onEditDefender={handleEditDefender}
+              onCreateDefender={handleNewDefender}
+              onMarkAsSemDefesa={handleMarkAsSemDefesa}
+              onViewAtendimento={handleViewAtendimento}
             />
 
-            {/* PAGINAÇÃO */}
             <PaginationControls
-              currentPage={Number(atendimentosPaginated.page)}
-              totalPages={Number(atendimentosPaginated.totalPages)}
-              pageSize={atendimentosPaginated.pageSize}
-              totalItems={atendimentosPaginated.total}
+              currentPage={Number(atendimentos.page)}
+              totalPages={Number(atendimentos.totalPages)}
+              pageSize={atendimentos.pageSize}
+              totalItems={atendimentos.total}
               onPageChange={handlePageChange}
               onPageSizeChange={handlePageSizeChange}
             />
@@ -297,12 +176,9 @@ export default function ABIDetalhesPage({
         )}
 
         {viewMode === "procedimento" && selectedProcedimento && (
-          <ABIProcedimentoDetails
-            procedimento={selectedProcedimento}
-            onBack={handleBackToAtendimento}
-          />
+          <ABIProcedimentoDetails procedimento={selectedProcedimento} onBack={handleBackToAtendimento} />
         )}
       </div>
     </div>
-  );
+  )
 }

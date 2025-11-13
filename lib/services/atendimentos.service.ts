@@ -27,7 +27,9 @@ export interface Atendimento {
   valorTotal?: number
   descricao?: string
   descricaoProcedimento?: string
-
+  dataRegistroTransacao?: string
+  horaRegistroTransacao?: string
+  quantidadeProcesso?: number
   // Relações
   abi?: Abi
 

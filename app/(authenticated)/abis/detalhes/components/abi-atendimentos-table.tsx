@@ -1,90 +1,62 @@
-"use client";
+"use client"
 
-import {
-  Card,
-  CardHeader,
-  CardTitle,
-  CardContent,
-} from "@/components/ui/card";
-
-import {
-  Table,
-  TableHeader,
-  TableBody,
-  TableRow,
-  TableHead,
-  TableCell,
-} from "@/components/ui/table";
-
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
+import { Badge } from "@/components/ui/badge"
+import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
 import {
   AlertDialog,
   AlertDialogAction,
   AlertDialogCancel,
   AlertDialogContent,
+  AlertDialogDescription,
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-  AlertDialogDescription,
   AlertDialogTrigger,
-} from "@/components/ui/alert-dialog";
-
-import {
-  Tooltip,
-  TooltipTrigger,
-  TooltipContent,
-} from "@/components/ui/tooltip";
-
-import {
-  FileText,
-  Search,
-  ShieldBanIcon,
-  ShieldCheck,
-  Eye,
-} from "lucide-react";
-
-import { TooltipButton } from "@/components/button-with-tooltip";
-import { Atendimento } from "@/lib/services/atendimentos.service";
+} from "@/components/ui/alert-dialog"
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip"
+import { FileText, Search, ShieldBanIcon, ShieldCheck, Eye } from "lucide-react"
+import { TooltipButton } from "@/components/button-with-tooltip"
+import type { PaginatedResponse } from "@/components/ui/pagination-controls"
+import type { Atendimento } from "@/lib/services/atendimentos.service"
 
 interface AtendimentoTableProps {
-  searchTerm: string;
-  handleSearch: (value: string) => void;
+  searchTerm: string
+  onSearch: (value: string) => void
+  loading: boolean
+  paginatedData: PaginatedResponse<Atendimento>
+  currentPage: number
+  pageSize: number
+  formatDate: (date: string | null | undefined) => string
+  onEditDefender: (id: string) => void
+  onCreateDefender: (id: string) => void
+  onMarkAsSemDefesa: (id: string) => void
+  onViewAtendimento: (item: Atendimento) => void
+}
 
-  atendimentosLoading: boolean;
-  atendimentosPaginated: {
-    data: any[];
-    page?: number;
-    pageSize?: number;
-    total?: number;
-  };
-
-  currentPage: number;
-  pageSize: number;
-
-  formatDateToDDMMYYYY: (date: string | null | undefined) => string;
-
-  handleEditDefender: (id: string) => void;
-  handleNewDefender: (id: string) => void;
-  handleMarkAsSemDefesa: (id: string) => void;
-  handleViewAtendimento: (item: any) => void;
+const formatCompetencia = (value?: string | number | null) => {
+  if (!value) return "-"
+  const normalized = String(value).padStart(6, "0")
+  return normalized.replace(/^(\d{2})(\d{4})$/, "$1/$2")
 }
 
 export function AtendimentosTable({
   searchTerm,
-  handleSearch,
-  atendimentosLoading,
-  atendimentosPaginated,
+  onSearch,
+  loading,
+  paginatedData,
   currentPage,
   pageSize,
-  formatDateToDDMMYYYY,
-  handleEditDefender,
-  handleNewDefender,
-  handleMarkAsSemDefesa,
-  handleViewAtendimento,
+  formatDate,
+  onEditDefender,
+  onCreateDefender,
+  onMarkAsSemDefesa,
+  onViewAtendimento,
 }: AtendimentoTableProps) {
+  const hasData = paginatedData.data.length > 0
+
   return (
     <Card>
       <CardHeader>
@@ -97,7 +69,7 @@ export function AtendimentosTable({
               placeholder="Difícil de encontrar? Digite aqui..."
               className="pl-8"
               value={searchTerm}
-              onChange={(e) => handleSearch(e.target.value)}
+              onChange={(e) => onSearch(e.target.value)}
             />
           </div>
         </div>
@@ -122,93 +94,72 @@ export function AtendimentosTable({
             </TableHeader>
 
             <TableBody>
-              {atendimentosLoading ? (
+              {loading && (
                 <TableRow>
                   <TableCell colSpan={10} className="text-center py-8">
                     Carregando atendimentos...
                   </TableCell>
                 </TableRow>
-              ) : atendimentosPaginated.data?.length === 0 ? (
+              )}
+
+              {!loading && !hasData && (
                 <TableRow>
                   <TableCell colSpan={10} className="text-center py-8">
                     Nenhum atendimento encontrado.
                   </TableCell>
                 </TableRow>
-              ) : (
-                atendimentosPaginated.data.map((item: Atendimento, index: number) => {
-                  const defesa = item?.defesa;
-                  const pdfUrl = defesa?.caminhoS3Pdf ?? null;
-                  const version = defesa?.atualizadoEm ?? Date.now();
-                  const pdfHref = pdfUrl ? `${pdfUrl}?v=${version}` : null;
+              )}
 
-                  const comp =
-                    item.competencia
-                      ? String(item.competencia)
-                          .padStart(6, "0")
-                          .replace(/^(\d{2})(\d{4})$/, "$1/$2")
-                      : "-";
+              {!loading &&
+                hasData &&
+                paginatedData.data.map((item, index) => {
+                  const defesa = item.defesa
+                  const pdfUrl = defesa?.caminhoS3Pdf ?? null
+                  const version = defesa?.atualizadoEm ?? Date.now()
+                  const pdfHref = pdfUrl ? `${pdfUrl}?v=${version}` : null
+                  const defesaIdentifier = defesa
+                    ? String(defesa.id ?? (defesa as any)._id ?? item.id)
+                    : null
 
                   return (
                     <TableRow key={item.id ?? index}>
-                      <TableCell>
-                        {(currentPage - 1) * pageSize + index + 1}
-                      </TableCell>
-
+                      <TableCell>{(currentPage - 1) * pageSize + index + 1}</TableCell>
                       <TableCell>{item.tipo}</TableCell>
-                      <TableCell className="font-mono">
-                        {item.numeroProcesso}
-                      </TableCell>
+                      <TableCell className="font-mono">{item.numeroProcesso}</TableCell>
                       <TableCell>{item.numeroAihApac}</TableCell>
-
-                      <TableCell>{comp}</TableCell>
-
-                      <TableCell>
-                        {formatDateToDDMMYYYY(item?.dataInicioAtendimento)}
-                      </TableCell>
-                      <TableCell>
-                        {formatDateToDDMMYYYY(item?.dataFimAtendimento)}
-                      </TableCell>
-
+                      <TableCell>{formatCompetencia(item.competencia)}</TableCell>
+                      <TableCell>{formatDate(item.dataInicioAtendimento)}</TableCell>
+                      <TableCell>{formatDate(item.dataFimAtendimento)}</TableCell>
                       <TableCell>{item.descricaoProcedimento}</TableCell>
-
                       <TableCell>
                         <Badge
                           className={
-                            item.semDefesa && item.defesa
+                            item.semDefesa && defesa
                               ? "bg-red-200 text-red-500"
-                              : !item.semDefesa && item.defesa
-                              ? "bg-teal-100 text-teal-800"
-                              : "bg-yellow-100 text-yellow-500"
+                              : !item.semDefesa && defesa
+                                ? "bg-teal-100 text-teal-800"
+                                : "bg-yellow-100 text-yellow-600"
                           }
                         >
-                          {item.semDefesa && item.defesa
+                          {item.semDefesa && defesa
                             ? "S/ Defesa"
-                            : !item.semDefesa && item.defesa
-                            ? "Defendido"
-                            : "Aberto"}
+                            : !item.semDefesa && defesa
+                              ? "Defendido"
+                              : "Aberto"}
                         </Badge>
                       </TableCell>
-
                       <TableCell className="text-right">
                         <div className="flex items-center justify-end gap-2">
-
-                          {/* --- Visualizar PDF --- */}
                           {pdfHref ? (
                             <Tooltip>
                               <TooltipTrigger asChild>
-                                <a
-                                  href={pdfHref}
-                                  target="_blank"
-                                  rel="noopener noreferrer"
-                                >
+                                <a href={pdfHref} target="_blank" rel="noopener noreferrer">
                                   <Button variant="ghost" size="icon">
                                     <FileText className="h-4 w-4" />
                                   </Button>
                                 </a>
                               </TooltipTrigger>
-                              <TooltipContent>
-                                Visualizar Documento
-                              </TooltipContent>
+                              <TooltipContent>Visualizar Documento</TooltipContent>
                             </Tooltip>
                           ) : (
                             <TooltipButton tooltip="Documento não disponível" disabled>
@@ -218,27 +169,25 @@ export function AtendimentosTable({
                             </TooltipButton>
                           )}
 
-                          {/* --- Criar/Editar Defesa --- */}
                           <Tooltip>
                             <TooltipTrigger asChild>
                               <Button
                                 variant="ghost"
                                 size="icon"
                                 onClick={() =>
-                                  item.defesa
-                                    ? handleEditDefender(defesa.id)
-                                    : handleNewDefender(item.id.toString())
+                                  defesa && defesaIdentifier
+                                    ? onEditDefender(defesaIdentifier)
+                                    : onCreateDefender(String(item.id))
                                 }
                               >
                                 <ShieldCheck className="h-4 w-4" />
                               </Button>
                             </TooltipTrigger>
                             <TooltipContent>
-                              {item.defesa ? "Editar Defesa" : "Defender"}
+                              {defesa ? "Editar Defesa" : "Defender"}
                             </TooltipContent>
                           </Tooltip>
 
-                          {/* --- Marcar como Sem Defesa --- */}
                           <AlertDialog>
                             <AlertDialogTrigger asChild>
                               <TooltipButton
@@ -249,62 +198,41 @@ export function AtendimentosTable({
                                 }
                                 disabled={item.semDefesa}
                               >
-                                <Button
-                                  variant="ghost"
-                                  size="icon"
-                                  disabled={item.semDefesa}
-                                >
+                                <Button variant="ghost" size="icon" disabled={item.semDefesa}>
                                   <ShieldBanIcon className="h-4 w-4" />
                                 </Button>
                               </TooltipButton>
                             </AlertDialogTrigger>
-
                             <AlertDialogContent>
                               <AlertDialogHeader>
-                                <AlertDialogTitle>
-                                  Confirmar ação
-                                </AlertDialogTitle>
+                                <AlertDialogTitle>Confirmar ação</AlertDialogTitle>
                                 <AlertDialogDescription>
-                                  Deseja realmente marcar este atendimento como
-                                  “sem defesa”?
+                                  Deseja realmente marcar este atendimento como “sem defesa”?
                                 </AlertDialogDescription>
                               </AlertDialogHeader>
-
                               <AlertDialogFooter>
-                                <AlertDialogCancel>
-                                  Cancelar
-                                </AlertDialogCancel>
-                                <AlertDialogAction
-                                  onClick={() =>
-                                    handleMarkAsSemDefesa(item.id.toString())
-                                  }
-                                >
+                                <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                                <AlertDialogAction onClick={() => onMarkAsSemDefesa(String(item.id))}>
                                   Confirmar
                                 </AlertDialogAction>
                               </AlertDialogFooter>
                             </AlertDialogContent>
                           </AlertDialog>
 
-                          {/* --- Ver Detalhes --- */}
                           <TooltipButton tooltip="Ver detalhes do atendimento">
-                            <Button
-                              variant="ghost"
-                              size="icon"
-                              onClick={() => handleViewAtendimento(item)}
-                            >
+                            <Button variant="ghost" size="icon" onClick={() => onViewAtendimento(item)}>
                               <Eye className="h-4 w-4" />
                             </Button>
                           </TooltipButton>
                         </div>
                       </TableCell>
                     </TableRow>
-                  );
-                })
-              )}
+                  )
+                })}
             </TableBody>
           </Table>
         </div>
       </CardContent>
     </Card>
-  );
+  )
 }

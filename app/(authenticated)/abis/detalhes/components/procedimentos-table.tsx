@@ -1,76 +1,89 @@
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Badge } from "@/components/ui/badge"
-import { Eye } from "lucide-react";
-import { TableCell, TableRow } from "@/components/ui/table";
+import { Button } from "@/components/ui/button"
+import { Eye } from "lucide-react"
+import type { ProcedimentoRelacionado } from "../hooks/use-procedimentos-relacionados"
 
-
-interface ProcedimentoProps {
-  procedimentos: any[];
-  loadProcedimentos: boolean;
-  onViewProcedimento: (procedimento: any) => void;
+interface ProcedimentosTableProps {
+  procedimentos: ProcedimentoRelacionado[]
+  isLoading: boolean
+  onViewProcedimento: (procedimento: ProcedimentoRelacionado) => void
 }
 
-export default function ProcedimentosTable({ procedimentos, loadProcedimentos, onViewProcedimento }: ProcedimentoProps) {
+export default function ProcedimentosTable({
+  procedimentos,
+  isLoading,
+  onViewProcedimento,
+}: ProcedimentosTableProps) {
+  const hasData = procedimentos.length > 0
+
   return (
     <Card className="mb-4">
       <CardHeader className="pb-3">
         <CardTitle className="text-sm font-medium">Procedimentos</CardTitle>
       </CardHeader>
       <CardContent>
-        <div className="overflow-x-auto">
-          <table className="w-full">
-            <thead>
-              <tr className="border-b border-gray-200">
-                <th className="text-left py-2 px-2 text-xs font-medium text-gray-600">Tipo</th>
-                <th className="text-left py-2 px-2 text-xs font-medium text-gray-600">Código</th>
-                <th className="text-left py-2 px-2 text-xs font-medium text-gray-600">Quantidade</th>
-                <th className="text-left py-2 px-2 text-xs font-medium text-gray-600">Valor</th>
-                <th className="text-left py-2 px-2 text-xs font-medium text-gray-600">Descrição</th>
-                <th className="text-left py-2 px-2 text-xs font-medium text-gray-600">Status</th>
-                <th className="text-left py-2 px-2 text-xs font-medium text-gray-600">Ações</th>
-              </tr>
-            </thead>
-            <tbody>
+        <div className="rounded-md border">
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>Tipo</TableHead>
+                <TableHead>Código</TableHead>
+                <TableHead>Quantidade</TableHead>
+                <TableHead>Valor</TableHead>
+                <TableHead>Descrição</TableHead>
+                <TableHead>Status</TableHead>
+                <TableHead className="text-right">Ações</TableHead>
+              </TableRow>
+            </TableHeader>
 
-              {loadProcedimentos ? (
+            <TableBody>
+              {isLoading && (
                 <TableRow>
-                  <TableCell colSpan={10} className="text-center py-8">
-                    Carregando atendimentos...
+                  <TableCell colSpan={7} className="py-6 text-center text-sm text-muted-foreground">
+                    Carregando procedimentos...
                   </TableCell>
                 </TableRow>
-              ) : procedimentos.length === 0 ? (
+              )}
+
+              {!isLoading && !hasData && (
                 <TableRow>
-                  <TableCell colSpan={10} className="text-center py-8">
-                    Nenhum atendimento encontrado.
+                  <TableCell colSpan={7} className="py-6 text-center text-sm text-muted-foreground">
+                    Nenhum procedimento encontrado.
                   </TableCell>
                 </TableRow>
-              ) : (procedimentos.map((procedimento) => (
-                <tr key={procedimento.id} className="border-b border-gray-100 hover:bg-gray-50">
-                  <td className="py-2 px-2 text-xs">{procedimento.tipo}</td>
-                  <td className="py-2 px-2 text-xs">{procedimento.codigo}</td>
-                  <td className="py-2 px-2 text-xs">{procedimento.quantidade}</td>
-                  <td className="py-2 px-2 text-xs">{procedimento.valor}</td>
-                  <td className="py-2 px-2 text-xs">{procedimento.descricao}</td>
-                  <td className="py-2 px-2">
-                    <Badge variant="secondary" className="bg-teal-100 text-teal-800">
-                      Aberto
-                    </Badge>
-                  </td>
-                  <td className="py-2 px-2">
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      className="p-1"
-                      onClick={() => onViewProcedimento(procedimento)}
-                    >
-                      <Eye className="w-3 h-3" />
-                    </Button>
-                  </td>
-                </tr>
-              )))}
-            </tbody>
-          </table>
+              )}
+
+              {!isLoading &&
+                hasData &&
+                procedimentos.map((procedimento) => (
+                  <TableRow key={procedimento.id}>
+                    <TableCell className="text-xs">{procedimento.tipo ?? "—"}</TableCell>
+                    <TableCell className="text-xs">{procedimento.codigo ?? "—"}</TableCell>
+                    <TableCell className="text-xs">
+                      {procedimento.quantidade ?? "—"}
+                    </TableCell>
+                    <TableCell className="text-xs">{procedimento.valor ?? "—"}</TableCell>
+                    <TableCell className="text-xs">{procedimento.descricao ?? "—"}</TableCell>
+                    <TableCell>
+                      <Badge variant="secondary" className="bg-teal-100 text-teal-800">
+                        Aberto
+                      </Badge>
+                    </TableCell>
+                    <TableCell className="text-right">
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => onViewProcedimento(procedimento)}
+                      >
+                        <Eye className="h-4 w-4" />
+                      </Button>
+                    </TableCell>
+                  </TableRow>
+                ))}
+            </TableBody>
+          </Table>
         </div>
       </CardContent>
     </Card>
