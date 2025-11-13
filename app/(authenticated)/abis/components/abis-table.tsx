@@ -32,14 +32,14 @@ export default function AbisTable({ data }: { data: Abi[] }) {
             </TableRow>
           ) : (
             data.map((abi: Abi) => (
-              <TableRow key={abi._id}>
-                <TableCell>{abi.numeroABI}</TableCell>
+              <TableRow key={abi.id}>
+                <TableCell>{abi.numeroAbi}</TableCell>
                 {/* <TableCell>{abi.numeroOficio}</TableCell> */}
                 <TableCell>{abi.numeroProcesso}</TableCell>
                 <TableCell>
                   <div className="space-y-1">
                     <div className="font-medium">{abi.razaoSocial}</div>
-                    <div className="text-sm text-gray-500"><b>{abi.operadoraName}</b> <br /> {abi.operadoraCnpj}</div>
+                    <div className="text-sm text-gray-500"><b>{abi.operadoraNome}</b> <br /> {abi.operadoraCnpj}</div>
                   </div>
                 </TableCell>
                 <TableCell>{formatDateTimeToDDMMYYYYHHMMSS(abi.createdAt)}</TableCell>
@@ -47,7 +47,7 @@ export default function AbisTable({ data }: { data: Abi[] }) {
                   <Badge className="bg-teal-100 text-teal-800">Aberto</Badge>
                 </TableCell>
                 <TableCell className="text-right">
-                  <Link href={`/abis/detalhes/${abi._id}`}>
+                  <Link href={`/abis/detalhes/${abi.id}`}>
                     <Button variant="ghost" size="icon">
                       <Eye className="h-4 w-4" />
                     </Button>

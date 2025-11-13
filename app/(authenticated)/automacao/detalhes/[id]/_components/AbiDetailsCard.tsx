@@ -16,7 +16,7 @@ export function AbiDetailsCard({ abi }: AbiDetailsCardProps) {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           <div>
             <p className="text-sm font-medium text-gray-500">Número da ABI</p>
-            <p className="font-semibold">{abi.numeroABI}</p>
+            <p className="font-semibold">{abi.numeroAbi}</p>
           </div>
           <div>
             <p className="text-sm font-medium text-gray-500">Número do Processo</p>
@@ -24,7 +24,7 @@ export function AbiDetailsCard({ abi }: AbiDetailsCardProps) {
           </div>
           <div>
             <p className="text-sm font-medium text-gray-500">Nome da Operadora</p>
-            <p className="font-semibold">{abi?.operadora?.name}</p>
+            <p className="font-semibold">{abi?.operadoraNome}</p>
           </div>
           <div>
             <p className="text-sm font-medium text-gray-500">CNPJ</p>

@@ -18,7 +18,7 @@ export interface UploadedDocument {
  * - Controla estados de carregamento e erro via React Query
  */
 export function useDocumentosAns(
-  abi: { _id?: string } | undefined,
+  atendimento: { id?: number } | undefined,
   setAnexedDocuments: React.Dispatch<React.SetStateAction<UploadedDocument[]>>,
   setError: React.Dispatch<React.SetStateAction<string | null>>
 ) {
@@ -26,12 +26,12 @@ export function useDocumentosAns(
 
   // 🔹 Busca documentos já salvos
   const { refetch: refetchDocumentos } = useQuery({
-    queryKey: ["documentos-ans", abi?._id],
+    queryKey: ["documentos-ans", atendimento?.id],
     enabled: false,
     queryFn: async () => {
-      if (!abi?._id) throw new Error("Atendimento não encontrado.")
+      if (!atendimento?.id) throw new Error("Atendimento não encontrado.")
 
-      const { protsafe } = await AnsDocumentosService.getDocumentosByAtendimento(abi._id)
+      const { protsafe } = await AnsDocumentosService.getDocumentosByAtendimento(atendimento.id)
       const mapped = protsafe.map((doc: any) => ({
         id: doc._id,
         name: doc.nome,
@@ -59,9 +59,9 @@ export function useDocumentosAns(
   // 🔹 Upload de novos documentos
   const uploadMutation = useMutation({
     mutationFn: async ({ files, documentType }: { files: { file: File }[]; documentType: string }) => {
-      if (!abi?._id) throw new Error("Atendimento não carregado.")
+      if (!atendimento?.id) throw new Error("Atendimento não carregado.")
 
-      const id_atendimento = abi._id
+      const id_atendimento = atendimento.id
       const id_protocolo = 0
       const tipo_documento = documentType
 

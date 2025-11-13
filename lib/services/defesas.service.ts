@@ -1,14 +1,25 @@
 import { PaginatedResponse } from "@/hooks/use-pagination"
 import { httpClient } from "../http-client"
 import { Abi, Operadora } from "./abis.service"
+import type { Atendimento, AtendimentosService } from "./atendimentos.service"
 
 export interface Defesa {
-  _id: string
-  petitionType: "RECURSO" | "IMPUGNACAO"
-  text: string
-  calculationMemory: string
+  /** MongoDB id legado */
+  _id?: string
+  /** Novo ID numérico */
+  id?: number
+  atendimentoId?: number
+  petitionType?: "RECURSO" | "IMPUGNACAO"
+  /** novo backend pode retornar tipoPeticao */
+  tipoPeticao?: "RECURSO" | "IMPUGNACAO"
+  text?: string
+  /** novo backend pode retornar textoDefesa */
+  textoDefesa?: string
+  calculationMemory?: string
+  /** novo backend pode retornar memoriaCalculo */
+  memoriaCalculo?: string
   tempestividade?: string
-  supportingDocuments: {
+  supportingDocuments?: {
     _id: string
     tipo: string
     createdAt: string
@@ -16,21 +27,45 @@ export interface Defesa {
     __v: number
   }[]
   othersSupportingDocument?: string
-  supportingDocument: string
-  orderOption: number
-  rectificationValue: string
-  defencesText: {
+  supportingDocument?: string
+  opcaoOrdem?: number
+  defencesText?: {
     _id: string
     nome: string
   }[]
-  atendimento: Abi,
-  createdAt: string
-  updatedAt: string
-  valorAbatido: string
+  atendimento?: Atendimento
+  createdAt?: string
+  updatedAt?: string
+  criadoEm?: string
+  atualizadoEm?: string
+  valorRetificacao?: string | null
   operadora?: Operadora
   numProtocoloAns?: string
+  caminhoS3Pdf?: string | null
+  s3PdfPath?: string
+  statusDefesa?: string | null
+  processadoEm?: string | null
   __v: number
 }
+
+export interface CreateDefesaPayload {
+  atendimentoId: number
+  tipoPeticao: "RECURSO" | "IMPUGNACAO"
+  textoDefesa?: string
+  tempestividade?: string
+  memoriaCalculo?: string
+  outrosDocumentosComplementares?: string
+  opcaoOrdem?: number
+  valorRetificacao?: string
+  caminhoS3Pdf?: string
+  statusDefesa?: string
+  processadoEm?: string
+  numProtocoloAns?: string
+  criadoPor?: string
+  atualizadoPor?: string
+}
+
+export type UpdateDefesaPayload = Partial<CreateDefesaPayload>
 
 export class DefesasService {
   private static readonly endpoint = "/defesa"
@@ -85,7 +120,7 @@ export class DefesasService {
     }
   }
 
-  static async create(data: Partial<Defesa>): Promise<{ message: string; data: Defesa }> {
+  static async create(data: CreateDefesaPayload): Promise<{ message: string; data: Defesa }> {
     return await httpClient.post<{ message: string; data: Defesa }>("/defesa", data);
   }
 
@@ -94,7 +129,7 @@ export class DefesasService {
   }
 
 
-  static async update(id: string, data: Partial<Defesa>): Promise<Defesa> {
+  static async update(id: number, data: UpdateDefesaPayload): Promise<Defesa> {
     try {
       return await httpClient.put<Defesa>(`${this.endpoint}/${id}`, data)
     } catch (error) {

@@ -33,6 +33,7 @@ export default function ABIsPage() {
           search: searchTerm || undefined,
           status: statusFilter !== "todos" ? statusFilter : undefined,
         })
+        console.log("Fetched ABIs:", response)
         setPaginatedData(response)
         setError(null)
       } catch (err) {

@@ -4,13 +4,14 @@ import type { PaginatedResponse } from "@/components/ui/pagination-controls"
 /** Dados básicos da operadora (join por registroAns ↔ ansRegister) */
 export interface Operadora {
   id: number
-  CNPJ: string
-  name: string
+  cnpj?: string
+  nome?: string
+  razaoSocial?: string
   alias?: string
-  type?: string
+  tipo_operadora?: string
   email?: string
-  phone?: string
-  ansRegister: string
+  telefone?: string
+  registroAns?: string
 }
 
 /**
@@ -19,7 +20,16 @@ export interface Operadora {
  * - Campos “legados” ficaram opcionais.
  */
 export interface Abi {
-  _id: string
+  id: string
+
+  numeroAbi?: number
+  registroAns?: number
+  numeroProcesso?: string
+
+  // ===== Relações (via include) =====
+  operadora?: Operadora
+  operadoraNome?: string
+  operadoraCnpj?: string
 
   // apenas para saber se o atendimento está defendido
   defenceId?: string
@@ -28,8 +38,7 @@ export interface Abi {
   cnpj?: string            // frontend pode usar minúsculo
   CNPJ?: string            // compatibilidade com dados antigos
   numeroABI?: string
-  registroAns?: string
-  numeroProcesso?: string
+
   numeroAihApac?: string
   codigoBeneficiario?: number
   comp?: string
@@ -105,10 +114,7 @@ export interface Abi {
   quantidadeProcesso?: number
   valorTotalProcesso?: number
 
-  // ===== Relações (via include) =====
-  operadora?: Operadora
-  operadoraName?: string
-  operadoraCnpj?: string
+  
 
   hash?: string
   createdAt?: string

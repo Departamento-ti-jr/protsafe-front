@@ -9,7 +9,7 @@ import { AnexarDocumentoDefesaModal } from "@/components/anexar-documento-defesa
 import { TextoDefesa, TextosDefesaService } from "@/lib/services/textos-defesa.service"
 import { DocumentoComprobatorio, DocumentosComprobatoriosService } from "@/lib/services/documentos-comprobatorios.service"
 import { AnsDocumentosService } from "@/lib/services/ans-documentos.service"
-import { Defesa, DefesasService } from "@/lib/services/defesas.service"
+import { Defesa, DefesasService, type UpdateDefesaPayload } from "@/lib/services/defesas.service"
 import { Abi } from "@/lib/services/abis.service"
 import DefesaCardAtendimento from "../../components/defesas-card-atendimento"
 import {
@@ -29,6 +29,20 @@ import {
 } from "@/components/ui/alert-dialog";
 import DefesaCardProtocolo from "../../components/defesas-card-protocolo"
 
+
+const normalizeNumber = (value: unknown): number | null => {
+  if (value === null || value === undefined) return null
+  const parsed = Number(value)
+  return Number.isNaN(parsed) ? null : parsed
+}
+
+const extractAtendimentoId = (defesa?: Defesa | null): number | null => {
+  if (!defesa) return null
+  const direct = normalizeNumber((defesa as any)?.atendimentoId)
+  if (direct !== null) return direct
+  const nested = normalizeNumber((defesa as any)?.atendimento?.id)
+  return nested
+}
 
 export default function EditarDefesaPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = React.use(params) // id da defesa
@@ -54,11 +68,11 @@ export default function EditarDefesaPage({ params }: { params: Promise<{ id: str
   const [error, setError] = useState<string | null>(null)
   const [calculationMemory, setCalculationMemory] = useState("")
   const [supportingDocument, setSupportingDocument] = useState("")
-  const [rectificationValue, setRectificationValue] = useState("")
-  const [valorAbatido, setValorAbatido] = useState("");
+  const [valorRetificacao, setValorRetificacao] = useState("");
   const [othersSupportingDocument, setOthersSupportingDocument] = useState("");
   const [isTextLoadedFromDefesa, setIsTextLoadedFromDefesa] = useState(false);
   const [hasUserChangedMotivos, setHasUserChangedMotivos] = useState(false);
+  const [currentAtendimentoId, setCurrentAtendimentoId] = useState<number | null>(null);
 
   const { loadDocumentosSalvos, handleAnexarDocumento, isLoading } = useDocumentosAns(abi, setAnexedDocuments, setError)
 
@@ -86,8 +100,8 @@ useEffect(() => {
 }, [selectedMotivos, textosDefesa, hasUserChangedMotivos]);
 
   useEffect(() => {
-    if (abi?._id) {
-      loadDocumentosSalvos(abi._id)
+    if (abi?.id) {
+      loadDocumentosSalvos(abi.id)
     }
   }, [abi])
 
@@ -100,27 +114,27 @@ useEffect(() => {
         return null
       }
 
-      console.log("data: ", data);
       setDefesa(data)
-      setTipoDoc(data.petitionType)
+      
       setTempestividade(data.tempestividade || "")
-      setCalculationMemory(data.calculationMemory || "")
+      setCalculationMemory(data.memoriaCalculo || "")
       setSupportingDocument(data.supportingDocument || "")
-      setRectificationValue(data.rectificationValue || "")
-      setSelectedMotivos(data.defencesText?.map((d: any) => d._id) || [])
-      setSelectedComprobatorios(data.supportingDocuments?.map((d: any) => d._id) || [])
+      setValorRetificacao(data.valorRetificacao || "")
+      setSelectedMotivos(data.defencesText?.map((d: any) => d.id) || [])
+      setSelectedComprobatorios(data.supportingDocuments?.map((d: any) => d.id) || [])
       setInformarOutrosDocumentos(String(data?.othersSupportingDocument) ? true : false);
       setOthersSupportingDocument(String(data?.othersSupportingDocument));
-      setAbi({...data.atendimento, operadora: data.operadora} );
+      
       setText(data.text || "")
       setSelectedPedido(
-        data.orderOption === 2
+        data.opcaoOrdem === 2
           ? 'retificacao'
-          : data.orderOption === 3
+          : data.opcaoOrdem === 3
             ? 'anulacao-subsidiaria'
             : 'anulacao-identificacao'
       )
-      setValorAbatido(data.valorAbatido);
+      setValorRetificacao(data.valorRetificacao || "");
+      setCurrentAtendimentoId(extractAtendimentoId(data));
 
       return data
     } catch (err: any) {
@@ -156,7 +170,7 @@ useEffect(() => {
 
   const handleEnviarParaAns = async () => {
 
-    if (!abi?._id) {
+    if (!abi?.id) {
       toast({
         variant: "warning",
         title: "Aviso",
@@ -190,12 +204,12 @@ useEffect(() => {
     try {
       setLoadSalvarDefesa(true)
 
-      if (!defesa?._id) return
+      if (!defesa?.id) return
 
-      const payload = mapDefesaToPayload(abi?._id || "")
+      const payload = mapDefesaToPayload(currentAtendimentoId ?? undefined)
       console.log("Payload para atualizar defesa:", payload)
 
-      await DefesasService.update(defesa._id, payload)
+      await DefesasService.update(defesa.id, payload)
 
       toast({
         title: "Sucesso!",
@@ -218,26 +232,29 @@ useEffect(() => {
     }
   }
 
-  function mapDefesaToPayload(abiId: string): any {
-    console.log(selectedMotivos)
+  const buildBaseDefesaPayload = () => {
+    const opcaoOrdem =
+      selectedPedido === "retificacao"
+        ? 2
+        : selectedPedido === "anulacao-subsidiaria"
+          ? 3
+          : 1
+
     return {
-      petitionType: tipoDoc,
-      text,
-      tempestividade,
-      calculationMemory,
-      supportingDocuments: selectedComprobatorios,
-      othersSupportingDocument: informarOutrosDocumentos ? othersSupportingDocument : "",
-      supportingDocument,
-      orderOption:
-        selectedPedido === "retificacao"
-          ? 2
-          : selectedPedido === "anulacao-subsidiaria"
-            ? 3
-            : 1,
-      rectificationValue,
-      defencesText: selectedMotivos,
-      atendimento: abiId,
-      valorAbatido: valorAbatido
+      tipoPeticao: tipoDoc,
+      textoDefesa: text || undefined,
+      tempestividade: tempestividade || undefined,
+      memoriaCalculo: calculationMemory || undefined,
+      outrosDocumentosComplementares: informarOutrosDocumentos ? (othersSupportingDocument || undefined) : undefined,
+      opcaoOrdem,
+      valorRetificacao: valorRetificacao || undefined,
+    }
+  }
+
+  function mapDefesaToPayload(atendimentoId?: number): UpdateDefesaPayload {
+    return {
+      ...(typeof atendimentoId === "number" ? { atendimentoId } : {}),
+      ...buildBaseDefesaPayload(),
     }
   }
 
@@ -265,7 +282,7 @@ useEffect(() => {
 
       {defesa && (
         <>
-          {abi && <DefesaCardAtendimento abi={abi} />}
+          {defesa?.atendimento && <DefesaCardAtendimento atendimento={defesa?.atendimento} />}
 
           {defesa && <DefesaCardProtocolo defesa={defesa} />}
 
@@ -297,8 +314,8 @@ useEffect(() => {
           <CardPedidos
             selectedPedido={selectedPedido}
             setSelectedPedido={setSelectedPedido}
-            valorAbatido={valorAbatido}
-            setValorAbatido={setValorAbatido}
+            valorRetificacao={valorRetificacao}
+            setValorRetificacao={setValorRetificacao}
           />
 
           <CardDocumentosAnexados

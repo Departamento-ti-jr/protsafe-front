@@ -2,13 +2,14 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Label } from "@/components/ui/label"
 import { formatDateToDDMMYYYY } from "@/lib/date-helpers"
 import { Abi } from "@/lib/services/abis.service"
+import { Atendimento } from "@/lib/services/atendimentos.service"
 import { CalendarDays, Building2, FileBadge, ClipboardList, Tag, Info } from "lucide-react"
 
 interface DefesasAtendimentoProps {
-  abi?: Abi
+  atendimento?: Atendimento
 }
 
-export default function DefesaCardAtendimento({ abi }: DefesasAtendimentoProps) {
+export default function DefesaCardAtendimento({ atendimento }: DefesasAtendimentoProps) {
   const formatDate = (date: any) => formatDateToDDMMYYYY(date)
 
   const formatCompetencia = (comp?: string | null) => {
@@ -24,13 +25,13 @@ export default function DefesaCardAtendimento({ abi }: DefesasAtendimentoProps) 
     <Card className="border-slate-200/70 dark:border-slate-700/70 bg-white/60 dark:bg-[rgba(43,62,89,0.3)] backdrop-blur-sm shadow-sm hover:shadow-md transition-shadow duration-300">
       <CardContent className="pt-3">
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
-          <Item icon={<Tag />} label="Atendimento" value={abi?.numeroAihApac} />
-          <Item icon={<Building2 />} label="Operadora" value={abi?.operadora?.name} />
-          <Item icon={<FileBadge />} label="Registro ANS" value={abi?.operadora?.ansRegister} />
-          <Item icon={<ClipboardList />} label="Competência" value={formatCompetencia(abi?.comp)} />
-          <Item icon={<Info />} label="Tipo" value={abi?.tipo} />
-          <Item icon={<CalendarDays />} label="Data Inicial" value={formatDate(abi?.dataInicial)} />
-          <Item icon={<CalendarDays />} label="Data Final" value={formatDate(abi?.dataFinal)} />
+          <Item icon={<Tag />} label="Atendimento" value={atendimento?.numeroAihApac} />
+          <Item icon={<Building2 />} label="Operadora" value={atendimento?.abi?.operadora?.razaoSocial} />
+          <Item icon={<FileBadge />} label="Registro ANS" value={atendimento?.abi?.operadora?.registroAns} />
+          <Item icon={<ClipboardList />} label="Competência" value={formatCompetencia(atendimento?.competencia)} />
+          <Item icon={<Info />} label="Tipo" value={atendimento?.tipo} />
+          <Item icon={<CalendarDays />} label="Data Inicial" value={formatDate(atendimento?.dataInicioAtendimento)} />
+          <Item icon={<CalendarDays />} label="Data Final" value={formatDate(atendimento?.dataFimAtendimento)} />
         </div>
       </CardContent>
     </Card>

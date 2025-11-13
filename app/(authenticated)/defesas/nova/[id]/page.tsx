@@ -22,6 +22,7 @@ import { useToast } from "@/hooks/use-toast"
 import RichTextEditor, { RichTextEditorHandle } from "@/components/rich-text-editor"
 import { useDocumentosAns } from "@/hooks/use-anexar-documento"
 import { DefesaAcoes } from "../../components/defesa-acoes"
+import { Atendimento, AtendimentosService } from "@/lib/services/atendimentos.service"
 
 export default function NovaDefesaPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = React.use(params)
@@ -34,6 +35,7 @@ export default function NovaDefesaPage({ params }: { params: Promise<{ id: strin
   const [informarOutrosDocumentos, setInformarOutrosDocumentos] = useState(false)
   const [loadSalvarDefesa, setLoadSalvarDefesa] = useState<"salvando" | "gerando-pdf" | null>(null)
   const [abi, setAbi] = useState<Abi>()
+  const [atendimento, setAtendimento] = useState<Atendimento>()
   const [isAnexarModalOpen, setIsAnexarModalOpen] = useState(false)
   const [anexedDocuments, setAnexedDocuments] = useState<any[]>([])
   const [selectedMotivos, setSelectedMotivos] = useState<string[]>([])
@@ -45,16 +47,15 @@ export default function NovaDefesaPage({ params }: { params: Promise<{ id: strin
   const [error, setError] = useState<string | null>(null)
   const [calculationMemory, setCalculationMemory] = useState("")
   const [supportingDocument, setSupportingDocument] = useState("")
-  const [rectificationValue, setRectificationValue] = useState("")
+
   const editorRef = useRef<RichTextEditorHandle>(null)
-  const [valorAbatido, setValorAbatido] = useState("")
+  const [valorRetificacao, setValorRetificacao] = useState("")
   const [othersSupportingDocument, setOthersSupportingDocument] = useState("")
   const [hasUserChangedMotivos, setHasUserChangedMotivos] = useState(false)
   const [isLoadingAbi, setIsLoadingAbi] = useState(true)
 
-
   const { loadDocumentosSalvos, handleAnexarDocumento, isLoading } = useDocumentosAns(
-    abi,
+    atendimento,
     setAnexedDocuments,
     setError
   )
@@ -74,18 +75,20 @@ export default function NovaDefesaPage({ params }: { params: Promise<{ id: strin
   }, [selectedMotivos, textosDefesa])
 
   useEffect(() => {
-    if (abi?.memoriaCalculo) setCalculationMemory(abi.memoriaCalculo)
-    if (abi?._id) loadDocumentosSalvos(abi._id)
-  }, [abi])
+    // if (abi?.memoriaCalculo) setCalculationMemory(atendimento.memoriaCalculo)
+    if (atendimento?.id) {
+      loadDocumentosSalvos()
+    }
+  }, [atendimento])
 
   const loadAtendimento = async () => {
     try {
       console.log("Carregando atendimento (ABI)...")
       setIsLoadingAbi(true)
       const id = await params.then(p => p.id)
-      const data = await AbisService.getById(id, { include: ["operadora"] })
-
-      setAbi(data)
+      const data = await AtendimentosService.getById(id)
+      setAbi(data.abi)
+      setAtendimento(data)
       setError(null)
     } catch (err: any) {
       console.error("Erro ao carregar ABI:", err)
@@ -158,7 +161,7 @@ export default function NovaDefesaPage({ params }: { params: Promise<{ id: strin
     try {
       setLoadSalvarDefesa("salvando")
 
-      if (!abi?._id) {
+      if (!abi?.id) {
         toast({
           variant: "warning",
           title: "Aviso",
@@ -168,12 +171,12 @@ export default function NovaDefesaPage({ params }: { params: Promise<{ id: strin
         return
       }
 
-      const payload = mapDefesaToPayload(abi._id)
+      const payload = mapDefesaToPayload(abi.id)
       console.log("Payload para salvar defesa:", payload)
 
       // 1️⃣ Cria a defesa no banco
       const response = await DefesasService.create(payload)
-      const defesaId = response?.data?._id || response?._id
+      const defesaId = response?.data?.id || response?.id
 
       if (!defesaId) throw new Error("ID da defesa não retornado pela API.")
 
@@ -226,16 +229,15 @@ export default function NovaDefesaPage({ params }: { params: Promise<{ id: strin
       supportingDocuments: selectedComprobatorios,
       othersSupportingDocument: informarOutrosDocumentos ? othersSupportingDocument : "",
       supportingDocument,
-      orderOption:
+      opcaoOrdem:
         selectedPedido === "retificacao"
           ? 2
           : selectedPedido === "anulacao-subsidiaria"
             ? 3
             : 1,
-      rectificationValue,
+      valorRetificacao,
       defencesText: selectedMotivos,
-      atendimento: abiId,
-      valorAbatido,
+      atendimento: abiId
     }
   }
 
@@ -268,7 +270,7 @@ export default function NovaDefesaPage({ params }: { params: Promise<{ id: strin
             </p>
           </div>
 
-          <DefesaCardAtendimento abi={abi} />
+          <DefesaCardAtendimento atendimento={atendimento} />
 
           <CardFormularioImputacao
             selectedTipo={tipoDoc}
@@ -299,8 +301,8 @@ export default function NovaDefesaPage({ params }: { params: Promise<{ id: strin
           <CardPedidos
             selectedPedido={selectedPedido}
             setSelectedPedido={setSelectedPedido}
-            valorAbatido={valorAbatido}
-            setValorAbatido={setValorAbatido}
+            valorRetificacao={valorRetificacao}
+            setValorRetificacao={setValorRetificacao}
           />
 
           <CardDocumentosAnexados

@@ -38,7 +38,7 @@ export function PaginationControls({
   onPageChange,
   onPageSizeChange,
   disabled = false,
-  pageSizeOptions = [10, 20, 50, 100],
+  pageSizeOptions = [5, 10, 20, 50, 100],
 }: PaginationControlsProps) {
   const startItem = (currentPage - 1) * pageSize + 1
   const endItem = Math.min(currentPage * pageSize, totalItems)
@@ -113,21 +113,22 @@ export function PaginationControls({
         <div className="flex items-center gap-2">
           <span className="text-sm text-gray-700">Mostrar</span>
           <Select
-            value={pageSize.toString()}
-            onValueChange={(value) => onPageSizeChange(Number(value))}
-            disabled={disabled}
-          >
-            <SelectTrigger className="w-20 bg-white">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              {pageSizeOptions.map((option) => (
-                <SelectItem key={option} value={option.toString()}>
-                  {option}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+              value={pageSize.toString()}
+              onValueChange={(value) => onPageSizeChange(Number(value))}
+              disabled={disabled}
+            >
+              <SelectTrigger className="w-20 bg-white">
+                <SelectValue defaultValue={pageSize.toString()} />
+              </SelectTrigger>
+
+              <SelectContent>
+                {pageSizeOptions.map((option) => (
+                  <SelectItem key={option} value={option.toString()}>
+                    {option}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           <span className="text-sm text-gray-700">por página</span>
         </div>
         <div className="text-sm text-gray-700">

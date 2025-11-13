@@ -24,8 +24,14 @@ export default function DefesaCardProtocolo({ defesa }: DefesasAtendimentoProps)
   const handleToggleEdit = () => setEditable(prev => !prev)
 
   /** Salva protocolo via PATCH */
+  const resolveDefesaId = () => {
+    if (!defesa) return null
+    return defesa._id ?? defesa.id ?? null
+  }
+
   const saveOrUpdateProtocolo = async () => {
-    if (!defesa?._id) {
+    const defesaIdentifier = resolveDefesaId()
+    if (!defesaIdentifier) {
       toast({
         variant: "destructive",
         title: "Erro",
@@ -47,7 +53,7 @@ export default function DefesaCardProtocolo({ defesa }: DefesasAtendimentoProps)
 
     try {
       const response = await httpClient.patch<{ message: string; data: any }>(
-        `/defesa/${defesa._id}`,
+        `/defesa/${defesaIdentifier}`,
         { numProtocoloAns: numProtocolo }
       )
 

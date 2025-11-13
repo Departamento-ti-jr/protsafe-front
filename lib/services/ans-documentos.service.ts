@@ -12,7 +12,7 @@ export interface AnsDocumento {
 }
 
 export interface UploadAnsDocumentoPayload {
-  id_atendimento: string;
+  id_atendimento: number;
   tipo_documento: string;   // ObjectId
   id_protocolo: number;
   nome?: string;
@@ -27,7 +27,7 @@ export class AnsDocumentosService {
   ): Promise<any> {
     const formData = new FormData();
     formData.append("file", file); // nome do campo PRECISA ser "file"
-    formData.append("id_atendimento", payload.id_atendimento);
+    formData.append("id_atendimento", String(payload.id_atendimento));
     formData.append("tipo_documento", payload.tipo_documento);
     formData.append("id_protocolo", String(payload.id_protocolo));
     if (payload.nome) formData.append("nome", payload.nome);
@@ -57,9 +57,9 @@ export class AnsDocumentosService {
     }
   }
 
-  static async getDocumentosByAtendimento(id_atendimento: string) {
+  static async getDocumentosByAtendimento(atendimento_id: number) {
     const data = await httpClient.get<{ protsafe: any[]; ans: any[] }>(
-      `/ans-documentos/por-atendimento/${id_atendimento}`
+      `/ans-documentos/por-atendimento/${atendimento_id}`
     )
     return data
   }

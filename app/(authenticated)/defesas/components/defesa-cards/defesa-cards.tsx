@@ -41,8 +41,8 @@ export function CardFormularioImputacao({
   setSelectedComprobatorios,
   informarOutrosDocumentos,
   setInformarOutrosDocumentos,
-  setOthersSupportingDocument,
-  othersSupportingDocument,
+  setOutrosDocumentosComplementares,
+  outrosDocumentosComplementares,
   setHasUserChangedMotivos
 }: any) {
 
@@ -129,12 +129,12 @@ export function CardFormularioImputacao({
             </Label>
           </div>
 
-          {(informarOutrosDocumentos) && (
+          {informarOutrosDocumentos && (
             <div className="mt-7 space-y-2">
               <Input
                 placeholder="Informe documentos comprobatórios que não estão listados à cima"
-                value={othersSupportingDocument}
-                onChange={(e) => setOthersSupportingDocument(e.target.value)}
+                value={outrosDocumentosComplementares}
+                onChange={(e) => setOutrosDocumentosComplementares(e.target.value)}
               />
             </div>
           )}
@@ -144,7 +144,7 @@ export function CardFormularioImputacao({
   )
 };
 
-export function CardPedidos({ selectedPedido, setSelectedPedido, valorAbatido, setValorAbatido }: any) {
+export function CardPedidos({ selectedPedido, setSelectedPedido, valorRetificacao, setValorRetificacao }: any) {
   const formatCurrency = useCallback((value: string) => {
     // Remove tudo que não for número
     const numericValue = value.replace(/\D/g, "")
@@ -159,7 +159,7 @@ export function CardPedidos({ selectedPedido, setSelectedPedido, valorAbatido, s
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value
-    setValorAbatido(formatCurrency(value))
+    setValorRetificacao(formatCurrency(value))
   }
 
   return (
@@ -200,7 +200,7 @@ export function CardPedidos({ selectedPedido, setSelectedPedido, valorAbatido, s
               </Label>
               <Input
                 placeholder="Valor ressarcido em reais (R$)"
-                value={valorAbatido}
+                value={valorRetificacao}
                 onChange={handleChange}
               />
             </div>

@@ -6,8 +6,8 @@ export interface DefesaPayload {
   supportingDocuments: string[]
   othersSupportingDocument: boolean
   supportingDocument: string
-  orderOption: number
-  rectificationValue: string
+  opcaoOrdem: number
+  valorRetificacao: string
   defencesText: string[]
   atendimento: string
 }
@@ -27,7 +27,7 @@ export function mapDefesaToPayload(
     informarOutrosDocumentos,
     supportingDocument,
     selectedPedido,
-    rectificationValue,
+    valorRetificacao,
     selectedMotivos,
   }: {
     tipoDoc: "RECURSO" | "IMPUGNACAO"
@@ -38,7 +38,7 @@ export function mapDefesaToPayload(
     informarOutrosDocumentos: boolean
     supportingDocument: string
     selectedPedido: string
-    rectificationValue: string
+    valorRetificacao: string
     selectedMotivos: string[]
   }
 ): DefesaPayload {
@@ -50,13 +50,13 @@ export function mapDefesaToPayload(
     supportingDocuments: selectedComprobatorios,
     othersSupportingDocument: informarOutrosDocumentos,
     supportingDocument,
-    orderOption:
+    opcaoOrdem:
       selectedPedido === "retificacao"
         ? 2
         : selectedPedido === "anulacao-subsidiaria"
         ? 3
         : 1,
-    rectificationValue,
+    valorRetificacao,
     defencesText: selectedMotivos,
     atendimento: abiId,
   }
