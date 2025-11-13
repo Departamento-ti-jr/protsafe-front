@@ -1,6 +1,7 @@
 import { httpClient } from "../http-client"
 import type { PaginatedResponse } from "@/components/ui/pagination-controls"
 import { Abi } from "./abis.service"
+import { Defesa } from "./defesas.service"
 
 /** Dados básicos do ABI associado ao atendimento */
 export interface AbiResumo {
@@ -30,7 +31,7 @@ export interface Atendimento {
   // Relações
   abi?: Abi
 
-  defesa?: any
+  defesa?: Defesa
   semDefesa?: boolean
 
   // Timestamps

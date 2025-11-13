@@ -137,8 +137,8 @@ export function AtendimentosTable({
               ) : (
                 atendimentosPaginated.data.map((item: Atendimento, index: number) => {
                   const defesa = item?.defesa;
-                  const pdfUrl = defesa?.s3PdfPath ?? null;
-                  const version = defesa?.updatedAt ?? Date.now();
+                  const pdfUrl = defesa?.caminhoS3Pdf ?? null;
+                  const version = defesa?.atualizadoEm ?? Date.now();
                   const pdfHref = pdfUrl ? `${pdfUrl}?v=${version}` : null;
 
                   const comp =
