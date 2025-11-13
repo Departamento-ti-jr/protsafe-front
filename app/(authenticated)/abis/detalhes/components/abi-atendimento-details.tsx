@@ -96,7 +96,7 @@ export function ABIAtendimentoDetails({
       <Card className="mb-4">
         <CardHeader className="pb-3">
           <CardTitle className="text-sm font-medium">
-            Você está visualizando o atendimento "{atendimento.tipo}" - ID: {atendimento._id ?? atendimento.id}
+            Você está visualizando o atendimento "{atendimento.tipo}" - ID: {atendimento.id}
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
