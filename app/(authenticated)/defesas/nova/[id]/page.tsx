@@ -161,7 +161,7 @@ export default function NovaDefesaPage({ params }: { params: Promise<{ id: strin
     try {
       setLoadSalvarDefesa("salvando")
 
-      if (!abi?.id) {
+      if (!atendimento?.id) {
         toast({
           variant: "warning",
           title: "Aviso",
@@ -171,7 +171,7 @@ export default function NovaDefesaPage({ params }: { params: Promise<{ id: strin
         return
       }
 
-      const payload = mapDefesaToPayload(abi.id)
+      const payload = mapDefesaToPayload(atendimento.id)
       console.log("Payload para salvar defesa:", payload)
 
       // 1️⃣ Cria a defesa no banco
@@ -220,24 +220,29 @@ export default function NovaDefesaPage({ params }: { params: Promise<{ id: strin
     }
   }
 
-  function mapDefesaToPayload(abiId: string): any {
+  const buildBaseDefesaPayload = () => {
+    const opcaoOrdem =
+      selectedPedido === "retificacao"
+        ? 2
+        : selectedPedido === "anulacao-subsidiaria"
+          ? 3
+          : 1
+
     return {
-      petitionType: tipoDoc,
-      text,
-      tempestividade,
-      calculationMemory,
-      supportingDocuments: selectedComprobatorios,
-      othersSupportingDocument: informarOutrosDocumentos ? othersSupportingDocument : "",
-      supportingDocument,
-      opcaoOrdem:
-        selectedPedido === "retificacao"
-          ? 2
-          : selectedPedido === "anulacao-subsidiaria"
-            ? 3
-            : 1,
-      valorRetificacao,
-      defencesText: selectedMotivos,
-      atendimento: abiId
+      tipoPeticao: tipoDoc,
+      textoDefesa: text || undefined,
+      tempestividade: tempestividade || undefined,
+      memoriaCalculo: calculationMemory || undefined,
+      outrosDocumentosComplementares: informarOutrosDocumentos ? (othersSupportingDocument || undefined) : undefined,
+      opcaoOrdem,
+      valorRetificacao: valorRetificacao || undefined,
+    }
+  }
+
+  function mapDefesaToPayload(atendimentoId: number) {
+    return {
+      atendimentoId,
+      ...buildBaseDefesaPayload(),
     }
   }
 
