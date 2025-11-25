@@ -67,7 +67,7 @@ export function CardFormularioImputacao({
         </div>
 
         <MultiSelectCheckbox
-          options={textosDefesa.map((texto: any) => ({ label: texto.nome, value: texto._id }))}
+          options={textosDefesa.map((texto: any) => ({ label: texto.nome, value: texto.id }))}
           value={selectedMotivos}
           onChange={(values) => {
             setHasUserChangedMotivos(true);

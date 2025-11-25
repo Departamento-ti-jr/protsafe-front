@@ -1,21 +1,30 @@
 import { httpClient } from "../http-client";
 
 
-export interface AnsDocumento {
-  _id: string;
-  id_defesa: string;
-  tipo_documento: string;
-  id_protocolo: string;
-  url: string;
-  createdAt?: string;
-  updatedAt?: string;
+export interface AnsDocumentoUploadPlain {
+  id: number;
+  nomeAnexo: string;
+  idProtocolo: number;
+  tipoDocumentoId: number;
+  defesaId: number | null;
+  caminho: string;
+  criadoEm: string;
+  atualizadoEm: string;
+  criadoPor?: string;
+  atualizadoPor?: string;
 }
 
 export interface UploadAnsDocumentoPayload {
   id_atendimento: number;
-  tipo_documento: string;   // ObjectId
+  tipo_documento: number;
   id_protocolo: number;
   nome?: string;
+}
+
+export interface UploadAnsDocumentoResponse {
+  url: string;
+  caminho: string;
+  created: AnsDocumentoUploadPlain;
 }
 
 export class AnsDocumentosService {
@@ -24,15 +33,15 @@ export class AnsDocumentosService {
   static async uploadDocument(
     file: File,
     payload: UploadAnsDocumentoPayload,
-  ): Promise<any> {
+  ): Promise<UploadAnsDocumentoResponse> {
     const formData = new FormData();
     formData.append("file", file); // nome do campo PRECISA ser "file"
     formData.append("id_atendimento", String(payload.id_atendimento));
-    formData.append("tipo_documento", payload.tipo_documento);
+    formData.append("tipo_documento", String(payload.tipo_documento));
     formData.append("id_protocolo", String(payload.id_protocolo));
     if (payload.nome) formData.append("nome", payload.nome);
 
-    return await httpClient.post<{ url: string; caminho: string }>(
+    return await httpClient.post<UploadAnsDocumentoResponse>(
       `/ans-documentos/upload`,
       formData
     );

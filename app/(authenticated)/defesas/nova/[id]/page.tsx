@@ -68,7 +68,7 @@ export default function NovaDefesaPage({ params }: { params: Promise<{ id: strin
 
   useEffect(() => {
     const textosConcatenados = textosDefesa
-      .filter(t => selectedMotivos.includes(t._id))
+      .filter(t => selectedMotivos.includes(t.id))
       .map(t => t.texto)
       .join("\n\n")
     setText(textosConcatenados)
@@ -231,6 +231,7 @@ export default function NovaDefesaPage({ params }: { params: Promise<{ id: strin
     return {
       tipoPeticao: tipoDoc,
       textoDefesa: text || undefined,
+      motivoIds: selectedMotivos,
       tempestividade: tempestividade || undefined,
       memoriaCalculo: calculationMemory || undefined,
       outrosDocumentosComplementares: informarOutrosDocumentos ? (othersSupportingDocument || undefined) : undefined,

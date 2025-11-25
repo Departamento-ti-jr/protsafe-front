@@ -59,8 +59,8 @@ export default function EditarDefesaPage({ params }: { params: Promise<{ id: str
   const [abi, setAbi] = useState<Abi>()
   const [isAnexarModalOpen, setIsAnexarModalOpen] = useState(false)
   const [anexedDocuments, setAnexedDocuments] = useState<any[]>([])
-  const [selectedMotivos, setSelectedMotivos] = useState<string[]>([])
-  const [text, setText] = useState<string>("")
+  const [selectedMotivos, setSelectedMotivos] = useState<number[]>([])
+  const [text, setText] = useState<string>("asdasd")
   const [selectedComprobatorios, setSelectedComprobatorios] = useState<string[]>([])
   const [textosDefesa, setTextosDefesa] = useState<TextoDefesa[]>([])
   const [documentosComprobatorios, setDocumentosComprobatorios] = useState<DocumentoComprobatorio[]>([])
@@ -74,25 +74,25 @@ export default function EditarDefesaPage({ params }: { params: Promise<{ id: str
   const [hasUserChangedMotivos, setHasUserChangedMotivos] = useState(false);
   const [currentAtendimentoId, setCurrentAtendimentoId] = useState<number | null>(null);
 
-  const { loadDocumentosSalvos, handleAnexarDocumento, isLoading } = useDocumentosAns(abi, setAnexedDocuments, setError)
+  const { loadDocumentosSalvos, handleAnexarDocumento, isLoading } = useDocumentosAns(defesa?.atendimento, setAnexedDocuments, setError)
 
   useEffect(() => {
-  const init = async () => {
-    const defesaData = await loadDefesa();
-    if (defesaData) {
-      await Promise.all([loadTextosDefesa(), loadDocumentosComprobatorios()]);
-      setIsTextLoadedFromDefesa(true);
-    }
-  };
-  init();
-}, []);
+    const init = async () => {
+      const defesaData = await loadDefesa();
+      if (defesaData) {
+        await Promise.all([loadTextosDefesa(), loadDocumentosComprobatorios()]);
+        setIsTextLoadedFromDefesa(true);
+      }
+    };
+    init();
+  }, []);
 
 // ✅ Esse useEffect só atualiza o texto se o usuário mexer no dropdown
 useEffect(() => {
   if (!hasUserChangedMotivos) return;
 
   const textosConcatenados = textosDefesa
-    .filter(t => selectedMotivos.includes(t._id))
+    .filter(t => selectedMotivos.includes(t.id))
     .map(t => t.texto)
     .join("\n\n");
 
@@ -120,12 +120,13 @@ useEffect(() => {
       setCalculationMemory(data.memoriaCalculo || "")
       setSupportingDocument(data.supportingDocument || "")
       setValorRetificacao(data.valorRetificacao || "")
-      setSelectedMotivos(data.defencesText?.map((d: any) => d.id) || [])
+      setSelectedMotivos(data.motivoIds|| [])
       setSelectedComprobatorios(data.supportingDocuments?.map((d: any) => d.id) || [])
       setInformarOutrosDocumentos(String(data?.othersSupportingDocument) ? true : false);
       setOthersSupportingDocument(String(data?.othersSupportingDocument));
       
-      setText(data.text || "")
+      setText(data.textoDefesa || "")
+      
       setSelectedPedido(
         data.opcaoOrdem === 2
           ? 'retificacao'
@@ -185,7 +186,7 @@ useEffect(() => {
         description: `Enviando documentos da ABI para a ANS...`,
       });
 
-      const result = await AnsDocumentosService.enviarDocumentosParaAns(abi._id);
+      // const result = await AnsDocumentosService.enviarDocumentosParaAns(abi.id);
 
       toast({
         title: "Sucesso!",
@@ -209,6 +210,7 @@ useEffect(() => {
       const payload = mapDefesaToPayload(currentAtendimentoId ?? undefined)
       console.log("Payload para atualizar defesa:", payload)
 
+      
       await DefesasService.update(defesa.id, payload)
 
       toast({
@@ -243,6 +245,7 @@ useEffect(() => {
     return {
       tipoPeticao: tipoDoc,
       textoDefesa: text || undefined,
+      motivoIds: selectedMotivos,
       tempestividade: tempestividade || undefined,
       memoriaCalculo: calculationMemory || undefined,
       outrosDocumentosComplementares: informarOutrosDocumentos ? (othersSupportingDocument || undefined) : undefined,

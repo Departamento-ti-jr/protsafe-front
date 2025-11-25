@@ -3,7 +3,7 @@ import { AnsDocumentosService } from "@/lib/services/ans-documentos.service"
 import { useMutation, useQuery } from "@tanstack/react-query"
 
 export interface UploadedDocument {
-  _id: string
+  id?: string | number
   name: string
   size: number | null
   type: string
@@ -33,10 +33,10 @@ export function useDocumentosAns(
 
       const { protsafe } = await AnsDocumentosService.getDocumentosByAtendimento(atendimento.id)
       const mapped = protsafe.map((doc: any) => ({
-        id: doc._id,
-        name: doc.nome,
+        id: doc.id,
+        name: doc.nome ?? doc.nomeAnexo,
         size: null,
-        type: doc.tipo_documento?.descricao || "Documento",
+        type: doc.tipo_documento?.descricao || doc.tipoDocumento?.descricao || "Documento",
         url: doc.caminho?.startsWith("http")
           ? doc.caminho
           : `${process.env.NEXT_PUBLIC_AWS_BASE_URL}/${doc.caminho}`,
@@ -58,17 +58,24 @@ export function useDocumentosAns(
 
   // 🔹 Upload de novos documentos
   const uploadMutation = useMutation({
-    mutationFn: async ({ files, documentType }: { files: { file: File }[]; documentType: string }) => {
+    mutationFn: async ({ files, documentType }: { files: { file: File }[]; documentType: number }) => {
       if (!atendimento?.id) throw new Error("Atendimento não carregado.")
 
       const id_atendimento = atendimento.id
       const id_protocolo = 0
-      const tipo_documento = documentType
+      const tipo_documento = Number(documentType)
+
+      if (!Number.isInteger(tipo_documento) || tipo_documento < 0) {
+        throw new Error("Tipo de documento inválido.")
+      }
 
       const uploadedDocs: UploadedDocument[] = await Promise.all(
         files.map(async (fileData) => {
           const file = fileData.file
           if (!file) throw new Error("Arquivo inválido")
+          if (!file.type?.toLowerCase().includes("pdf")) {
+            throw new Error("Apenas arquivos PDF são permitidos.")
+          }
 
           const { url, caminho, created } = await AnsDocumentosService.uploadDocument(file, {
             id_atendimento,
@@ -77,13 +84,21 @@ export function useDocumentosAns(
             nome: file.name,
           })
 
+          const caminhoFinal = created?.caminho || caminho || url
+          const resolvedUrl =
+            caminhoFinal && caminhoFinal.startsWith("http")
+              ? caminhoFinal
+              : caminhoFinal
+              ? `${process.env.NEXT_PUBLIC_AWS_BASE_URL}/${caminhoFinal}`
+              : url
+
           return {
-            id: created?._id,
-            name: file.name,
+            id: created?.id,
+            name: created?.nomeAnexo || file.name,
             size: file.size,
-            type: documentType,
-            url: created?.caminho || caminho,
-            caminho: created?.caminho || caminho,
+            type: String(tipo_documento),
+            url: resolvedUrl,
+            caminho: resolvedUrl,
           }
         })
       )
@@ -110,7 +125,7 @@ export function useDocumentosAns(
 
   return {
     loadDocumentosSalvos: () => refetchDocumentos(),
-    handleAnexarDocumento: (files: { file: File }[], documentType: string) =>
+    handleAnexarDocumento: (files: { file: File }[], documentType: number) =>
       uploadMutation.mutate({ files, documentType }),
     isLoading: uploadMutation.isPending,
     isSuccess: uploadMutation.isSuccess,

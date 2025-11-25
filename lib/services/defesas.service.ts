@@ -34,6 +34,7 @@ export interface Defesa {
     nome: string
   }[]
   atendimento?: Atendimento
+  motivoIds?: number[]
   createdAt?: string
   updatedAt?: string
   criadoEm?: string

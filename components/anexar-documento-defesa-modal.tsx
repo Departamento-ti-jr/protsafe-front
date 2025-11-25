@@ -17,7 +17,7 @@ interface SelectedFile {
 interface AnexarDocumentoModalProps {
   open: boolean
   onOpenChange: (open: boolean) => void
-  onSubmit: (files: SelectedFile[], documentType: string) => void // documentType = _id do tipo_documento
+  onSubmit: (files: SelectedFile[], documentType: number) => void // documentType = id_ans do tipo_documento
 }
 
 export function AnexarDocumentoDefesaModal({ open, onOpenChange, onSubmit }: AnexarDocumentoModalProps) {
@@ -94,7 +94,10 @@ export function AnexarDocumentoDefesaModal({ open, onOpenChange, onSubmit }: Ane
 
   const handleSubmit = () => {
     if (selectedFiles.length > 0 && selectedDocumentType) {
-      onSubmit(selectedFiles, selectedDocumentType) // envia o _id do tipo selecionado
+      const numericDocumentType = Number(selectedDocumentType)
+      if (Number.isNaN(numericDocumentType)) return
+
+      onSubmit(selectedFiles, numericDocumentType) // envia o id_ans do tipo selecionado
       // Reset form
       setSelectedFiles([])
       setSelectedDocumentType("")
@@ -193,8 +196,8 @@ export function AnexarDocumentoDefesaModal({ open, onOpenChange, onSubmit }: Ane
                     <div className="px-3 py-2 text-sm text-gray-500">Nenhum tipo encontrado</div>
                   )}
                   {docTypes.map((type) => (
-                    // value = _id (ObjectId) — o backend espera isso no upload
-                    <SelectItem key={type._id} value={type._id}>
+                    // value = id_ans numérico — o backend espera isso no upload
+                    <SelectItem key={type._id} value={String(type.id_ans)}>
                       {type.nome}
                     </SelectItem>
                   ))}
