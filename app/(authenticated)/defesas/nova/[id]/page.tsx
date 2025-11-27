@@ -75,7 +75,6 @@ export default function NovaDefesaPage({ params }: { params: Promise<{ id: strin
   }, [selectedMotivos, textosDefesa])
 
   useEffect(() => {
-    // if (abi?.memoriaCalculo) setCalculationMemory(atendimento.memoriaCalculo)
     if (atendimento?.id) {
       loadDocumentosSalvos()
     }
@@ -83,7 +82,6 @@ export default function NovaDefesaPage({ params }: { params: Promise<{ id: strin
 
   const loadAtendimento = async () => {
     try {
-      console.log("Carregando atendimento (ABI)...")
       setIsLoadingAbi(true)
       const id = await params.then(p => p.id)
       const data = await AtendimentosService.getById(id)
@@ -232,6 +230,7 @@ export default function NovaDefesaPage({ params }: { params: Promise<{ id: strin
       tipoPeticao: tipoDoc,
       textoDefesa: text || undefined,
       motivoIds: selectedMotivos,
+      documentosComprobatoriosIds: selectedComprobatorios,
       tempestividade: tempestividade || undefined,
       memoriaCalculo: calculationMemory || undefined,
       outrosDocumentosComplementares: informarOutrosDocumentos ? (othersSupportingDocument || undefined) : undefined,
@@ -293,6 +292,8 @@ export default function NovaDefesaPage({ params }: { params: Promise<{ id: strin
             setSelectedComprobatorios={setSelectedComprobatorios}
             informarOutrosDocumentos={informarOutrosDocumentos}
             setInformarOutrosDocumentos={setInformarOutrosDocumentos}
+            setOutrosDocumentosComplementares={setOthersSupportingDocument}
+            outrosDocumentosComplementares={othersSupportingDocument}
             tempestividade={tempestividade}
             setTempestividade={setTempestividade}
             calculationMemory={calculationMemory}

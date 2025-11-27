@@ -1,14 +1,12 @@
 "use client"
 
-import React, { useEffect, useRef, useState } from "react"
+import React, { useEffect, useState } from "react"
 import { Button } from "@/components/ui/button"
 import { ArrowLeft, Upload, Save, Cloud } from "lucide-react"
 import Link from "next/link"
-import { useRouter } from "next/navigation"
 import { AnexarDocumentoDefesaModal } from "@/components/anexar-documento-defesa-modal"
 import { TextoDefesa, TextosDefesaService } from "@/lib/services/textos-defesa.service"
 import { DocumentoComprobatorio, DocumentosComprobatoriosService } from "@/lib/services/documentos-comprobatorios.service"
-import { AnsDocumentosService } from "@/lib/services/ans-documentos.service"
 import { Defesa, DefesasService, type UpdateDefesaPayload } from "@/lib/services/defesas.service"
 import { Abi } from "@/lib/services/abis.service"
 import DefesaCardAtendimento from "../../components/defesas-card-atendimento"
@@ -61,7 +59,7 @@ export default function EditarDefesaPage({ params }: { params: Promise<{ id: str
   const [anexedDocuments, setAnexedDocuments] = useState<any[]>([])
   const [selectedMotivos, setSelectedMotivos] = useState<number[]>([])
   const [text, setText] = useState<string>("asdasd")
-  const [selectedComprobatorios, setSelectedComprobatorios] = useState<string[]>([])
+  const [selectedComprobatorios, setSelectedComprobatorios] = useState<number[]>([])
   const [textosDefesa, setTextosDefesa] = useState<TextoDefesa[]>([])
   const [documentosComprobatorios, setDocumentosComprobatorios] = useState<DocumentoComprobatorio[]>([])
   const [detalhamentoMotivo, setDetalhamentoMotivo] = useState("")
@@ -74,7 +72,7 @@ export default function EditarDefesaPage({ params }: { params: Promise<{ id: str
   const [hasUserChangedMotivos, setHasUserChangedMotivos] = useState(false);
   const [currentAtendimentoId, setCurrentAtendimentoId] = useState<number | null>(null);
 
-  const { loadDocumentosSalvos, handleAnexarDocumento, isLoading } = useDocumentosAns(defesa?.atendimento, setAnexedDocuments, setError)
+  const { loadDocumentosSalvos, handleAnexarDocumento, isLoading } = useDocumentosAns(defesa?.atendimento?.id, setAnexedDocuments, setError)
 
   useEffect(() => {
     const init = async () => {
@@ -87,23 +85,22 @@ export default function EditarDefesaPage({ params }: { params: Promise<{ id: str
     init();
   }, []);
 
-// ✅ Esse useEffect só atualiza o texto se o usuário mexer no dropdown
-useEffect(() => {
-  if (!hasUserChangedMotivos) return;
+  useEffect(() => {
+    if (!hasUserChangedMotivos) return;
 
-  const textosConcatenados = textosDefesa
-    .filter(t => selectedMotivos.includes(t.id))
-    .map(t => t.texto)
-    .join("\n\n");
+    const textosConcatenados = textosDefesa
+      .filter(t => selectedMotivos.includes(Number(t.id)))
+      .map(t => t.texto)
+      .join("\n\n");
 
-  setText(textosConcatenados);
-}, [selectedMotivos, textosDefesa, hasUserChangedMotivos]);
+    setText(textosConcatenados);
+  }, [selectedMotivos, textosDefesa, hasUserChangedMotivos]);
 
   useEffect(() => {
-    if (abi?.id) {
-      loadDocumentosSalvos(abi.id)
+    if (defesa?.atendimento?.id) {
+      loadDocumentosSalvos()
     }
-  }, [abi])
+  }, [defesa])
 
   const loadDefesa = async (): Promise<Defesa | null> => {
     try {
@@ -115,18 +112,19 @@ useEffect(() => {
       }
 
       setDefesa(data)
-      
+
       setTempestividade(data.tempestividade || "")
       setCalculationMemory(data.memoriaCalculo || "")
       setSupportingDocument(data.supportingDocument || "")
       setValorRetificacao(data.valorRetificacao || "")
-      setSelectedMotivos(data.motivoIds|| [])
+      setSelectedMotivos(data.motivoIds || [])
       setSelectedComprobatorios(data.supportingDocuments?.map((d: any) => d.id) || [])
       setInformarOutrosDocumentos(String(data?.othersSupportingDocument) ? true : false);
       setOthersSupportingDocument(String(data?.othersSupportingDocument));
-      
+      setSelectedComprobatorios(data.documentosComprobatoriosIds || [])
+
       setText(data.textoDefesa || "")
-      
+
       setSelectedPedido(
         data.opcaoOrdem === 2
           ? 'retificacao'
@@ -188,10 +186,10 @@ useEffect(() => {
 
       // const result = await AnsDocumentosService.enviarDocumentosParaAns(abi.id);
 
-      toast({
-        title: "Sucesso!",
-        description: result?.message || "Documentos enviados com sucesso à ANS.",
-      });
+      // toast({
+      //   title: "Sucesso!",
+      //   description: result?.message || "Documentos enviados com sucesso à ANS.",
+      // });
     } catch (error: any) {
       toast({
         variant: "destructive",
@@ -206,11 +204,7 @@ useEffect(() => {
       setLoadSalvarDefesa(true)
 
       if (!defesa?.id) return
-
       const payload = mapDefesaToPayload(currentAtendimentoId ?? undefined)
-      console.log("Payload para atualizar defesa:", payload)
-
-      
       await DefesasService.update(defesa.id, payload)
 
       toast({
@@ -246,6 +240,7 @@ useEffect(() => {
       tipoPeticao: tipoDoc,
       textoDefesa: text || undefined,
       motivoIds: selectedMotivos,
+      documentosComprobatoriosIds: selectedComprobatorios,
       tempestividade: tempestividade || undefined,
       memoriaCalculo: calculationMemory || undefined,
       outrosDocumentosComplementares: informarOutrosDocumentos ? (othersSupportingDocument || undefined) : undefined,
@@ -275,7 +270,7 @@ useEffect(() => {
         </div>
       </div>
 
-      
+
       {error && (
         <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-6 text-center">
           <p className="text-yellow-700 font-medium">{error}</p>
@@ -304,6 +299,8 @@ useEffect(() => {
             setSelectedComprobatorios={setSelectedComprobatorios}
             informarOutrosDocumentos={informarOutrosDocumentos}
             setInformarOutrosDocumentos={setInformarOutrosDocumentos}
+            setOutrosDocumentosComplementares={setOthersSupportingDocument}
+            outrosDocumentosComplementares={othersSupportingDocument}
             tempestividade={tempestividade}
             setTempestividade={setTempestividade}
             calculationMemory={calculationMemory}

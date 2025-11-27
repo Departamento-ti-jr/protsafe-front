@@ -38,6 +38,7 @@ export function AnexarDocumentoDefesaModal({ open, onOpenChange, onSubmit }: Ane
       setTypesError(null)
       try {
         const data = await AnsTiposDocumentosService.getAll()
+        console.log("Tipos de documento ANS carregados:", data)
         if (!cancelled) setDocTypes(data)
       } catch (e: any) {
         if (!cancelled) setTypesError("Erro ao carregar tipos de documento")
@@ -51,6 +52,10 @@ export function AnexarDocumentoDefesaModal({ open, onOpenChange, onSubmit }: Ane
       cancelled = true
     }
   }, [open])
+
+  useEffect(() => {
+    console.log("Selected document type changed:", selectedDocumentType)
+  }, [selectedDocumentType])
 
   const handleFileSelect = useCallback((files: FileList | null) => {
     if (!files) return
@@ -95,6 +100,7 @@ export function AnexarDocumentoDefesaModal({ open, onOpenChange, onSubmit }: Ane
   const handleSubmit = () => {
     if (selectedFiles.length > 0 && selectedDocumentType) {
       const numericDocumentType = Number(selectedDocumentType)
+      console.log("Submitting files with document type ID (ANS):", numericDocumentType)
       if (Number.isNaN(numericDocumentType)) return
 
       onSubmit(selectedFiles, numericDocumentType) // envia o id_ans do tipo selecionado
@@ -197,7 +203,7 @@ export function AnexarDocumentoDefesaModal({ open, onOpenChange, onSubmit }: Ane
                   )}
                   {docTypes.map((type) => (
                     // value = id_ans numérico — o backend espera isso no upload
-                    <SelectItem key={type._id} value={String(type.id_ans)}>
+                    <SelectItem key={type.id} value={String(type.id)}>
                       {type.nome}
                     </SelectItem>
                   ))}

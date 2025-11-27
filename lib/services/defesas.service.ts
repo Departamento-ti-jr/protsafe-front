@@ -35,6 +35,7 @@ export interface Defesa {
   }[]
   atendimento?: Atendimento
   motivoIds?: number[]
+  documentosComprobatoriosIds?: number[]
   createdAt?: string
   updatedAt?: string
   criadoEm?: string

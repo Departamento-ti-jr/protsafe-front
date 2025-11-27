@@ -18,7 +18,7 @@ export interface UploadedDocument {
  * - Controla estados de carregamento e erro via React Query
  */
 export function useDocumentosAns(
-  atendimento: { id?: number } | undefined,
+  atendimentoId: number | undefined,
   setAnexedDocuments: React.Dispatch<React.SetStateAction<UploadedDocument[]>>,
   setError: React.Dispatch<React.SetStateAction<string | null>>
 ) {
@@ -26,12 +26,14 @@ export function useDocumentosAns(
 
   // 🔹 Busca documentos já salvos
   const { refetch: refetchDocumentos } = useQuery({
-    queryKey: ["documentos-ans", atendimento?.id],
+    queryKey: ["documentos-ans", atendimentoId],
     enabled: false,
     queryFn: async () => {
-      if (!atendimento?.id) throw new Error("Atendimento não encontrado.")
-
-      const { protsafe } = await AnsDocumentosService.getDocumentosByAtendimento(atendimento.id)
+      console.log("Carregando documentos salvos para atendimento:", atendimentoId)
+      if (!atendimentoId) throw new Error("Atendimento não encontrado.")
+      console.log("atendimentoId:", atendimentoId)
+      const { protsafe } = await AnsDocumentosService.getDocumentosByAtendimento(atendimentoId)
+      console.log("Documentos salvos carregados:", protsafe)
       const mapped = protsafe.map((doc: any) => ({
         id: doc.id,
         name: doc.nome ?? doc.nomeAnexo,
@@ -58,16 +60,12 @@ export function useDocumentosAns(
 
   // 🔹 Upload de novos documentos
   const uploadMutation = useMutation({
-    mutationFn: async ({ files, documentType }: { files: { file: File }[]; documentType: number }) => {
-      if (!atendimento?.id) throw new Error("Atendimento não carregado.")
+    mutationFn: async ({ files, tipoDocumentoId }: { files: { file: File }[]; tipoDocumentoId: number }) => {
+      if (!atendimentoId) throw new Error("Atendimento não carregado.")
 
-      const id_atendimento = atendimento.id
+      const id_atendimento = atendimentoId
       const id_protocolo = 0
-      const tipo_documento = Number(documentType)
-
-      if (!Number.isInteger(tipo_documento) || tipo_documento < 0) {
-        throw new Error("Tipo de documento inválido.")
-      }
+      const tipo_documento = tipoDocumentoId
 
       const uploadedDocs: UploadedDocument[] = await Promise.all(
         files.map(async (fileData) => {
@@ -124,9 +122,14 @@ export function useDocumentosAns(
   })
 
   return {
-    loadDocumentosSalvos: () => refetchDocumentos(),
-    handleAnexarDocumento: (files: { file: File }[], documentType: number) =>
-      uploadMutation.mutate({ files, documentType }),
+    loadDocumentosSalvos: (id?: number) => {
+      if (id) {
+        atendimentoId = id
+      }
+      return refetchDocumentos()
+    },
+    handleAnexarDocumento: (files: { file: File }[], tipoDocumentoId: number) =>
+      uploadMutation.mutate({ files, tipoDocumentoId }),
     isLoading: uploadMutation.isPending,
     isSuccess: uploadMutation.isSuccess,
     error: uploadMutation.error,

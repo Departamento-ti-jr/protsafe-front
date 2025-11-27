@@ -2,11 +2,11 @@
 import { httpClient } from "../http-client"; // ajuste o caminho se necessário
 
 export interface AnsTipoDocumento {
-  _id: string;
+  id: number;
   id_ans: number;
   nome: string;
-  createdAt?: string;
-  updatedAt?: string;
+  criado_em?: string;
+  atualizado_em?: string;
 }
 
 export class AnsTiposDocumentosService {

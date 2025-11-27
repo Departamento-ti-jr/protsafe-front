@@ -109,7 +109,7 @@ export function CardFormularioImputacao({
 
             <div className="space-y-2">
               <MultiSelectCheckbox
-                options={documentosComprobatorios.map((doc: any) => ({ label: doc.tipo, value: doc._id }))}
+                options={documentosComprobatorios.map((doc: any) => ({ label: doc.tipo, value: doc.id }))}
                 value={selectedComprobatorios}
                 onChange={setSelectedComprobatorios}
                 label="Documentos Comprobatórios"
