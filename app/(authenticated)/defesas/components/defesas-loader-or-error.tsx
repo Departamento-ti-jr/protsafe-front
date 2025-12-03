@@ -1,6 +1,6 @@
 "use client"
 
-import { AlertCircle, RefreshCcw } from "lucide-react"
+import { AlertCircle, Loader2, RefreshCcw } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Spinner } from "@/components/ui/spinner"
 
@@ -17,8 +17,9 @@ export default function DefesasLoaderOrError({
 }: DefesasLoaderOrErrorProps) {
   if (loading) {
     return (
-      <div className="flex justify-center py-10">
-        <Spinner className="h-6 w-6 text-blue-500 animate-spin" />
+      <div className="flex items-center justify-center py-12">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+        <span className="ml-2 text-gray-600">Carregando defesas...</span>
       </div>
     )
   }

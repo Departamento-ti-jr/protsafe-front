@@ -128,9 +128,9 @@ export default function DocumentosComprobatoriosPage() {
       </div>
 
       {loading && (
-        <div className="flex items-center justify-center py-4 space-x-2">
-          <Loader2 className="h-6 w-6 animate-spin text-blue-500" />
-          <span className="text-gray-600">Carregando documentos...</span>
+        <div className="flex items-center justify-center py-12">
+          <Loader2 className="h-8 w-8 animate-spin text-primary" />
+          <span className="ml-2 text-gray-600">Carregando documentos...</span>
         </div>
       )}
 
