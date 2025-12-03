@@ -30,8 +30,6 @@ export function ModernSidebar({ className }: ModernSidebarProps) {
 
   const navItems = [
     { name: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
-    { name: "Empresas", href: "/empresas", icon: Building2 },
-    { name: "Usuários", href: "/usuarios", icon: Users },
     { name: "Textos de defesa", href: "/textos-defesa", icon: FileText },
     { name: "Documentos comprob.", href: "/documentos-comprobatorios", icon: FileCheck },
     { name: "ABIs", href: "/abis", icon: FileSpreadsheet },

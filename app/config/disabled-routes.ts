@@ -1,8 +1,8 @@
 // app/config/disabled-routes.ts
 
 export const disabledRoutes = [
-  "/empresas",
-  "/usuarios",
+  // "/empresas",
+  // "/usuarios",
   // "/textos-defesa",
   // "/documentos-comprobatorios",
   "/recolhimentos",

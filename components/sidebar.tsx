@@ -36,16 +36,6 @@ export function Sidebar({ className }: SidebarProps) {
       icon: LayoutDashboard,
     },
     {
-      name: "Empresas",
-      href: "/empresas",
-      icon: Building2,
-    },
-    {
-      name: "Usuários",
-      href: "/usuarios",
-      icon: Users,
-    },
-    {
       name: "Textos de defesa",
       href: "/textos-defesa",
       icon: FileText,

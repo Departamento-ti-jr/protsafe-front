@@ -42,35 +42,35 @@ export async function ModernHeader() {
       <div className="flex items-center gap-3">
         {/* Quick Actions */}
         <div className="flex items-center gap-2">
-          <Button variant="ghost" size="icon" className="relative hover:bg-slate-50">
+          {/* <Button variant="ghost" size="icon" className="relative hover:bg-slate-50">
             <MessageSquare className="h-5 w-5 text-slate-600" />
           </Button>
 
           <Button variant="ghost" size="icon" className="relative hover:bg-slate-50">
             <Calendar className="h-5 w-5 text-slate-600" />
-          </Button>
+          </Button> */}
 
-          <Button variant="ghost" size="icon" className="relative hover:bg-slate-50">
+          {/* <Button variant="ghost" size="icon" className="relative hover:bg-slate-50">
             <Mail className="h-5 w-5 text-slate-600" />
-          </Button>
+          </Button> */}
         </div>
 
-        <div className="w-px h-6 bg-slate-200"></div>
+        {/* <div className="w-px h-6 bg-slate-200"></div> */}
 
         {/* Notifications */}
-        <div className="relative">
+        {/* <div className="relative">
           <Button variant="ghost" size="icon" className="relative hover:bg-slate-50">
             <Bell className="h-5 w-5 text-slate-600" />
             <span className="absolute -top-1 -right-1 h-5 w-5 bg-red-500 text-white text-xs rounded-full flex items-center justify-center font-medium">
               3
             </span>
           </Button>
-        </div>
+        </div> */}
 
         {/* Settings */}
-        <Button variant="ghost" size="icon" className="hover:bg-slate-50">
+        {/* <Button variant="ghost" size="icon" className="hover:bg-slate-50">
           <Settings className="h-5 w-5 text-slate-600" />
-        </Button>
+        </Button> */}
 
         <div className="w-px h-6 bg-slate-200"></div>
 
