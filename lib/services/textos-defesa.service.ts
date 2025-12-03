@@ -85,9 +85,7 @@ export class TextosDefesaService {
 
   static async update(id: string, data: UpdateTextoDefesaData): Promise<TextoDefesa> {
     try {
-      console.log(`Atualizando texto de defesa ${id}:`, data)
       const result = await httpClient.put<TextoDefesa>(`${this.endpoint}/${id}`, data)
-      console.log("Texto de defesa atualizado:", result)
       return result
     } catch (error) {
       console.error(`Erro ao atualizar texto de defesa ${id}:`, error)

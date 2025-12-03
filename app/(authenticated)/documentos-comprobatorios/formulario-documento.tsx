@@ -21,6 +21,7 @@ export function FormularioDocumento({ id }: Props) {
   const router = useRouter()
   const [documento, setDocumento] = useState<DocumentoComprobatorio | null>(null)
   const [loading, setLoading] = useState(true)
+  const [loadingHandleSave, setLoadingHandleSave] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [tipo, setTipo] = useState('')
   const isNew = !id
@@ -49,18 +50,18 @@ export function FormularioDocumento({ id }: Props) {
 
   const handleSalvar = async () => {
     try {
-      setLoading(true)
+      setLoadingHandleSave(true)
       if (isNew) {
-        await DocumentosComprobatoriosService.create({ tipo })
+        const response = await DocumentosComprobatoriosService.create({ tipo })
+        router.push(`/documentos-comprobatorios/editar/${response.id}`)
       } else {
         await DocumentosComprobatoriosService.update(id, { tipo })
       }
-      router.push('/documentos-comprobatorios')
     } catch (err) {
       console.error('Erro ao salvar documento:', err)
       setError('Erro ao salvar documento.')
     } finally {
-      setLoading(false)
+      setLoadingHandleSave(false);
     }
   }
 
@@ -113,33 +114,28 @@ export function FormularioDocumento({ id }: Props) {
           {!isNew && documento && (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 pt-4">
               <div>
-                <p className="text-sm font-medium text-gray-500">ID</p>
-                <p className="text-sm font-mono text-gray-700 break-all">{documento._id}</p>
-              </div>
-              <div>
                 <p className="text-sm font-medium text-gray-500">Data de Criação</p>
                 <p className="text-sm text-gray-700">
-                  {new Date(documento.createdAt).toLocaleDateString('pt-BR')}
+                  {new Date(documento.criadoEm).toLocaleDateString('pt-BR')}
                 </p>
               </div>
               <div>
                 <p className="text-sm font-medium text-gray-500">Última Atualização</p>
                 <p className="text-sm text-gray-700">
-                  {new Date(documento.updatedAt).toLocaleDateString('pt-BR')}
+                  {new Date(documento.atualizadoEm).toLocaleDateString('pt-BR')}
                 </p>
               </div>
             </div>
           )}
 
-          {/* Botão de ação */}
           <div className="flex justify-end pt-6">
             <Button
               onClick={handleSalvar}
-              disabled={loading || !tipo}
-              className="bg-[#a97452] hover:bg-[#946548] text-white px-6 shadow-md"
+              disabled={loadingHandleSave || !tipo}
+              className="text-xs"
             >
               <Save className="h-4 w-4 mr-2" />
-              {isNew ? 'Cadastrar Documento' : 'Salvar Alterações'}
+              { loadingHandleSave && 'Salvando...' || (isNew ? 'Cadastrar Documento' : 'Salvar Alterações')}
             </Button>
           </div>
         </CardContent>

@@ -2,14 +2,13 @@ import { httpClient } from "../http-client"
 import type { PaginatedResponse } from "@/components/ui/pagination-controls"
 
 export interface DocumentoComprobatorio {
-  _id: string
+  id?: string
   tipo: string
-  createdAt: string
-  updatedAt: string
-  __v: number
+  criadoEm?: string
+  atualizadoEm?: string
 }
 
-export interface CreateDocumentoComprobatorioData extends Omit<DocumentoComprobatorio, "_id" | "createdAt" | "updatedAt" | "__v"> {}
+export interface CreateDocumentoComprobatorioData extends Omit<DocumentoComprobatorio, "id" | "criadoEm" | "atualizadoEm"> {}
 
 export interface GetDocumentosParams {
   page?: number

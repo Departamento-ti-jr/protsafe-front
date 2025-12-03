@@ -169,15 +169,15 @@ export default function DocumentosComprobatoriosPage() {
               </TableRow>
             ) : (
               paginatedData.data.map((doc) => (
-                <TableRow key={doc._id} className="hover:bg-gray-50">
+                <TableRow key={doc.id} className="hover:bg-gray-50">
                   <TableCell className="font-medium text-gray-900">
                     {doc.tipo}
                   </TableCell>
                   <TableCell className="text-sm text-gray-500">
-                    {formatDate(doc.createdAt)}
+                    {formatDate(doc.criadoEm)}
                   </TableCell>
                   <TableCell className="text-right">
-                    <Link href={`/documentos-comprobatorios/editar/${doc._id}`}>
+                    <Link href={`/documentos-comprobatorios/editar/${doc.id}`}>
                       <Button variant="ghost" size="icon" disabled={loading}>
                         <PenSquare className="h-4 w-4" />
                       </Button>

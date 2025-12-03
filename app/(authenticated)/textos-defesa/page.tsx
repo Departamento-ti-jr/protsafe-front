@@ -154,7 +154,7 @@ export default function TextosDefesaPage() {
               </TableRow>
             ) : (
               paginatedData.data.map((texto) => (
-                <TableRow key={texto._id} className="hover:bg-gray-50">
+                <TableRow key={texto.id} className="hover:bg-gray-50">
                   <TableCell className="font-medium text-gray-900 max-w-xs">
                     <div className="truncate" title={texto.nome}>
                       {texto.nome}
@@ -165,7 +165,7 @@ export default function TextosDefesaPage() {
                   </TableCell>
                   <TableCell className="text-sm text-gray-500">{formatDate(texto.updatedAt)}</TableCell>
                   <TableCell className="text-right">
-                    <Link href={`/textos-defesa/editar/${texto._id}`}>
+                    <Link href={`/textos-defesa/editar/${texto.id}`}>
                       <Button variant="ghost" size="icon" disabled={loading}>
                         <PenSquare className="h-4 w-4" />
                       </Button>
