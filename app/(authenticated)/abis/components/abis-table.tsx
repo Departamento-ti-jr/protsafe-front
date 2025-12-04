@@ -8,7 +8,7 @@ import { Badge } from "@/components/ui/badge"
 import type { Abi } from "@/lib/services/abis.service"
 import { formatDateTimeToDDMMYYYYHHMMSS } from "@/lib/date-helpers"
 
-export default function AbisTable({ data }: { data: Abi[] }) {
+export default function AbisTable({ data, loading = false }: { data: Abi[], loading?: boolean }) {
   return (
     <div className="bg-white rounded-lg border overflow-hidden">
       <Table>
@@ -27,7 +27,7 @@ export default function AbisTable({ data }: { data: Abi[] }) {
           {data.length === 0 ? (
             <TableRow>
               <TableCell colSpan={7} className="text-center py-8 text-gray-500">
-                Nenhuma ABI encontrada.
+                {loading ? 'Carregando...' : `Nenhuma ABI encontrada.`}
               </TableCell>
             </TableRow>
           ) : (

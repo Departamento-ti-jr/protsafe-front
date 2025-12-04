@@ -23,6 +23,7 @@ import {
 } from "@/components/ui/table"
 import Link from "next/link"
 import { useAuthContext } from "@/components/auth-provider"
+import { useLoadingIndicator } from "@/components/loading-indicator"
 
 export default function DocumentosComprobatoriosPage() {
   const { isAuthenticated } = useAuthContext()
@@ -38,16 +39,24 @@ export default function DocumentosComprobatoriosPage() {
   const [searchTerm, setSearchTerm] = useState("")
   const [currentPage, setCurrentPage] = useState(1)
   const [pageSize, setPageSize] = useState(10)
+  const { startLoading, stopLoading } = useLoadingIndicator();
 
   useEffect(() => {
     if (!isAuthenticated) return
-
     const delayDebounce = setTimeout(() => {
       loadDocumentos()
     }, 500)
 
     return () => clearTimeout(delayDebounce)
   }, [searchTerm, currentPage, pageSize, isAuthenticated])
+
+  useEffect(() => {
+    if(loading) {
+      startLoading()
+    } else {
+      stopLoading()
+    }
+  }, [loading])
 
   const loadDocumentos = async () => {
     try {
@@ -127,13 +136,6 @@ export default function DocumentosComprobatoriosPage() {
         </div>
       </div>
 
-      {loading && (
-        <div className="flex items-center justify-center py-12">
-          <Loader2 className="h-8 w-8 animate-spin text-primary" />
-          <span className="ml-2 text-gray-600">Carregando documentos...</span>
-        </div>
-      )}
-
       {error && (
         <div className="flex flex-col items-center justify-center py-4 space-y-2 text-red-600">
           <p>{error}</p>
@@ -164,7 +166,7 @@ export default function DocumentosComprobatoriosPage() {
                 <TableCell colSpan={3} className="text-center py-8 text-gray-500">
                   {searchTerm
                     ? "Nenhum documento encontrado para a busca."
-                    : "Nenhum documento cadastrado."}
+                    : loading ? "Carregando..." : "Nenhum documento cadastrado."}
                 </TableCell>
               </TableRow>
             ) : (

@@ -7,6 +7,7 @@ import DefesasFilters from "./components/defesas-filters"
 import DefesasTable from "./components/defesas-table"
 import DefesasPagination from "./components/defesas-pagination"
 import DefesasLoaderOrError from "./components/defesas-loader-or-error"
+import { useLoadingIndicator } from "@/components/loading-indicator"
 
 export default function DefesasPage() {
   const [paginatedData, setPaginatedData] = useState<PaginatedResponse<Defesa>>({
@@ -16,15 +17,16 @@ export default function DefesasPage() {
     pageSize: 20,
     totalPages: 1,
   })
-  const [loading, setLoading] = useState(true)
+  const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [searchTerm, setSearchTerm] = useState("")
   const [currentPage, setCurrentPage] = useState(1)
   const [pageSize, setPageSize] = useState(20)
+  const { startLoading, stopLoading } = useLoadingIndicator();
 
   useEffect(() => {
     const loadDefesas = async () => {
-      setLoading(true)
+      startLoading();
       try {
         console.log("Loading defesas with params:", {
           page: currentPage,
@@ -41,7 +43,7 @@ export default function DefesasPage() {
         console.error(err)
         setError("Erro ao carregar Defesas.")
       } finally {
-        setLoading(false)
+        stopLoading();
       }
     }
 

@@ -7,6 +7,7 @@ import { AuthProvider } from "@/components/auth-provider"
 import { Toaster } from "@/components/ui/toaster"
 import { TooltipProvider } from "@/components/ui/tooltip"
 import { QueryProvider } from "./providers/query-provider"
+import { LoadingIndicatorProvider } from "@/components/loading-indicator"
 
 const inter = Inter({ subsets: ["latin"] })
 
@@ -27,10 +28,10 @@ export default function RootLayout({
         <AuthProvider>
           <ThemeProvider attribute="class" defaultTheme="light" enableSystem disableTransitionOnChange>
             <QueryProvider>
-              <TooltipProvider>
-                {children}
-              </TooltipProvider>
-              <Toaster />
+              <LoadingIndicatorProvider>
+                <TooltipProvider>{children}</TooltipProvider>
+                <Toaster />
+              </LoadingIndicatorProvider>
             </QueryProvider>
           </ThemeProvider>
         </AuthProvider>
