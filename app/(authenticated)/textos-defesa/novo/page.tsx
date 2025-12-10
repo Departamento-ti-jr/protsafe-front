@@ -6,11 +6,14 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { Textarea } from "@/components/ui/textarea"
 import { ArrowLeft, Save } from 'lucide-react'
 import Link from "next/link"
 import { TextosDefesaService } from "@/lib/services/textos-defesa.service"
 import { useToast } from "@/hooks/use-toast"
+
+// --- IMPORTS DO CODEMIRROR ---
+import CodeMirror from "@uiw/react-codemirror"
+import { html } from "@codemirror/lang-html"
 
 export default function NovoTextoDefesaPage() {
   const [formData, setFormData] = useState({
@@ -99,14 +102,15 @@ export default function NovoTextoDefesaPage() {
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="texto">Conteúdo do Texto de Defesa</Label>
-            <Textarea
-              id="texto"
-              placeholder="Digite o conteúdo do texto de defesa..."
+            <Label htmlFor="texto">Conteúdo do Texto de Defesa (HTML)</Label>
+
+            <CodeMirror
               value={formData.texto}
-              onChange={(e) => handleInputChange("texto", e.target.value)}
-              className="min-h-[200px] resize-none"
-              disabled={loading}
+              height="400px"
+              theme="light"
+              extensions={[html({ matchClosingTags: true, autoCloseTags: true })]}
+              onChange={(value) => handleInputChange("texto", value)}
+              className="rounded border border-gray-300"
             />
           </div>
 
@@ -114,7 +118,10 @@ export default function NovoTextoDefesaPage() {
           {success && <p className="text-sm text-green-600">Texto de defesa cadastrado com sucesso!</p>}
 
           <div className="flex justify-end">
-            <Button onClick={handleSubmit} disabled={loading || !formData.nome.trim() || !formData.texto.trim()}>
+            <Button
+              onClick={handleSubmit}
+              disabled={loading || !formData.nome.trim() || !formData.texto.trim()}
+            >
               {loading ? (
                 <>
                   <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2" />

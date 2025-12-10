@@ -10,6 +10,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { PenSquare, Plus, Search } from "lucide-react"
 import Link from "next/link"
 import { useAuthContext } from "@/components/auth-provider"
+import { useLoadingIndicator } from "@/components/loading-indicator"
 
 export default function TextosDefesaPage() {
   const { isAuthenticated } = useAuthContext()
@@ -25,6 +26,7 @@ export default function TextosDefesaPage() {
   const [searchTerm, setSearchTerm] = useState("")
   const [currentPage, setCurrentPage] = useState(1)
   const [pageSize, setPageSize] = useState(20)
+  const { startLoading, stopLoading } = useLoadingIndicator();
 
   useEffect(() => {
     if (!isAuthenticated) return
@@ -38,6 +40,7 @@ export default function TextosDefesaPage() {
 
   const loadTextosDefesa = async () => {
     try {
+      startLoading();
       setLoading(true)
       setError(null)
       const data = await TextosDefesaService.getAll({
@@ -51,6 +54,7 @@ export default function TextosDefesaPage() {
       console.error(err)
     } finally {
       setLoading(false)
+      stopLoading();
     }
   }
 
@@ -71,19 +75,6 @@ export default function TextosDefesaPage() {
     if (!dateString) return "-"
     return new Date(dateString).toLocaleDateString("pt-BR")
   }
-
-  // Se não autenticado, mostrar mensagem e sair logo
-  if (!isAuthenticated) {
-    return (
-      <div className="p-6 space-y-6">
-        <div className="flex items-center justify-center py-12">
-          <p className="text-gray-600">Você precisa estar autenticado para acessar esta página.</p>
-        </div>
-      </div>
-    )
-  }
-
-  // Renderização principal SEM retornar no loading, só exibir loading na interface
 
   return (
     <div className="p-6 space-y-6">
@@ -117,15 +108,6 @@ export default function TextosDefesaPage() {
         </div>
       </div>
 
-      {/* Loading aparece aqui, sem sumir nada */}
-      {loading && (
-        <div className="flex items-center justify-center py-12">
-          <Loader2 className="h-8 w-8 animate-spin text-primary" />
-          <span className="ml-2 text-gray-600">Carregando textos de defesa...</span>
-        </div>
-      )}
-
-      {/* Se erro, mostra mensagem mas mantém tabela */}
       {error && (
         <div className="flex flex-col items-center justify-center py-4 space-y-2 text-red-600">
           <p>{error}</p>
@@ -149,7 +131,7 @@ export default function TextosDefesaPage() {
             {paginatedData.data.length === 0 ? (
               <TableRow>
                 <TableCell colSpan={5} className="text-center py-8 text-gray-500">
-                  {searchTerm ? "Nenhum texto encontrado para a busca." : "Nenhum texto de defesa cadastrado."}
+                  {searchTerm ? "Nenhum texto encontrado para a busca." : (loading ? "Carregando textos de defesa..." : "Nenhum texto de defesa cadastrado.") }
                 </TableCell>
               </TableRow>
             ) : (
