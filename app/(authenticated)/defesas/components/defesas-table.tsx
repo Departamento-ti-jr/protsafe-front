@@ -27,18 +27,11 @@ const formatDateTime = (value?: string | null) => {
 }
 
 interface DefesasTableProps {
-  data: Defesa[]
+  data: Defesa[],
+  loading: boolean
 }
 
-export default function DefesasTable({ data }: DefesasTableProps) {
-
-  if (!data.length) {
-    return (
-      <div className="text-center text-gray-500 py-10">
-        Nenhuma defesa encontrada.
-      </div>
-    )
-  }
+export default function DefesasTable({ data, loading = false }: DefesasTableProps) {
 
   return (
     <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
@@ -56,7 +49,15 @@ export default function DefesasTable({ data }: DefesasTableProps) {
         </TableHeader>
 
         <TableBody>
-          {data.map((defesa, index) => {
+
+          {data.length === 0 ? (
+            <TableRow>
+              <TableCell colSpan={7} className="text-center py-8 text-gray-500">
+                {loading ? 'Carregando...' : `Nenhuma Defesa encontrada.`}
+              </TableCell>
+            </TableRow>
+          ) :
+          (data.map((defesa, index) => {
             const atendimento: any = defesa.atendimento ?? (defesa as any).atendimento
             const abi = atendimento?.abi ?? atendimento
             const operadora = defesa.operadora ?? abi?.operadora
@@ -116,7 +117,7 @@ export default function DefesasTable({ data }: DefesasTableProps) {
                 </TableCell>
               </TableRow>
             )
-          })}
+          }))}
         </TableBody>
       </Table>
     </div>

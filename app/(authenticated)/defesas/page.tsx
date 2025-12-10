@@ -27,6 +27,7 @@ export default function DefesasPage() {
   useEffect(() => {
     const loadDefesas = async () => {
       startLoading();
+      setLoading(true);
       try {
         console.log("Loading defesas with params:", {
           page: currentPage,
@@ -43,6 +44,7 @@ export default function DefesasPage() {
         console.error(err)
         setError("Erro ao carregar Defesas.")
       } finally {
+        setLoading(false)
         stopLoading();
       }
     }
@@ -54,16 +56,12 @@ export default function DefesasPage() {
     <div className="p-6 space-y-6">
       <h1 className="text-2xl font-semibold text-gray-900">Defesas</h1>
 
-      <DefesasLoaderOrError loading={loading} error={error} onRetry={() => setCurrentPage((p) => p)} />
-
-      {!loading && !error && (
-        <>
           <DefesasFilters
             searchTerm={searchTerm}
             onSearch={setSearchTerm}
           />
 
-          <DefesasTable data={paginatedData.data} />
+          <DefesasTable data={paginatedData.data} loading={loading} />
 
           <DefesasPagination
             currentPage={currentPage}
@@ -73,8 +71,7 @@ export default function DefesasPage() {
             onPageChange={setCurrentPage}
             onPageSizeChange={setPageSize}
           />
-        </>
-      )}
+            
     </div>
   )
 }
