@@ -98,7 +98,7 @@ export default function EditarDefesaPage({ params }: { params: Promise<{ id: str
 
   useEffect(() => {
     if (defesa?.atendimento?.id) {
-      loadDocumentosSalvos()
+      loadDocumentosSalvos(defesa?.atendimento?.id)
     }
   }, [defesa])
 

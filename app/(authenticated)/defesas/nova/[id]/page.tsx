@@ -76,7 +76,7 @@ export default function NovaDefesaPage({ params }: { params: Promise<{ id: strin
 
   useEffect(() => {
     if (atendimento?.id) {
-      loadDocumentosSalvos()
+      loadDocumentosSalvos(atendimento?.id)
     }
   }, [atendimento])
 
