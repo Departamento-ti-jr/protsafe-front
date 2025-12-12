@@ -67,6 +67,8 @@ export function useDocumentosAns(
       const id_protocolo = 0
       const tipo_documento = tipoDocumentoId
 
+      console.log("Iniciando upload de documentos para atendimento:", id_atendimento)
+
       const uploadedDocs: UploadedDocument[] = await Promise.all(
         files.map(async (fileData) => {
           const file = fileData.file
@@ -74,6 +76,8 @@ export function useDocumentosAns(
           if (!file.type?.toLowerCase().includes("pdf")) {
             throw new Error("Apenas arquivos PDF são permitidos.")
           }
+
+          console.log("Iniciando upload do arquivo:", file)
 
           const { url, caminho, created } = await AnsDocumentosService.uploadDocument(file, {
             id_atendimento,

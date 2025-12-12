@@ -55,7 +55,7 @@ export default function NovaDefesaPage({ params }: { params: Promise<{ id: strin
   const [isLoadingAbi, setIsLoadingAbi] = useState(true)
 
   const { loadDocumentosSalvos, handleAnexarDocumento, isLoading } = useDocumentosAns(
-    atendimento,
+    atendimento?.id,
     setAnexedDocuments,
     setError
   )
