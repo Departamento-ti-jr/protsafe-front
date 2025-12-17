@@ -5,10 +5,10 @@ import { Button } from "@/components/ui/button"
 import { Eye } from "lucide-react"
 import Link from "next/link"
 import { Badge } from "@/components/ui/badge"
-import type { Abi } from "@/lib/services/abis.service"
 import { formatDateTimeToDDMMYYYYHHMMSS } from "@/lib/date-helpers"
+import type { ComposicaoDadosAbi } from "@/lib/services/composicao-dados-ans.service"
 
-export default function AbisTable({ data }: { data: Abi[] }) {
+export default function AbisTable({ data, loading = false }: { data: ComposicaoDadosAbi[]; loading?: boolean }) {
   return (
     <div className="bg-white rounded-lg border overflow-hidden">
       <Table>
@@ -27,19 +27,21 @@ export default function AbisTable({ data }: { data: Abi[] }) {
           {data.length === 0 ? (
             <TableRow>
               <TableCell colSpan={7} className="text-center py-8 text-gray-500">
-                Nenhuma ABI encontrada.
+                {loading ? "Carregando..." : "Nenhuma ABI encontrada."}
               </TableCell>
             </TableRow>
           ) : (
-            data.map((abi: Abi) => (
-              <TableRow key={abi._id}>
-                <TableCell>{abi.numeroABI}</TableCell>
+            data.map((abi) => (
+              <TableRow key={abi.id}>
+                <TableCell>{abi.numeroAbi}</TableCell>
                 {/* <TableCell>{abi.numeroOficio}</TableCell> */}
                 <TableCell>{abi.numeroProcesso}</TableCell>
                 <TableCell>
                   <div className="space-y-1">
-                    <div className="font-medium">{abi.razaoSocial}</div>
-                    <div className="text-sm text-gray-500"><b>{abi.operadoraName}</b> <br /> {abi.operadoraCnpj}</div>
+                    <div className="font-medium">{abi.razaoSocial || abi.operadoraNome}</div>
+                    <div className="text-sm text-gray-500">
+                      <b>{abi.operadoraNome}</b> <br /> {abi.operadoraCnpj}
+                    </div>
                   </div>
                 </TableCell>
                 <TableCell>{formatDateTimeToDDMMYYYYHHMMSS(abi.createdAt)}</TableCell>
@@ -47,7 +49,7 @@ export default function AbisTable({ data }: { data: Abi[] }) {
                   <Badge className="bg-teal-100 text-teal-800">Aberto</Badge>
                 </TableCell>
                 <TableCell className="text-right">
-                  <Link href={`/automacao/detalhes/${abi._id}`}>
+                  <Link href={`/automacao/detalhes/${abi.id}`}>
                     <Button variant="ghost" size="icon">
                       <Eye className="h-4 w-4" />
                     </Button>

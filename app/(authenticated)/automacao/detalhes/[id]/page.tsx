@@ -1,102 +1,91 @@
 "use client"
 
-import { useEffect, useState } from "react"
-import { useRouter } from "next/navigation"
-import { DefesaBaseService } from "@/lib/services/defesa-base.service"
-import { usePagination } from "@/hooks/use-pagination"
-import { useDebounce } from "@/hooks/use-debounce"
-import { type Abi } from "@/lib/services/abis.service"
+import React, { useEffect, useState } from "react"
+import { PaginationControls, type PaginatedResponse } from "@/components/ui/pagination-controls"
+import { ComposicaoDadosAnsService, type ComposicaoDadosAbiRegistro } from "@/lib/services/composicao-dados-ans.service"
+import { ComposicaoAbiHeader } from "./_components/ComposicaoAbiHeader"
+import { ComposicaoAbiDetailsCard } from "./_components/ComposicaoAbiDetailsCard"
+import { ComposicaoAtendimentosTable } from "./_components/ComposicaoAtendimentosTable"
+import { Loader2, AlertCircle } from "lucide-react"
+import { Button } from "@/components/ui/button"
 
-import { AbiHeader } from "./_components/AbiHeader"
-import { AbiDetailsCard } from "./_components/AbiDetailsCard"
-import { AtendimentosFilterCard } from "./_components/AtendimentosFilterCard"
-import { AtendimentosTable } from "./_components/AtendimentosTable"
-import { PaginationControls } from "@/components/ui/pagination-controls"
+const createEmptyResponse = (): PaginatedResponse<ComposicaoDadosAbiRegistro> => ({
+  data: [],
+  total: 0,
+  page: 1,
+  pageSize: 10,
+  totalPages: 1,
+})
 
 export default function AutomacaoDetalhesPage({ params }: { params: Promise<{ id: string }> }) {
-  const router = useRouter()
-  const { pagination: atendimentosPaginated, setPagination: setAtendimentoPaginated } = usePagination<Abi>()
-  const [currentPage, setCurrentPage] = useState(1)
-  const [pageSize, setPageSize] = useState(5)
-  const [searchTerm, setSearchTerm] = useState("")
-  const [statusFilter, setStatusFilter] = useState<string[]>([])
-  const [abi, setAbi] = useState<Abi | null>(null)
+  const { id } = React.use(params)
+  const [registros, setRegistros] = useState<PaginatedResponse<ComposicaoDadosAbiRegistro>>(createEmptyResponse)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
-  const debouncedSearchTerm = useDebounce(searchTerm, 500)
-  const [atendimentosLoading, setAtendimentosLoading] = useState(false)
+  const [page, setPage] = useState(1)
+  const [pageSize, setPageSize] = useState(10)
 
   useEffect(() => {
-    params.then((resolved) => fetchCabecalhoDefesaBase(resolved.id))
-  }, [params])
-
-  useEffect(() => {
-    fetchAtendimentos(abi?.numeroABI ? Number(abi.numeroABI) : null)
-  }, [abi, currentPage, pageSize, debouncedSearchTerm, statusFilter])
-
-  const fetchCabecalhoDefesaBase = async (id: string) => {
-    try {
-      const result = await DefesaBaseService.getById(id, { include: ["operadora"] })
-      setAbi(result)
-    } catch (err) {
-      setError("Erro ao carregar os detalhes da ABI.")
-      console.error(err)
-    } finally {
-      setLoading(false)
+    const load = async () => {
+      setLoading(true)
+      try {
+        const response = await ComposicaoDadosAnsService.getRegistrosByAbiId(id, { page, pageSize })
+        setRegistros(response)
+        setError(null)
+      } catch (err) {
+        setError("Erro ao carregar registros da ABI.")
+      } finally {
+        setLoading(false)
+      }
     }
-  }
-
-  const fetchAtendimentos = async (abiNumero?: number | null) => {
-    if (!abiNumero) return
-    try {
-      setError(null)
-      setAtendimentosLoading(true)
-
-      const response = await DefesaBaseService.getAtendimentos({
-        page: currentPage,
-        limit: pageSize,
-        numeroABI: String(abiNumero),
-        search: debouncedSearchTerm || undefined,
-        status: statusFilter.length ? statusFilter : undefined,
-      })
-
-      setAtendimentoPaginated(response)
-    } catch (err) {
-      console.error(err)
-      setError("Erro ao carregar atendimentos. Tente novamente.")
-    } finally {
-      setAtendimentosLoading(false)
-    }
-  }
-
-  if (loading) return <div className="p-6">Carregando...</div>
-  if (error || !abi) return <div className="p-6 text-red-600">{error || "Não foi possível encontrar os dados da ABI."}</div>
+    load()
+  }, [id, page, pageSize])
 
   return (
-    <div className="flex min-h-screen bg-gray-50">
-      <div className="flex-1 p-6 space-y-6">
-        <AbiHeader abi={abi} />
-        <AbiDetailsCard abi={abi} />
-        <AtendimentosFilterCard
-          searchTerm={searchTerm}
-          onSearchChange={setSearchTerm}
-          statusFilter={statusFilter}
-          onStatusChange={setStatusFilter}
+    <div className="min-h-screen bg-slate-50/50">
+      <div className="max-w-[1600px] mx-auto p-4 md:p-8 space-y-8 animate-in fade-in duration-500">
+        
+        <ComposicaoAbiHeader 
+          numeroAbi={registros.data[0]?.numeroAbi} 
+          registroAns={registros.data[0]?.registroAns} 
         />
-        <AtendimentosTable
-          atendimentos={atendimentosPaginated.data}
-          loading={atendimentosLoading}
-        />
-        <PaginationControls
-          currentPage={atendimentosPaginated.page}
-          totalPages={atendimentosPaginated.totalPages}
-          pageSize={atendimentosPaginated.pageSize}
-          totalItems={atendimentosPaginated.total}
-          onPageChange={setCurrentPage}
-          onPageSizeChange={setPageSize}
-          disabled={loading}
-          pageSizeOptions={[5, 10, 20, 50, 100]}
-        />
+
+        <div className="grid grid-cols-1 gap-8">
+          <ComposicaoAbiDetailsCard 
+            numeroAbi={registros.data[0]?.numeroAbi} 
+            registroAns={registros.data[0]?.registroAns} 
+            totalRegistros={registros.total} 
+          />
+
+          {error ? (
+            <div className="flex flex-col items-center justify-center p-12 bg-white rounded-xl border border-red-100 shadow-sm">
+              <AlertCircle className="h-10 w-10 text-red-500 mb-4" />
+              <p className="text-red-600 font-medium">{error}</p>
+              <Button variant="outline" className="mt-4" onClick={() => window.location.reload()}>Tentar novamente</Button>
+            </div>
+          ) : (
+            <div className="space-y-4">
+              <ComposicaoAtendimentosTable 
+                registros={registros.data} 
+                loading={loading} 
+                abiId={id} 
+              />
+              
+              <div className="bg-white p-4 rounded-lg border border-slate-200 shadow-sm">
+                <PaginationControls
+                  currentPage={registros.page}
+                  totalPages={registros.totalPages}
+                  pageSize={registros.pageSize}
+                  totalItems={registros.total}
+                  onPageChange={setPage}
+                  onPageSizeChange={setPageSize}
+                  disabled={loading}
+                  pageSizeOptions={[10, 20, 50, 100]}
+                />
+              </div>
+            </div>
+          )}
+        </div>
       </div>
     </div>
   )

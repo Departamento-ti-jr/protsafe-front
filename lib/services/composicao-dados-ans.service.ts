@@ -1,0 +1,144 @@
+import { httpClient } from "../http-client"
+import type { PaginatedResponse } from "@/components/ui/pagination-controls"
+
+export interface ComposicaoDadosAbi {
+  id: number
+  numeroAbi: string
+  registroAns: string
+  numeroProcesso: string
+  operadoraId: number | null
+  operadoraNome: string
+  operadoraCnpj: string
+  createdAt: string
+  updatedAt: string
+  razaoSocial?: string
+}
+
+export interface ComposicaoDadosAbiRegistro {
+  id: string
+  numeroAbi: number
+  ordem: string
+  qtdDocumentos: number
+  registroAns: string
+  pedidoDefesa: string
+  numeroAihApac: string
+  codigoPrimeiraAlegacao: string | null
+  codigoSegundaAlegacao: string | null
+  descricaoPrimeiraAlegacao: string | null
+  descricaoSegundaAlegacao: string | null
+  segundaAlegacao: string | null
+  clausulaPrimeiraAlegacao: string | null
+  clausulaSegundaAlegacao: string | null
+  declaracaoCpt: string | null
+  itemCpt: string | null
+  grupoMunicipiosEstados: string | null
+  cidadesEstados: string | null
+  copart: string | null
+  totalCopart: string | null
+  memoriaDeCalculo: string | null
+  valorAbatido: string | null
+  dataInclusaoBeneficiario: string | null
+  dataFimCarencia: string | null
+  dataFimCpt: string | null
+  dataInicial: string | null
+  dataFinal: string | null
+  tipoDefesa: string | null
+  s3PathDocPrincipal: string | null
+  s3PathDocAdicional: any
+  hash: string
+  abiId: number
+}
+
+export interface ComposicaoDadosRegistroDetalhe extends ComposicaoDadosAbiRegistro {
+  descricaoPrimeiraAlegacao: string | null
+  descricaoSegundaAlegacao: string | null
+  totalCopart: string | null
+  memoriaDeCalculo: string | null
+  valorAbatido: string | null
+  dataInclusaoBeneficiario: string | null
+  dataFimCarencia: string | null
+  dataFimCpt: string | null
+}
+
+export interface GetComposicaoDadosAbisParams {
+  page?: number
+  pageSize?: number
+  search?: string
+  status?: string
+}
+
+export class ComposicaoDadosAnsService {
+  private static readonly endpoint = "/composicao-dados-ans/abis"
+
+  static async getAll(params: GetComposicaoDadosAbisParams = {}): Promise<PaginatedResponse<ComposicaoDadosAbi>> {
+    try {
+      const searchParams = new URLSearchParams()
+
+      if (params.page) searchParams.append("page", String(params.page))
+      if (params.pageSize) searchParams.append("pageSize", String(params.pageSize))
+      if (params.search) searchParams.append("search", params.search)
+      if (params.status) searchParams.append("status", params.status)
+
+      const query = searchParams.toString()
+      const url = query ? `${this.endpoint}?${query}` : this.endpoint
+
+      return await httpClient.get<PaginatedResponse<ComposicaoDadosAbi>>(url)
+    } catch (error) {
+      console.error("Erro ao buscar ABIs de composição de dados ANS:", error)
+      throw new Error("Falha ao carregar ABIs de composição de dados ANS")
+    }
+  }
+
+  static async getRegistrosByAbiId(
+    abiId: string,
+    params: { page?: number; pageSize?: number } = {}
+  ): Promise<PaginatedResponse<ComposicaoDadosAbiRegistro>> {
+    try {
+      const searchParams = new URLSearchParams()
+
+      if (params.page) searchParams.append("page", String(params.page))
+      if (params.pageSize) searchParams.append("pageSize", String(params.pageSize))
+
+      const query = searchParams.toString()
+      const url = query
+        ? `/composicao-dados-ans/abi/${abiId}?${query}`
+        : `/composicao-dados-ans/abi/${abiId}`
+
+      return await httpClient.get<PaginatedResponse<ComposicaoDadosAbiRegistro>>(url)
+    } catch (error) {
+      console.error(`Erro ao buscar registros da ABI ${abiId}:`, error)
+      throw new Error("Falha ao carregar registros da ABI")
+    }
+  }
+
+  static async getRegistroById(id: string): Promise<ComposicaoDadosRegistroDetalhe> {
+    try {
+      return await httpClient.get<ComposicaoDadosRegistroDetalhe>(`/composicao-dados-ans/registro/${id}`)
+    } catch (error) {
+      console.error(`Erro ao buscar registro ${id}:`, error)
+      throw new Error("Falha ao carregar registro")
+    }
+  }
+
+  static async uploadAnexo(registroId: string, file: File) {
+    try {
+      const form = new FormData()
+      form.append("file", file)
+
+      // endpoint conforme exemplo de curl: /composicao-dados-ans/:id/upload-pdf
+      return await httpClient.post(`/composicao-dados-ans/${registroId}/upload-pdf`, form)
+    } catch (error) {
+      console.error(`Erro ao anexar arquivo ao registro ${registroId}:`, error)
+      throw new Error("Falha ao anexar arquivo")
+    }
+  }
+
+  static async removeAnexo(registroId: string, anexoId: string) {
+    try {
+      return await httpClient.delete(`/composicao-dados-ans/${registroId}/remover-anexo/${anexoId}`)
+    } catch (error) {
+      console.error(`Erro ao remover anexo ${anexoId} do registro ${registroId}:`, error)
+      throw new Error("Falha ao remover anexo")
+    }
+  }
+}
