@@ -8,6 +8,7 @@ import { ComposicaoAbiDetailsCard } from "./_components/ComposicaoAbiDetailsCard
 import { ComposicaoAtendimentosTable } from "./_components/ComposicaoAtendimentosTable"
 import { Loader2, AlertCircle } from "lucide-react"
 import { Button } from "@/components/ui/button"
+import { useToast } from "@/components/ui/use-toast"
 
 const createEmptyResponse = (): PaginatedResponse<ComposicaoDadosAbiRegistro> => ({
   data: [],
@@ -29,7 +30,7 @@ export default function AutomacaoDetalhesPage({ params }: { params: Promise<{ id
   const [processError, setProcessError] = useState<string | null>(null)
   const [syncing, setSyncing] = useState(false)
   const [syncError, setSyncError] = useState<string | null>(null)
-  const [syncSuccess, setSyncSuccess] = useState<string | null>(null)
+  const { toast } = useToast()
 
   useEffect(() => {
     const load = async () => {
@@ -89,12 +90,19 @@ export default function AutomacaoDetalhesPage({ params }: { params: Promise<{ id
     try {
       setSyncing(true)
       setSyncError(null)
-      setSyncSuccess(null)
       await ComposicaoDadosAnsService.sincronizarDocumentos(numeroAbi, registroAns)
-      setSyncSuccess("Sincronização solicitada com sucesso.")
+      toast({
+        title: "Sincronização iniciada",
+        description: "Documentos estão sendo buscados na ANS.",
+      })
     } catch (err) {
       console.error(err)
       setSyncError("Erro ao sincronizar documentos.")
+      toast({
+        title: "Falha ao sincronizar",
+        description: "Não foi possível solicitar a busca de documentos.",
+        variant: "destructive",
+      })
     } finally {
       setSyncing(false)
     }
@@ -149,7 +157,6 @@ export default function AutomacaoDetalhesPage({ params }: { params: Promise<{ id
                 />
                 {processError && <p className="text-sm text-red-600 mt-2">{processError}</p>}
                 {syncError && <p className="text-sm text-red-600 mt-1">{syncError}</p>}
-                {syncSuccess && <p className="text-sm text-green-600 mt-1">{syncSuccess}</p>}
               </div>
             </div>
           )}
