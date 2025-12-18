@@ -19,6 +19,7 @@ export interface ComposicaoDadosAbiRegistro {
   numeroAbi: number
   ordem: string
   qtdDocumentos: number
+  qtdDocumentosUpload: number
   registroAns: string
   pedidoDefesa: string
   numeroAihApac: string
@@ -46,6 +47,7 @@ export interface ComposicaoDadosAbiRegistro {
   s3PathDocPrincipal: string | null
   s3PathDocAdicional: any
   hash: string
+  statusEnvio: number | null
   abiId: number
 }
 
@@ -139,6 +141,16 @@ export class ComposicaoDadosAnsService {
     } catch (error) {
       console.error(`Erro ao remover anexo ${anexoId} do registro ${registroId}:`, error)
       throw new Error("Falha ao remover anexo")
+    }
+  }
+
+  static async processarLote(ids: Array<string | number>) {
+    try {
+      const numericIds = ids.map((id) => Number(id)).filter((n) => !Number.isNaN(n))
+      return await httpClient.post(`/composicao-dados-ans/processar-lote`, { ids: numericIds })
+    } catch (error) {
+      console.error("Erro ao processar lote de registros:", error)
+      throw new Error("Falha ao enviar registros para a ANS")
     }
   }
 }

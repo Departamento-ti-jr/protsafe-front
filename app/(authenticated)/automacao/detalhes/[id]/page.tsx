@@ -24,6 +24,9 @@ export default function AutomacaoDetalhesPage({ params }: { params: Promise<{ id
   const [error, setError] = useState<string | null>(null)
   const [page, setPage] = useState(1)
   const [pageSize, setPageSize] = useState(10)
+  const [selectedIds, setSelectedIds] = useState<string[]>([])
+  const [processing, setProcessing] = useState(false)
+  const [processError, setProcessError] = useState<string | null>(null)
 
   useEffect(() => {
     const load = async () => {
@@ -32,6 +35,7 @@ export default function AutomacaoDetalhesPage({ params }: { params: Promise<{ id
         const response = await ComposicaoDadosAnsService.getRegistrosByAbiId(id, { page, pageSize })
         setRegistros(response)
         setError(null)
+        setSelectedIds([])
       } catch (err) {
         setError("Erro ao carregar registros da ABI.")
       } finally {
@@ -40,6 +44,40 @@ export default function AutomacaoDetalhesPage({ params }: { params: Promise<{ id
     }
     load()
   }, [id, page, pageSize])
+
+  const toggleId = (id: string) => {
+    setSelectedIds((prev) => (prev.includes(id) ? prev.filter((i) => i !== id) : [...prev, id]))
+  }
+
+  const toggleAllCurrent = (ids: string[]) => {
+    if (ids.length === 0) return
+    const allSelected = ids.every((id) => selectedIds.includes(id))
+    if (allSelected) {
+      setSelectedIds((prev) => prev.filter((id) => !ids.includes(id)))
+    } else {
+      setSelectedIds((prev) => Array.from(new Set([...prev, ...ids])))
+    }
+  }
+
+  const handleProcessSelected = async () => {
+    if (selectedIds.length === 0) return
+    const numericIds = selectedIds.map((id) => Number(id)).filter((n) => !Number.isNaN(n))
+    if (numericIds.length !== selectedIds.length) {
+      setProcessError("IDs inválidos para envio. Selecione novamente.")
+      return
+    }
+    try {
+      setProcessing(true)
+      setProcessError(null)
+      await ComposicaoDadosAnsService.processarLote(numericIds)
+      setSelectedIds([])
+    } catch (err) {
+      console.error(err)
+      setProcessError("Erro ao enviar registros para a ANS.")
+    } finally {
+      setProcessing(false)
+    }
+  }
 
   return (
     <div className="min-h-screen bg-slate-50/50">
@@ -69,6 +107,11 @@ export default function AutomacaoDetalhesPage({ params }: { params: Promise<{ id
                 registros={registros.data} 
                 loading={loading} 
                 abiId={id} 
+                selectedIds={selectedIds}
+                processing={processing}
+                onToggle={toggleId}
+                onToggleAll={toggleAllCurrent}
+                onProcessSelected={handleProcessSelected}
               />
               
               <div className="bg-white p-4 rounded-lg border border-slate-200 shadow-sm">
@@ -82,6 +125,7 @@ export default function AutomacaoDetalhesPage({ params }: { params: Promise<{ id
                   disabled={loading}
                   pageSizeOptions={[10, 20, 50, 100]}
                 />
+                {processError && <p className="text-sm text-red-600 mt-2">{processError}</p>}
               </div>
             </div>
           )}
