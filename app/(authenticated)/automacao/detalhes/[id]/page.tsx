@@ -27,6 +27,8 @@ export default function AutomacaoDetalhesPage({ params }: { params: Promise<{ id
   const [selectedIds, setSelectedIds] = useState<string[]>([])
   const [processing, setProcessing] = useState(false)
   const [processError, setProcessError] = useState<string | null>(null)
+  const [syncing, setSyncing] = useState(false)
+  const [syncError, setSyncError] = useState<string | null>(null)
 
   useEffect(() => {
     const load = async () => {
@@ -79,6 +81,22 @@ export default function AutomacaoDetalhesPage({ params }: { params: Promise<{ id
     }
   }
 
+  const handleSyncDocuments = async () => {
+    const numeroAbi = registros.data[0]?.numeroAbi
+    const registroAns = registros.data[0]?.registroAns
+    if (!numeroAbi || !registroAns) return
+    try {
+      setSyncing(true)
+      setSyncError(null)
+      await ComposicaoDadosAnsService.sincronizarDocumentos(numeroAbi, registroAns)
+    } catch (err) {
+      console.error(err)
+      setSyncError("Erro ao sincronizar documentos.")
+    } finally {
+      setSyncing(false)
+    }
+  }
+
   return (
     <div className="min-h-screen bg-slate-50/50">
       <div className="max-w-[1600px] mx-auto p-4 md:p-8 space-y-8 animate-in fade-in duration-500">
@@ -112,6 +130,7 @@ export default function AutomacaoDetalhesPage({ params }: { params: Promise<{ id
                 onToggle={toggleId}
                 onToggleAll={toggleAllCurrent}
                 onProcessSelected={handleProcessSelected}
+                onSyncDocuments={handleSyncDocuments}
               />
               
               <div className="bg-white p-4 rounded-lg border border-slate-200 shadow-sm">
@@ -126,6 +145,7 @@ export default function AutomacaoDetalhesPage({ params }: { params: Promise<{ id
                   pageSizeOptions={[10, 20, 50, 100]}
                 />
                 {processError && <p className="text-sm text-red-600 mt-2">{processError}</p>}
+                {syncError && <p className="text-sm text-red-600 mt-1">{syncError}</p>}
               </div>
             </div>
           )}

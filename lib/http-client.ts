@@ -20,7 +20,7 @@ class HttpClient {
    * - Só define Content-Type quando NÃO for FormData (o navegador calcula o boundary).
    * - Sempre manda Accept: application/json (ok com FormData).
    */
-  private getAuthHeaders(isFormData = false): HeadersInit {
+  private getAuthHeaders(isFormData = false, extraHeaders?: HeadersInit): HeadersInit {
     const token = this.getToken()
     const headers: Record<string, string> = {
       Accept: "application/json",
@@ -33,7 +33,10 @@ class HttpClient {
       headers["Authorization"] = `Bearer ${token}`
     }
 
-    return headers
+    return {
+      ...headers,
+      ...(extraHeaders as Record<string, string> | undefined),
+    }
   }
 
   /** Faz o parse “seguro” do corpo de sucesso (pode ser vazio) */
@@ -68,10 +71,10 @@ class HttpClient {
     }
   }
 
-  async get<T>(endpoint: string): Promise<T> {
+  async get<T>(endpoint: string, headers?: HeadersInit): Promise<T> {
     const response = await fetch(`${this.baseURL}${endpoint}`, {
       method: "GET",
-      headers: this.getAuthHeaders(false),
+      headers: this.getAuthHeaders(false, headers),
     })
 
     if (!response.ok) {
@@ -86,13 +89,14 @@ class HttpClient {
   async post<T>(
     endpoint: string,
     data?: any,
-    responseType: "json" | "blob" = "json"
+    responseType: "json" | "blob" = "json",
+    headers?: HeadersInit
   ): Promise<T | Blob> {
     const isFormData = typeof FormData !== "undefined" && data instanceof FormData
 
     const response = await fetch(`${this.baseURL}${endpoint}`, {
       method: "POST",
-      headers: this.getAuthHeaders(isFormData),
+      headers: this.getAuthHeaders(isFormData, headers),
       body: isFormData ? data : data ? JSON.stringify(data) : undefined,
     })
 
@@ -103,10 +107,10 @@ class HttpClient {
     return this.parseOkResponse<T>(response, responseType)
   }
 
-  async put<T>(endpoint: string, data?: any): Promise<T> {
+  async put<T>(endpoint: string, data?: any, headers?: HeadersInit): Promise<T> {
     const response = await fetch(`${this.baseURL}${endpoint}`, {
       method: "PUT",
-      headers: this.getAuthHeaders(false),
+      headers: this.getAuthHeaders(false, headers),
       body: data ? JSON.stringify(data) : undefined,
     })
 
@@ -118,10 +122,10 @@ class HttpClient {
     return text ? (JSON.parse(text) as T) : ({} as T)
   }
 
-  async patch<T>(endpoint: string, data?: any): Promise<T> {
+  async patch<T>(endpoint: string, data?: any, headers?: HeadersInit): Promise<T> {
     const response = await fetch(`${this.baseURL}${endpoint}`, {
       method: "PATCH",
-      headers: this.getAuthHeaders(false),
+      headers: this.getAuthHeaders(false, headers),
       body: data ? JSON.stringify(data) : undefined,
     })
 
@@ -133,10 +137,10 @@ class HttpClient {
     return text ? (JSON.parse(text) as T) : ({} as T)
   }
 
-  async delete<T>(endpoint: string): Promise<T> {
+  async delete<T>(endpoint: string, headers?: HeadersInit): Promise<T> {
     const response = await fetch(`${this.baseURL}${endpoint}`, {
       method: "DELETE",
-      headers: this.getAuthHeaders(false),
+      headers: this.getAuthHeaders(false, headers),
     })
 
     if (!response.ok) {

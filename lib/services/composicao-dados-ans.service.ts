@@ -71,6 +71,7 @@ export interface GetComposicaoDadosAbisParams {
 
 export class ComposicaoDadosAnsService {
   private static readonly endpoint = "/composicao-dados-ans/abis"
+  private static readonly apiKeyHeader = { "x-api-key": "TcnnTvMrJBYTl4r8WXZbjRTtYzEo2D" }
 
   static async getAll(params: GetComposicaoDadosAbisParams = {}): Promise<PaginatedResponse<ComposicaoDadosAbi>> {
     try {
@@ -84,7 +85,7 @@ export class ComposicaoDadosAnsService {
       const query = searchParams.toString()
       const url = query ? `${this.endpoint}?${query}` : this.endpoint
 
-      return await httpClient.get<PaginatedResponse<ComposicaoDadosAbi>>(url)
+      return await httpClient.get<PaginatedResponse<ComposicaoDadosAbi>>(url, this.apiKeyHeader)
     } catch (error) {
       console.error("Erro ao buscar ABIs de composição de dados ANS:", error)
       throw new Error("Falha ao carregar ABIs de composição de dados ANS")
@@ -106,7 +107,7 @@ export class ComposicaoDadosAnsService {
         ? `/composicao-dados-ans/abi/${abiId}?${query}`
         : `/composicao-dados-ans/abi/${abiId}`
 
-      return await httpClient.get<PaginatedResponse<ComposicaoDadosAbiRegistro>>(url)
+      return await httpClient.get<PaginatedResponse<ComposicaoDadosAbiRegistro>>(url, this.apiKeyHeader)
     } catch (error) {
       console.error(`Erro ao buscar registros da ABI ${abiId}:`, error)
       throw new Error("Falha ao carregar registros da ABI")
@@ -115,7 +116,7 @@ export class ComposicaoDadosAnsService {
 
   static async getRegistroById(id: string): Promise<ComposicaoDadosRegistroDetalhe> {
     try {
-      return await httpClient.get<ComposicaoDadosRegistroDetalhe>(`/composicao-dados-ans/registro/${id}`)
+      return await httpClient.get<ComposicaoDadosRegistroDetalhe>(`/composicao-dados-ans/registro/${id}`, this.apiKeyHeader)
     } catch (error) {
       console.error(`Erro ao buscar registro ${id}:`, error)
       throw new Error("Falha ao carregar registro")
@@ -128,7 +129,7 @@ export class ComposicaoDadosAnsService {
       form.append("file", file)
 
       // endpoint conforme exemplo de curl: /composicao-dados-ans/:id/upload-pdf
-      return await httpClient.post(`/composicao-dados-ans/${registroId}/upload-pdf`, form)
+      return await httpClient.post(`/composicao-dados-ans/${registroId}/upload-pdf`, form, "json", this.apiKeyHeader)
     } catch (error) {
       console.error(`Erro ao anexar arquivo ao registro ${registroId}:`, error)
       throw new Error("Falha ao anexar arquivo")
@@ -137,7 +138,7 @@ export class ComposicaoDadosAnsService {
 
   static async removeAnexo(registroId: string, anexoId: string) {
     try {
-      return await httpClient.delete(`/composicao-dados-ans/${registroId}/remover-anexo/${anexoId}`)
+      return await httpClient.delete(`/composicao-dados-ans/${registroId}/remover-anexo/${anexoId}`, this.apiKeyHeader)
     } catch (error) {
       console.error(`Erro ao remover anexo ${anexoId} do registro ${registroId}:`, error)
       throw new Error("Falha ao remover anexo")
@@ -147,10 +148,25 @@ export class ComposicaoDadosAnsService {
   static async processarLote(ids: Array<string | number>) {
     try {
       const numericIds = ids.map((id) => Number(id)).filter((n) => !Number.isNaN(n))
-      return await httpClient.post(`/composicao-dados-ans/processar-lote`, { ids: numericIds })
+      return await httpClient.post(`/composicao-dados-ans/processar-lote`, { ids: numericIds }, "json", this.apiKeyHeader)
     } catch (error) {
       console.error("Erro ao processar lote de registros:", error)
       throw new Error("Falha ao enviar registros para a ANS")
+    }
+  }
+
+  static async sincronizarDocumentos(numeroAbi: string | number, registroAns: string | number) {
+    try {
+      const searchParams = new URLSearchParams()
+      searchParams.append("numeroAbi", String(numeroAbi))
+      searchParams.append("registroAns", String(registroAns))
+      return await httpClient.get(
+        `/composicao-dados-ans/trigger-busca-documentos?${searchParams.toString()}`,
+        this.apiKeyHeader
+      )
+    } catch (error) {
+      console.error("Erro ao sincronizar documentos:", error)
+      throw new Error("Falha ao sincronizar documentos")
     }
   }
 }

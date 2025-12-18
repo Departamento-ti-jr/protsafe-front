@@ -16,6 +16,7 @@ interface Props {
   onToggle: (id: string) => void
   onToggleAll: (ids: string[]) => void
   onProcessSelected: () => void
+  onSyncDocuments: () => void
 }
 
 export function ComposicaoAtendimentosTable({
@@ -27,6 +28,7 @@ export function ComposicaoAtendimentosTable({
   onToggle,
   onToggleAll,
   onProcessSelected,
+  onSyncDocuments,
 }: Props) {
   const currentIds = registros.map((r) => String(r.id))
   const allSelected = currentIds.length > 0 && currentIds.every((id) => selectedIds.includes(id))
@@ -45,13 +47,21 @@ export function ComposicaoAtendimentosTable({
             </Badge>
           )}
         </div>
-        <Button
-          variant="default"
-          onClick={onProcessSelected}
-          disabled={selectedIds.length === 0 || processing}
-        >
-          {processing ? "Enviando..." : "Enviar para ANS"}
-        </Button>
+        <div className="flex items-center gap-2">
+          <Button
+            variant="outline"
+            onClick={onSyncDocuments}
+          >
+            Sincronizar Documento
+          </Button>
+          <Button
+            variant="default"
+            onClick={onProcessSelected}
+            disabled={selectedIds.length === 0 || processing}
+          >
+            {processing ? "Enviando..." : "Enviar para ANS"}
+          </Button>
+        </div>
       </CardHeader>
       <CardContent className="p-0">
         <div className="overflow-x-auto">
