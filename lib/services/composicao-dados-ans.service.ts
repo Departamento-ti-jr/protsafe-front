@@ -48,6 +48,7 @@ export interface ComposicaoDadosAbiRegistro {
   s3PathDocAdicional: any
   hash: string
   statusEnvio: number | null
+  protocoloId?: string | null
   abiId: number
 }
 
@@ -160,16 +161,26 @@ export class ComposicaoDadosAnsService {
       const searchParams = new URLSearchParams()
       searchParams.append("numeroAbi", String(numeroAbi))
       searchParams.append("registroAns", String(registroAns))
-      return await fetch(
-        `https://resus-api.codebeat.com.br/composicao-dados-ans/trigger-busca-documentos?${searchParams.toString()}`,
-        {
-          method: "GET",
-          headers: {"x-api-key": "TcnnTvMrJBYTl4r8WXZbjRTtYzEo2D"},
-        }
+      return await httpClient.get(
+        `/composicao-dados-ans/trigger-busca-documentos?${searchParams.toString()}`,
+        this.apiKeyHeader
       )
     } catch (error) {
       console.error("Erro ao sincronizar documentos:", error)
       throw new Error("Falha ao sincronizar documentos")
+    }
+  }
+
+  static async atualizarProtocolo(registroId: string, protocolo: string) {
+    try {
+      return await httpClient.patch(
+        `/composicao-dados-ans/registro/${registroId}`,
+        { protocolo_id: protocolo },
+        this.apiKeyHeader
+      )
+    } catch (error) {
+      console.error(`Erro ao atualizar protocolo do registro ${registroId}:`, error)
+      throw new Error("Falha ao salvar protocolo")
     }
   }
 }

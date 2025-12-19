@@ -25,6 +25,9 @@ export default function RegistroDetalhePage({ params }: { params: Promise<{ id: 
   const [uploadError, setUploadError] = useState<string | null>(null)
   const [removingId, setRemovingId] = useState<string | null>(null)
   const [removeError, setRemoveError] = useState<string | null>(null)
+  const [protocolo, setProtocolo] = useState<string>("")
+  const [protocoloEditable, setProtocoloEditable] = useState<boolean>(false)
+  const [savingProtocolo, setSavingProtocolo] = useState<boolean>(false)
 
   useEffect(() => {
     const load = async () => {
@@ -42,6 +45,13 @@ export default function RegistroDetalhePage({ params }: { params: Promise<{ id: 
     }
     load()
   }, [registroId])
+
+  useEffect(() => {
+    if (!registro) return
+    const initial = registro.protocoloId ?? ""
+    setProtocolo(initial || "")
+    setProtocoloEditable(!initial)
+  }, [registro])
 
   const handleUpload = async () => {
     if (!file) return
@@ -91,6 +101,24 @@ export default function RegistroDetalhePage({ params }: { params: Promise<{ id: 
   const docPrincipal = registro.s3PathDocPrincipal
   const anexosAdicionais = Array.isArray(registro.s3PathDocAdicional) ? registro.s3PathDocAdicional : []
 
+  const handleSaveProtocolo = async () => {
+    if (!protocolo.trim()) {
+      setUploadError("O protocolo é obrigatório.")
+      return
+    }
+    try {
+      setSavingProtocolo(true)
+      await ComposicaoDadosAnsService.atualizarProtocolo(registroId, protocolo)
+      setProtocoloEditable(false)
+      setRegistro((prev) => (prev ? { ...prev, protocoloId: protocolo } : prev))
+    } catch (err) {
+      console.error(err)
+      setUploadError("Erro ao salvar protocolo.")
+    } finally {
+      setSavingProtocolo(false)
+    }
+  }
+
   return (
     <div className="mx-auto p-4 md:p-8 space-y-8 animate-in fade-in duration-500">
       
@@ -137,6 +165,34 @@ export default function RegistroDetalhePage({ params }: { params: Promise<{ id: 
               </div>
               <InfoItem label="Tipo de Defesa" value={registro.tipoDefesa} />
               <InfoItem label="Qtd. Documentos" value={registro.qtdDocumentos?.toString()} />
+              <div className="md:col-span-2 space-y-2">
+                <div className="flex items-center justify-between">
+                  <p className="text-sm font-semibold text-slate-700">Protocolo ANS</p>
+                  <div className="flex items-center gap-2">
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => setProtocoloEditable((prev) => !prev)}
+                      disabled={savingProtocolo}
+                    >
+                      {protocoloEditable ? "Bloquear edição" : "Editar"}
+                    </Button>
+                    <Button
+                      size="sm"
+                      onClick={handleSaveProtocolo}
+                      disabled={!protocolo.trim() || savingProtocolo || !protocoloEditable}
+                    >
+                      {savingProtocolo ? "Salvando..." : "Salvar"}
+                    </Button>
+                  </div>
+                </div>
+                <Input
+                  value={protocolo}
+                  onChange={(e) => setProtocolo(e.target.value)}
+                  disabled={!protocoloEditable}
+                  placeholder="Digite o número do protocolo ANS"
+                />
+              </div>
               <div className="md:col-span-2 space-y-4 pt-2">
                 <div className="bg-slate-50 p-4 rounded-lg border border-slate-100">
                   <p className="text-xs font-bold uppercase tracking-wider text-slate-500 mb-3">Alegações e Cláusulas</p>
