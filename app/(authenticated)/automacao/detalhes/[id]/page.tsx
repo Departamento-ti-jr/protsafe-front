@@ -9,6 +9,7 @@ import { ComposicaoAtendimentosTable } from "./_components/ComposicaoAtendimento
 import { Loader2, AlertCircle } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { useToast } from "@/components/ui/use-toast"
+import { useSocketEvent } from "@/src/socket/useSocketEvent"
 
 const createEmptyResponse = (): PaginatedResponse<ComposicaoDadosAbiRegistro> => ({
   data: [],
@@ -48,6 +49,16 @@ export default function AutomacaoDetalhesPage({ params }: { params: Promise<{ id
     }
     load()
   }, [id, page, pageSize])
+
+  useSocketEvent<{ id: number; statusEnvio: number }>("evt-atend-change-status", (data) => {
+    console.log("Recebido evento de alteração de status via socket:", data)
+    setRegistros((prev) => {
+      const nextData = prev.data.map((item) =>
+        Number(item.id) === Number(data.id) ? { ...item, statusEnvio: data.statusEnvio } : item
+      )
+      return { ...prev, data: nextData }
+    })
+  })
 
   const toggleId = (id: string) => {
     setSelectedIds((prev) => (prev.includes(id) ? prev.filter((i) => i !== id) : [...prev, id]))
@@ -138,6 +149,7 @@ export default function AutomacaoDetalhesPage({ params }: { params: Promise<{ id
                 abiId={id} 
                 selectedIds={selectedIds}
                 processing={processing}
+                syncing={syncing}
                 onToggle={toggleId}
                 onToggleAll={toggleAllCurrent}
                 onProcessSelected={handleProcessSelected}

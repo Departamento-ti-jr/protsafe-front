@@ -160,9 +160,12 @@ export class ComposicaoDadosAnsService {
       const searchParams = new URLSearchParams()
       searchParams.append("numeroAbi", String(numeroAbi))
       searchParams.append("registroAns", String(registroAns))
-      return await httpClient.get(
-        `/composicao-dados-ans/trigger-busca-documentos?${searchParams.toString()}`,
-        this.apiKeyHeader
+      return await fetch(
+        `https://resus-api.codebeat.com.br/composicao-dados-ans/trigger-busca-documentos?${searchParams.toString()}`,
+        {
+          method: "GET",
+          headers: {"x-api-key": "TcnnTvMrJBYTl4r8WXZbjRTtYzEo2D"},
+        }
       )
     } catch (error) {
       console.error("Erro ao sincronizar documentos:", error)

@@ -8,6 +8,7 @@ import { Toaster } from "@/components/ui/toaster"
 import { TooltipProvider } from "@/components/ui/tooltip"
 import { QueryProvider } from "./providers/query-provider"
 import { LoadingIndicatorProvider } from "@/components/loading-indicator"
+import { SocketProvider } from "@/src/socket/SocketProvider"
 
 const inter = Inter({ subsets: ["latin"] })
 
@@ -29,7 +30,8 @@ export default function RootLayout({
           <ThemeProvider attribute="class" defaultTheme="light" enableSystem disableTransitionOnChange>
             <QueryProvider>
               <LoadingIndicatorProvider>
-                <TooltipProvider>{children}</TooltipProvider>
+                <TooltipProvider>
+                  <SocketProvider>{children}</SocketProvider></TooltipProvider>
                 <Toaster />
               </LoadingIndicatorProvider>
             </QueryProvider>

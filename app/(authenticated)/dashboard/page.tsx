@@ -1,8 +1,14 @@
+"use client"
+
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { FileText, Users, Building2, Shield, Clock, CheckCircle, ArrowUpRight } from "lucide-react"
+import { useSocketEvent } from "@/src/socket/useSocketEvent"
 
 export default function DashboardPage() {
+
+  useSocketEvent<{ foo: string }>("meu-evento", (data) => console.log(data))
+
   return (
     <div className="p-6 space-y-6">
       {/* Header */}

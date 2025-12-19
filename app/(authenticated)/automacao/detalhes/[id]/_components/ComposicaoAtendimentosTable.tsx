@@ -13,6 +13,7 @@ interface Props {
   abiId: string
   selectedIds: string[]
   processing: boolean
+  syncing: boolean
   onToggle: (id: string) => void
   onToggleAll: (ids: string[]) => void
   onProcessSelected: () => void
@@ -25,6 +26,7 @@ export function ComposicaoAtendimentosTable({
   abiId,
   selectedIds,
   processing,
+  syncing,
   onToggle,
   onToggleAll,
   onProcessSelected,
@@ -51,8 +53,9 @@ export function ComposicaoAtendimentosTable({
           <Button
             variant="outline"
             onClick={onSyncDocuments}
+            disabled={syncing}
           >
-            Sincronizar Documento
+            {syncing ? "Carregando..." : "Sincronizar Documento"}
           </Button>
           <Button
             variant="default"
