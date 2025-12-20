@@ -9,6 +9,8 @@ import { ComposicaoAtendimentosTable } from "./_components/ComposicaoAtendimento
 import { Loader2, AlertCircle } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { useToast } from "@/components/ui/use-toast"
+import { Input } from "@/components/ui/input"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { useSocketEvent } from "@/src/socket/useSocketEvent"
 
 const createEmptyResponse = (): PaginatedResponse<ComposicaoDadosAbiRegistro> => ({
@@ -31,14 +33,31 @@ export default function AutomacaoDetalhesPage({ params }: { params: Promise<{ id
   const [processError, setProcessError] = useState<string | null>(null)
   const [syncing, setSyncing] = useState(false)
   const [syncError, setSyncError] = useState<string | null>(null)
+  const [aguardandoSyn, setAguardandoSyn] = useState<boolean>(false)
+  const [filterAih, setFilterAih] = useState("")
+  const [filterStatus, setFilterStatus] = useState("todos")
+  const [filterOrder, setFilterOrder] = useState("default")
   const { toast } = useToast()
 
   useEffect(() => {
     const load = async () => {
       setLoading(true)
       try {
-        const response = await ComposicaoDadosAnsService.getRegistrosByAbiId(id, { page, pageSize })
-        setRegistros(response)
+        const response = await ComposicaoDadosAnsService.getRegistrosByAbiId(id, {
+          page,
+          pageSize,
+          numeroAihApac: filterAih || undefined,
+          status: filterStatus !== "todos" ? filterStatus : undefined,
+          order: filterOrder !== "default" ? filterOrder : undefined,
+        })
+        setRegistros({
+          data: response.data,
+          total: response.total,
+          page: response.page,
+          pageSize: response.pageSize,
+          totalPages: response.totalPages,
+        })
+        setAguardandoSyn((response as any).aguardandoSyn ?? false)
         setError(null)
         setSelectedIds([])
       } catch (err) {
@@ -48,10 +67,9 @@ export default function AutomacaoDetalhesPage({ params }: { params: Promise<{ id
       }
     }
     load()
-  }, [id, page, pageSize])
+  }, [id, page, pageSize, filterAih, filterStatus, filterOrder])
 
   useSocketEvent<{ id: number; statusEnvio: number }>("evt-atend-change-status", (data) => {
-    console.log("Recebido evento de alteração de status via socket:", data)
     setRegistros((prev) => {
       const nextData = prev.data.map((item) =>
         Number(item.id) === Number(data.id) ? { ...item, statusEnvio: data.statusEnvio } : item
@@ -143,6 +161,34 @@ export default function AutomacaoDetalhesPage({ params }: { params: Promise<{ id
             </div>
           ) : (
             <div className="space-y-4">
+              <div className="bg-white border border-slate-200 rounded-lg p-4 shadow-sm flex flex-col md:flex-row gap-4">
+                <div className="flex-1">
+                  <p className="text-xs font-semibold text-slate-500 mb-1">Filtrar por Nº AIH/APAC</p>
+                  <Input
+                    placeholder="Digite o número AIH/APAC"
+                    value={filterAih}
+                    onChange={(e) => { setFilterAih(e.target.value); setPage(1) }}
+                  />
+                </div>
+                <div className="w-full md:w-48">
+                  <p className="text-xs font-semibold text-slate-500 mb-1">Status</p>
+                  <Select
+                    value={filterStatus}
+                    onValueChange={(v) => { setFilterStatus(v); setPage(1) }}
+                  >
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="todos">Todos</SelectItem>
+                      <SelectItem value="0">Aguardando</SelectItem>
+                      <SelectItem value="1">Enviado</SelectItem>
+                      <SelectItem value="2">Concluído</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+
               <ComposicaoAtendimentosTable 
                 registros={registros.data} 
                 loading={loading} 
@@ -150,6 +196,7 @@ export default function AutomacaoDetalhesPage({ params }: { params: Promise<{ id
                 selectedIds={selectedIds}
                 processing={processing}
                 syncing={syncing}
+                aguardandoSyn={aguardandoSyn}
                 onToggle={toggleId}
                 onToggleAll={toggleAllCurrent}
                 onProcessSelected={handleProcessSelected}

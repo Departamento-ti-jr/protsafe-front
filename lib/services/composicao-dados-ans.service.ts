@@ -95,13 +95,16 @@ export class ComposicaoDadosAnsService {
 
   static async getRegistrosByAbiId(
     abiId: string,
-    params: { page?: number; pageSize?: number } = {}
+    params: { page?: number; pageSize?: number; numeroAihApac?: string; status?: string; order?: string } = {}
   ): Promise<PaginatedResponse<ComposicaoDadosAbiRegistro>> {
     try {
       const searchParams = new URLSearchParams()
 
       if (params.page) searchParams.append("page", String(params.page))
       if (params.pageSize) searchParams.append("pageSize", String(params.pageSize))
+      if (params.numeroAihApac) searchParams.append("numeroAihApac", params.numeroAihApac)
+      if (params.status) searchParams.append("status", params.status)
+      if (params.order) searchParams.append("order", params.order)
 
       const query = searchParams.toString()
       const url = query

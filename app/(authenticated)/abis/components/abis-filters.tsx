@@ -16,54 +16,37 @@ interface Props {
 
 export default function AbisFilters({ searchTerm, onSearch, statusFilter, onStatusChange }: Props) {
   return (
-    <div className="flex flex-col md:flex-row gap-4 items-start md:items-center">
-      {/* Search */}
-      <div className="relative w-full md:flex-1">
-        <Search
-          className={cn(
-            "absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4",
-            "text-muted-foreground"
-          )}
-        />
+    <div className="flex flex-col lg:flex-row gap-4 justify-between">
+      <div className="relative w-full lg:max-w-md">
+        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
         <Input
-          placeholder="Buscar ABIs..."
+          placeholder="Buscar por ABI, Processo ou Operadora..."
           value={searchTerm}
           onChange={(e) => onSearch(e.target.value)}
-          className={cn(
-            // garante cores do tema, evitando fundo escuro
-            "pl-9 h-9 text-sm",
-            "bg-background text-foreground",
-            "border border-input",
-            "placeholder:text-muted-foreground",
-            "focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 ring-offset-background"
-          )}
+          className="pl-10 bg-slate-50/50 border-slate-200 focus-visible:ring-primary h-10"
         />
       </div>
 
-      {/* Filtros e botão */}
-      <div className="flex gap-3">
-        <Select value={statusFilter} onValueChange={onStatusChange}>
-          <SelectTrigger
-            className={cn(
-              "w-full md:w-[180px] h-9",
-              // força tokens do tema no trigger também
-              "bg-background text-foreground border border-input",
-              "placeholder:text-muted-foreground",
-              "focus:ring-2 focus:ring-ring focus:ring-offset-2 ring-offset-background"
-            )}
-          >
-            <SelectValue placeholder="Filtrar" />
-          </SelectTrigger>
-          <SelectContent className="bg-popover text-popover-foreground border border-border">
-            <SelectItem value="todos">Todos</SelectItem>
-            <SelectItem value="aberto">Aberto</SelectItem>
-            <SelectItem value="fechado">Fechado</SelectItem>
-            <SelectItem value="em-andamento">Em Andamento</SelectItem>
-          </SelectContent>
-        </Select>
+      <div className="flex flex-wrap items-center gap-3">
+        <div className="flex items-center gap-2">
+          <span className="text-xs font-semibold text-slate-400 uppercase tracking-tight">Status:</span>
+          <Select value={statusFilter} onValueChange={onStatusChange}>
+            <SelectTrigger className="w-[160px] bg-white border-slate-200 h-10 shadow-sm">
+              <SelectValue placeholder="Filtrar Status" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="todos text-slate-600">Todos os Status</SelectItem>
+              <SelectItem value="aberto">🟢 Aberto</SelectItem>
+              <SelectItem value="em-andamento">🔵 Em Andamento</SelectItem>
+              <SelectItem value="fechado">⚪ Fechado</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+
+        <div className="h-8 w-[1px] bg-slate-200 mx-2 hidden md:block" />
 
         <Link href="/abis/nova">
-          <Button className="h-9">
+          <Button className="h-10 px-5 shadow-sm hover:shadow-md transition-all">
             <Plus className="mr-2 h-4 w-4" />
             Nova ABI
           </Button>

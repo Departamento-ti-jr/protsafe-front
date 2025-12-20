@@ -14,6 +14,7 @@ interface Props {
   selectedIds: string[]
   processing: boolean
   syncing: boolean
+  aguardandoSyn?: boolean
   onToggle: (id: string) => void
   onToggleAll: (ids: string[]) => void
   onProcessSelected: () => void
@@ -27,6 +28,7 @@ export function ComposicaoAtendimentosTable({
   selectedIds,
   processing,
   syncing,
+  aguardandoSyn,
   onToggle,
   onToggleAll,
   onProcessSelected,
@@ -36,7 +38,7 @@ export function ComposicaoAtendimentosTable({
   const allSelected = currentIds.length > 0 && currentIds.every((id) => selectedIds.includes(id))
 
   return (
-    <Card className="border-slate-200 shadow-md overflow-hidden bg-white">
+    <Card className="border-slate-200 shadow-sm overflow-hidden bg-white">
       <CardHeader className="border-b border-slate-50 bg-slate-50/30 flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
         <div className="flex items-center gap-2">
           <CardTitle className="text-base font-semibold flex items-center gap-2">
@@ -53,7 +55,7 @@ export function ComposicaoAtendimentosTable({
           <Button
             variant="outline"
             onClick={onSyncDocuments}
-            disabled={syncing}
+            disabled={syncing || aguardandoSyn}
           >
             {syncing ? "Carregando..." : "Sincronizar Documento"}
           </Button>

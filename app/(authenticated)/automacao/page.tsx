@@ -5,6 +5,7 @@ import AbisTable from "./_components/automacao-table"
 import AbisPagination from "./_components/automacao-pagination"
 import AbisLoaderOrError from "./_components/automacaos-loader-or-error"
 import { useComposicaoAbisList } from "./hooks/use-composicao-abis-list"
+import AutomacaoTable from "./_components/automacao-table"
 
 export default function AutomacaoPage() {
   const {
@@ -35,16 +36,20 @@ export default function AutomacaoPage() {
             onStatusChange={handleStatusChange}
           />
 
-          <AbisTable data={data.data} loading={loading} />
+          <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
+            <AutomacaoTable data={data.data} loading={loading} />
 
-          <AbisPagination
-            currentPage={pagination.page}
-            totalPages={data.totalPages}
-            totalItems={data.total}
-            pageSize={pagination.pageSize}
-            onPageChange={handlePageChange}
-            onPageSizeChange={handlePageSizeChange}
-          />
+            <div className="border-t border-slate-100 p-4 bg-slate-50/30">
+              <AbisPagination
+                currentPage={pagination.page}
+                totalPages={data.totalPages}
+                totalItems={data.total}
+                pageSize={pagination.pageSize}
+                onPageChange={handlePageChange}
+                onPageSizeChange={handlePageSizeChange}
+              />
+            </div>
+          </div>
         </>
       )}
     </div>
