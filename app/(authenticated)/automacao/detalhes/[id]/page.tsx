@@ -38,6 +38,7 @@ export default function AutomacaoDetalhesPage({ params }: { params: Promise<{ id
   const [filterStatus, setFilterStatus] = useState("todos")
   const [filterOrder, setFilterOrder] = useState("default")
   const { toast } = useToast()
+  const [syncLocked, setSyncLocked] = useState(false)
 
   useEffect(() => {
     const load = async () => {
@@ -58,6 +59,7 @@ export default function AutomacaoDetalhesPage({ params }: { params: Promise<{ id
           totalPages: response.totalPages,
         })
         setAguardandoSyn((response as any).aguardandoSyn ?? false)
+        setSyncLocked(false) // libera caso backend informe aguardandoSyn=false após refresh
         setError(null)
         setSelectedIds([])
       } catch (err) {
@@ -117,6 +119,7 @@ export default function AutomacaoDetalhesPage({ params }: { params: Promise<{ id
     const registroAns = registros.data[0]?.registroAns
     if (!numeroAbi || !registroAns) return
     try {
+      setSyncLocked(true)
       setSyncing(true)
       setSyncError(null)
       await ComposicaoDadosAnsService.sincronizarDocumentos(numeroAbi, registroAns)
@@ -197,6 +200,7 @@ export default function AutomacaoDetalhesPage({ params }: { params: Promise<{ id
                 processing={processing}
                 syncing={syncing}
                 aguardandoSyn={aguardandoSyn}
+                syncLocked={syncLocked}
                 onToggle={toggleId}
                 onToggleAll={toggleAllCurrent}
                 onProcessSelected={handleProcessSelected}

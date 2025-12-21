@@ -15,6 +15,7 @@ interface Props {
   processing: boolean
   syncing: boolean
   aguardandoSyn?: boolean
+  syncLocked?: boolean
   onToggle: (id: string) => void
   onToggleAll: (ids: string[]) => void
   onProcessSelected: () => void
@@ -29,6 +30,7 @@ export function ComposicaoAtendimentosTable({
   processing,
   syncing,
   aguardandoSyn,
+  syncLocked,
   onToggle,
   onToggleAll,
   onProcessSelected,
@@ -55,7 +57,7 @@ export function ComposicaoAtendimentosTable({
           <Button
             variant="outline"
             onClick={onSyncDocuments}
-            disabled={syncing || aguardandoSyn}
+            disabled={syncing || aguardandoSyn || syncLocked}
           >
             {syncing ? "Carregando..." : "Sincronizar Documento"}
           </Button>
