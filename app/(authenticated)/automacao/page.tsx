@@ -1,9 +1,7 @@
 'use client'
 
 import AbisFilters from "./_components/automacao-filters"
-import AbisTable from "./_components/automacao-table"
 import AbisPagination from "./_components/automacao-pagination"
-import AbisLoaderOrError from "./_components/automacaos-loader-or-error"
 import { useComposicaoAbisList } from "./hooks/use-composicao-abis-list"
 import AutomacaoTable from "./_components/automacao-table"
 import { useEffect, useRef, useState } from "react"
@@ -41,9 +39,7 @@ export default function AutomacaoPage() {
     } catch (err) {
       console.error(err)
       const httpError = err as any
-
       if (httpError?.status === 400 && httpError.body) {
-        // repassa a resposta de validação (mensagem/erros) para o modal
         setUploadResult(httpError.body)
       } else {
         const fallback = httpError?.body ?? httpError ?? { mensagem: "Falha ao enviar o CSV." }

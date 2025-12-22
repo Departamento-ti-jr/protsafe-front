@@ -33,7 +33,7 @@ export default function AutomacaoDetalhesPage({ params }: { params: Promise<{ id
   const [processError, setProcessError] = useState<string | null>(null)
   const [syncing, setSyncing] = useState(false)
   const [syncError, setSyncError] = useState<string | null>(null)
-  const [aguardandoSyn, setAguardandoSyn] = useState<boolean>(false)
+  const [aguardandoSyn, setAguardandoSyn] = useState<boolean>(true)
   const [filterAih, setFilterAih] = useState("")
   const [filterStatus, setFilterStatus] = useState("todos")
   const [filterOrder, setFilterOrder] = useState("default")
@@ -136,6 +136,7 @@ export default function AutomacaoDetalhesPage({ params }: { params: Promise<{ id
         variant: "destructive",
       })
     } finally {
+      setAguardandoSyn(true)
       setSyncing(false)
     }
   }
