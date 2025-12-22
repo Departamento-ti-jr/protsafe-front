@@ -2,9 +2,8 @@
 
 import { Input } from "@/components/ui/input"
 import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@/components/ui/select"
-import { Search, Plus } from "lucide-react"
+import { Search, Upload } from "lucide-react"
 import { Button } from "@/components/ui/button"
-import Link from "next/link"
 import { cn } from "@/lib/utils"
 
 interface Props {
@@ -12,9 +11,10 @@ interface Props {
   onSearch: (value: string) => void
   statusFilter: string
   onStatusChange: (value: string) => void
+  onUploadClick: () => void
 }
 
-export default function AbisFilters({ searchTerm, onSearch, statusFilter, onStatusChange }: Props) {
+export default function AbisFilters({ searchTerm, onSearch, statusFilter, onStatusChange, onUploadClick }: Props) {
   return (
     <div className="flex flex-col md:flex-row gap-4 items-start md:items-center">
       {/* Search */}
@@ -62,12 +62,10 @@ export default function AbisFilters({ searchTerm, onSearch, statusFilter, onStat
           </SelectContent>
         </Select>
 
-        <Link href="/abis/nova">
-          <Button className="h-9">
-            <Plus className="mr-2 h-4 w-4" />
-            Nova ABI
-          </Button>
-        </Link>
+        <Button className="h-9" onClick={onUploadClick}>
+          <Upload className="mr-2 h-4 w-4" />
+          Upload de documento
+        </Button>
       </div>
     </div>
   )

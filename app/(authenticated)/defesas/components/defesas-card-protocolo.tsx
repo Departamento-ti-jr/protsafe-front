@@ -67,11 +67,20 @@ export default function DefesaCardProtocolo({ defesa }: DefesasAtendimentoProps)
 
       setEditable(false)
     } catch (error: any) {
+      const apiMessage =
+        error?.body?.mensagem ||
+        error?.body?.message ||
+        "Não foi possível salvar o protocolo. Tente novamente."
+
+      const apiErrors = error?.body?.erros
+      const fullMessage = apiErrors && Array.isArray(apiErrors)
+        ? `${apiMessage}\n${apiErrors.join('\n')}`
+        : apiMessage
+
       toast({
         variant: "destructive",
         title: "Erro ao salvar",
-        description:
-          error?.body?.message || "Não foi possível salvar o protocolo. Tente novamente.",
+        description: fullMessage,
       })
     } finally {
       setIsSaving(false)

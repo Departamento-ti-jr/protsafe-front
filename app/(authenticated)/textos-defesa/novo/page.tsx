@@ -58,8 +58,18 @@ export default function NovoTextoDefesaPage() {
         router.push("/textos-defesa")
       }, 1500)
     } catch (err: any) {
-      setError(err.message || "Erro ao cadastrar texto de defesa.")
-    } finally {
+      const apiMessage =
+        err?.body?.mensagem ||
+        err?.body?.message ||
+        err.message ||
+        "Erro ao cadastrar texto de defesa."
+
+      const apiErrors = err?.body?.erros
+      const fullMessage = apiErrors && Array.isArray(apiErrors)
+        ? `${apiMessage}\n${apiErrors.join('\n')}`
+        : apiMessage
+
+      setError(fullMessage) finally {
       setLoading(false)
     }
   }

@@ -202,17 +202,23 @@ export default function NovaDefesaPage({ params }: { params: Promise<{ id: strin
       console.error("Erro ao salvar defesa:", error)
 
       const apiMessage =
+        error?.body?.mensagem ||
         error?.body?.message ||
         error?.statusText ||
         "Erro ao salvar defesa."
 
+      const apiErrors = error?.body?.erros
+      const fullMessage = apiErrors && Array.isArray(apiErrors)
+        ? `${apiMessage}\n${apiErrors.join('\n')}`
+        : apiMessage
+
       toast({
         variant: "warning",
         title: "Aviso",
-        description: apiMessage,
+        description: fullMessage,
       })
 
-      setError(apiMessage)
+      setError(fullMessage)
     } finally {
       setLoadSalvarDefesa(null)
     }

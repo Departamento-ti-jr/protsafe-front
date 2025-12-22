@@ -186,4 +186,15 @@ export class ComposicaoDadosAnsService {
       throw new Error("Falha ao salvar protocolo")
     }
   }
+
+  static async uploadCsv(file: File) {
+    try {
+      const form = new FormData()
+      form.append("file", file)
+      return await httpClient.post(`/composicao-dados-ans/upload-csv`, form, "json", this.apiKeyHeader)
+    } catch (error) {
+      console.error("Erro ao importar CSV de composição de dados ANS:", error)
+      throw error
+    }
+  }
 }

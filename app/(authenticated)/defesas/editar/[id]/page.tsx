@@ -214,15 +214,23 @@ export default function EditarDefesaPage({ params }: { params: Promise<{ id: str
 
     } catch (error: any) {
       const apiMessage =
-        error?.body?.message || error?.statusText || "Erro ao atualizar defesa."
+        error?.body?.mensagem ||
+        error?.body?.message ||
+        error?.statusText ||
+        "Erro ao atualizar defesa."
+
+      const apiErrors = error?.body?.erros
+      const fullMessage = apiErrors && Array.isArray(apiErrors)
+        ? `${apiMessage}\n${apiErrors.join('\n')}`
+        : apiMessage
 
       toast({
         variant: "warning",
         title: "Aviso",
-        description: apiMessage,
+        description: fullMessage,
       })
 
-      setError(apiMessage)
+      setError(fullMessage)
     } finally {
       setLoadSalvarDefesa(false)
     }

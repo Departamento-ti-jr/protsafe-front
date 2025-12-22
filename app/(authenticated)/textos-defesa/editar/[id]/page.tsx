@@ -56,10 +56,24 @@ export default function EditarTextoDefesaPage({ params }: { params: Promise<{ id
       })
 
       router.push("/textos-defesa")
-    } catch (err) {
-      alert("Erro ao salvar texto de defesa. Tente novamente.")
-      console.error(err)
-    } finally {
+    } catch (err: any) {
+      const apiMessage =
+        err?.body?.mensagem ||
+        err?.body?.message ||
+        "Erro ao salvar texto de defesa. Tente novamente."
+
+      const apiErrors = err?.body?.erros
+      const fullMessage = apiErrors && Array.isArray(apiErrors)
+        ? `${apiMessage}\n${apiErrors.join('\n')}`
+        : apiMessage
+
+      toast({
+        variant: "destructive",
+        title: "Erro",
+        description: fullMessage,
+      })
+
+      console.error(err) finally {
       setSaving(false)
     }
   }
