@@ -68,8 +68,8 @@ export default function NovoTextoDefesaPage() {
       const fullMessage = apiErrors && Array.isArray(apiErrors)
         ? `${apiMessage}\n${apiErrors.join('\n')}`
         : apiMessage
-
-      setError(fullMessage) finally {
+    
+      setError(fullMessage) 
       setLoading(false)
     }
   }
