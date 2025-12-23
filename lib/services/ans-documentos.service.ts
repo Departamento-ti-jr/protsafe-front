@@ -74,7 +74,7 @@ export class AnsDocumentosService {
     return data
   }
 
-  static async enviarDocumentosParaAns(id_atendimento: string) {
+  static async enviarDocumentosParaAns(id_atendimento: number) {
     try {
       const data  = await httpClient.post<{ message: string; detalhes?: any }>(
         `${this.endpoint}/enviar/${id_atendimento}`

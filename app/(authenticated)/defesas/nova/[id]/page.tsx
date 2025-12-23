@@ -125,27 +125,28 @@ export default function NovaDefesaPage({ params }: { params: Promise<{ id: strin
   }
 
   const handleEnviarParaAns = async () => {
+    
     if (!abi?.numeroABI) {
-      toast({
-        variant: "warning",
-        title: "Aviso",
-        description: "Número da ABI não encontrado.",
-      })
-      return
+      // toast({
+      //   variant: "warning",
+      //   title: "Aviso",
+      //   description: "Número da ABI não encontrado.",
+      // })
+      // return
     }
 
     try {
-      toast({
-        title: "Enviando...",
-        description: `Enviando documentos da ABI ${abi.numeroABI} para a ANS...`,
-      })
+      // toast({
+      //   title: "Enviando...",
+      //   description: `Enviando documentos da ABI ${abi.numeroABI} para a ANS...`,
+      // })
 
-      const result = await AnsDocumentosService.enviarDocumentosParaAns(abi._id)
+      // const result = await AnsDocumentosService.enviarDocumentosParaAns(a)
 
-      toast({
-        title: "Sucesso!",
-        description: result?.message || "Documentos enviados com sucesso à ANS.",
-      })
+      // toast({
+      //   title: "Sucesso!",
+      //   description: result?.message || "Documentos enviados com sucesso à ANS.",
+      // })
     } catch (error: any) {
       toast({
         variant: "destructive",

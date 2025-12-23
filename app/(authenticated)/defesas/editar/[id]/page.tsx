@@ -26,6 +26,7 @@ import {
   AlertDialogDescription,
 } from "@/components/ui/alert-dialog";
 import DefesaCardProtocolo from "../../components/defesas-card-protocolo"
+import { AnsDocumentosService } from "@/lib/services/ans-documentos.service"
 
 
 const normalizeNumber = (value: unknown): number | null => {
@@ -168,8 +169,9 @@ export default function EditarDefesaPage({ params }: { params: Promise<{ id: str
   }
 
   const handleEnviarParaAns = async () => {
-
-    if (!abi?.id) {
+    const id_atendimento = defesa?.atendimento?.id;
+    
+    if (!id_atendimento) {
       toast({
         variant: "warning",
         title: "Aviso",
@@ -184,12 +186,12 @@ export default function EditarDefesaPage({ params }: { params: Promise<{ id: str
         description: `Enviando documentos da ABI para a ANS...`,
       });
 
-      // const result = await AnsDocumentosService.enviarDocumentosParaAns(abi.id);
-
-      // toast({
-      //   title: "Sucesso!",
-      //   description: result?.message || "Documentos enviados com sucesso à ANS.",
-      // });
+      const result = await AnsDocumentosService.enviarDocumentosParaAns(id_atendimento);
+      console.log("Resultado do envio para ANS:", result);
+      toast({
+        title: "Sucesso!",
+        description: result?.message || "Documentos enviados com sucesso à ANS.",
+      });
     } catch (error: any) {
       toast({
         variant: "destructive",
