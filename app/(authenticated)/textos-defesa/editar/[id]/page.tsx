@@ -73,7 +73,7 @@ export default function EditarTextoDefesaPage({ params }: { params: Promise<{ id
         description: fullMessage,
       })
 
-      console.error(err) finally {
+      setError(fullMessage);
       setSaving(false)
     }
   }
