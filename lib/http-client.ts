@@ -71,19 +71,44 @@ class HttpClient {
     }
   }
 
-  async get<T>(endpoint: string, headers?: HeadersInit): Promise<T> {
+  private async send<T>(params: {
+    method: "GET" | "POST" | "PUT" | "PATCH" | "DELETE"
+    endpoint: string
+    data?: any
+    responseType?: "json" | "blob"
+    headers?: HeadersInit
+    retrying?: boolean
+  }): Promise<T | Blob> {
+    const { method, endpoint, data, responseType = "json", headers, retrying = false } = params
+    const isFormData = typeof FormData !== "undefined" && data instanceof FormData
+
     const response = await fetch(`${this.baseURL}${endpoint}`, {
-      method: "GET",
-      headers: this.getAuthHeaders(false, headers),
+      method,
+      headers: this.getAuthHeaders(isFormData, headers),
+      body:
+        method === "GET" || method === "DELETE"
+          ? undefined
+          : isFormData
+            ? data
+            : data
+              ? JSON.stringify(data)
+              : undefined,
     })
 
     if (!response.ok) {
+      const refreshed = await this.tryRefreshToken(response)
+      if (refreshed && !retrying) {
+        return this.send<T>({ ...params, retrying: true })
+      }
+
       throw await this.buildHttpError(response)
     }
 
-    // parse “seguro” de JSON (pode vir vazio)
-    const text = await response.text().catch(() => "")
-    return text ? (JSON.parse(text) as T) : ({} as T)
+    return this.parseOkResponse<T>(response, responseType)
+  }
+
+  async get<T>(endpoint: string, headers?: HeadersInit): Promise<T> {
+    return this.send<T>({ method: "GET", endpoint, headers }) as Promise<T>
   }
 
   async post<T>(
@@ -92,63 +117,61 @@ class HttpClient {
     responseType: "json" | "blob" = "json",
     headers?: HeadersInit
   ): Promise<T | Blob> {
-    const isFormData = typeof FormData !== "undefined" && data instanceof FormData
-
-    const response = await fetch(`${this.baseURL}${endpoint}`, {
-      method: "POST",
-      headers: this.getAuthHeaders(isFormData, headers),
-      body: isFormData ? data : data ? JSON.stringify(data) : undefined,
-    })
-
-    if (!response.ok) {
-      throw await this.buildHttpError(response)
-    }
-
-    return this.parseOkResponse<T>(response, responseType)
+    return this.send<T>({ method: "POST", endpoint, data, responseType, headers })
   }
 
   async put<T>(endpoint: string, data?: any, headers?: HeadersInit): Promise<T> {
-    const response = await fetch(`${this.baseURL}${endpoint}`, {
-      method: "PUT",
-      headers: this.getAuthHeaders(false, headers),
-      body: data ? JSON.stringify(data) : undefined,
-    })
-
-    if (!response.ok) {
-      throw await this.buildHttpError(response)
-    }
-
-    const text = await response.text().catch(() => "")
-    return text ? (JSON.parse(text) as T) : ({} as T)
+    return this.send<T>({ method: "PUT", endpoint, data, headers }) as Promise<T>
   }
 
   async patch<T>(endpoint: string, data?: any, headers?: HeadersInit): Promise<T> {
-    const response = await fetch(`${this.baseURL}${endpoint}`, {
-      method: "PATCH",
-      headers: this.getAuthHeaders(false, headers),
-      body: data ? JSON.stringify(data) : undefined,
-    })
-
-    if (!response.ok) {
-      throw await this.buildHttpError(response)
-    }
-
-    const text = await response.text().catch(() => "")
-    return text ? (JSON.parse(text) as T) : ({} as T)
+    return this.send<T>({ method: "PATCH", endpoint, data, headers }) as Promise<T>
   }
 
   async delete<T>(endpoint: string, headers?: HeadersInit): Promise<T> {
-    const response = await fetch(`${this.baseURL}${endpoint}`, {
-      method: "DELETE",
-      headers: this.getAuthHeaders(false, headers),
-    })
+    return this.send<T>({ method: "DELETE", endpoint, headers }) as Promise<T>
+  }
 
-    if (!response.ok) {
-      throw await this.buildHttpError(response)
+  /**
+   * Tenta renovar o token quando a API responder 401 por expiração/invalidade
+   * e, se renovado, permite que o request seja refeito uma vez.
+   */
+  private async tryRefreshToken(response: Response): Promise<boolean> {
+    if (response.status !== 401) return false
+
+    const raw = await response.clone().text().catch(() => "")
+    let parsed: any = null
+    try { parsed = raw ? JSON.parse(raw) : null } catch { /* mantém null */ }
+
+    const message = (parsed && typeof parsed === "object")
+      ? parsed.message ?? parsed.mensagem ?? parsed.error
+      : typeof parsed === "string"
+        ? parsed
+        : raw
+
+    const normalized = (message || "").toLowerCase()
+    const isTokenExpired =
+      normalized.includes("token") &&
+      (normalized.includes("expirado") || normalized.includes("inválido") || normalized.includes("invalido"))
+
+    if (!isTokenExpired || typeof window === "undefined") {
+      return false
     }
 
-    const text = await response.text().catch(() => "")
-    return text ? (JSON.parse(text) as T) : ({} as T)
+    try {
+      const res = await fetch("/api/auth/token", { cache: "no-store" })
+      if (!res.ok) return false
+
+      const data = await res.json().catch(() => null)
+      const newToken = data?.token
+
+      if (!newToken) return false
+
+      localStorage.setItem("resus_auth_token", newToken)
+      return true
+    } catch {
+      return false
+    }
   }
 }
 
