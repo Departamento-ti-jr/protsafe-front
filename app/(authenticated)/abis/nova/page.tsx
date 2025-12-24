@@ -17,7 +17,7 @@ export default function NovaABIPage() {
   const [uploading, setUploading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [success, setSuccess] = useState<string | null>(null)
-  const [tipoDoc, setTipoDoc] = useState<"IMPUGNACAO" | "RECURSO" | "">("")
+  const [tipoDoc, setTipoDoc] = useState<"IMPUGNACAO" | "RECURSO" | "">("IMPUGNACAO")
   const router = useRouter()
 
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
@@ -51,7 +51,7 @@ export default function NovaABIPage() {
       const res = await AbisService.uploadCsv(files[0], { tipoDoc, upsert, batchSize })
       setSuccess(`Importado: total=${res.total}, inseridos=${res.inserted}, upserts=${res.upserted}, matched=${res.matched}`)
       setFiles([])
-      setTipoDoc("")
+      setTipoDoc("IMPUGNACAO")
       setTimeout(() => router.push("/abis"), 1200)
     } catch (e: any) {
       setError(e?.message || "Erro ao enviar CSV da ABI.")

@@ -25,7 +25,7 @@ export default function AbisTable({ data, loading = false }: { data: Abi[], load
         {loading && data.length === 0 ? (
           <TableRow><TableCell colSpan={6} className="text-center py-20 text-slate-400">Carregando ABIs...</TableCell></TableRow>
         ) : data.length === 0 ? (
-          <TableRow><TableCell colSpan={6} className="text-center py-20 text-slate-400 font-medium italic text-lg">Nenhuma ABI encontrada com esses filtros.</TableCell></TableRow>
+          <TableRow><TableCell colSpan={6} className="text-center py-20 text-slate-400 font-medium italic text-lg">Nenhuma ABI encontrada.</TableCell></TableRow>
         ) : (
           data.map((abi) => (
             <TableRow key={abi.id} className="group hover:bg-slate-50/50 transition-colors">

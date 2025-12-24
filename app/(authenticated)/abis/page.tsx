@@ -5,8 +5,9 @@ import AbisTable from "./components/abis-table"
 import AbisPagination from "./components/abis-pagination"
 import { useAbisList } from "./hooks/use-abis-list"
 import { useLoadingIndicator } from "@/components/loading-indicator"
+import { Button } from "@/components/ui/button"
 import { useEffect } from "react"
-import { Layers, CheckCircle2, Clock, AlertCircle } from "lucide-react"
+import { Layers, CheckCircle2, Clock, AlertCircle, RefreshCcw } from "lucide-react"
 
 export default function ABIsPage() {
   const {
@@ -19,6 +20,7 @@ export default function ABIsPage() {
     handleStatusChange,
     handlePageChange,
     handlePageSizeChange,
+    refetch,
   } = useAbisList()
 
   const { startLoading, stopLoading } = useLoadingIndicator();
@@ -32,11 +34,22 @@ export default function ABIsPage() {
       <div className="max-w-[1600px] mx-auto p-4 md:p-8 space-y-8 animate-in fade-in duration-500">
         
         {/* Cabeçalho da Página */}
-        <div className="flex flex-col gap-2">
-          <h1 className="text-3xl font-bold tracking-tight text-slate-900">Gerenciamento de ABIs</h1>
-          <p className="text-muted-foreground text-sm">
-            Monitore e gerencie os processos de Ressarcimento ao SUS (ABI) da sua operadora.
-          </p>
+        <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+          <div className="space-y-2">
+            <h1 className="text-3xl font-bold tracking-tight text-slate-900">Gerenciamento de ABIs</h1>
+            <p className="text-muted-foreground text-sm">
+              Monitore e gerencie os processos de Ressarcimento ao SUS (ABI) da sua operadora.
+            </p>
+          </div>
+          <Button
+            variant="outline"
+            onClick={refetch}
+            disabled={loading}
+            className="flex items-center gap-2"
+          >
+            <RefreshCcw className="h-4 w-4" />
+            {loading ? "Atualizando..." : "Atualizar tabela"}
+          </Button>
         </div>
 
         {/* Mini Dash de Status (KPIs) */}

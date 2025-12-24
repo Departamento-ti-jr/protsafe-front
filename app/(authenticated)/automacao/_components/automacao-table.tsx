@@ -31,7 +31,7 @@ export default function AutomacaoTable({ data, loading = false }: { data: Compos
         ) : data.length === 0 ? (
           <TableRow>
             <TableCell colSpan={6} className="text-center py-20 text-slate-400 font-medium italic text-lg">
-              Nenhuma ABI encontrada com esses filtros.
+              Nenhuma ABI encontrada.
             </TableCell>
           </TableRow>
         ) : (
