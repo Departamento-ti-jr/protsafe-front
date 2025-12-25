@@ -17,7 +17,7 @@ export default function AbisTable({ data, loading = false }: { data: Abi[], load
           <TableHead className="font-bold text-slate-600">Processo Administrativo</TableHead>
           <TableHead className="font-bold text-slate-600">Operadora</TableHead>
           <TableHead className="font-bold text-slate-600">Data de Criação</TableHead>
-          <TableHead className="font-bold text-slate-600">Status</TableHead>
+          {/* <TableHead className="font-bold text-slate-600">Status</TableHead> */}
           <TableHead className="text-right pr-6 font-bold text-slate-600">Ações</TableHead>
         </TableRow>
       </TableHeader>
@@ -52,11 +52,11 @@ export default function AbisTable({ data, loading = false }: { data: Abi[], load
                   {formatDateTimeToDDMMYYYYHHMMSS(abi.createdAt)}
                 </div>
               </TableCell>
-              <TableCell>
+              {/* <TableCell>
                 <Badge className="bg-emerald-50 text-emerald-700 border-emerald-100 hover:bg-emerald-50 px-3">
                   Ativo
                 </Badge>
-              </TableCell>
+              </TableCell> */}
               <TableCell className="text-right pr-6">
                 <Link href={`/abis/detalhes/${abi.id}`}>
                   <Button 

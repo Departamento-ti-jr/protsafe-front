@@ -125,7 +125,7 @@ export function AtendimentosTable({
                     <TableRow key={item.id ?? index}>
                       <TableCell>{(currentPage - 1) * pageSize + index + 1}</TableCell>
                       <TableCell>{item.tipo}</TableCell>
-                      <TableCell className="font-mono">{item.numeroProcesso}</TableCell>
+                      <TableCell className="font-mono">{item.abi?.numeroProcesso}</TableCell>
                       <TableCell>{item.numeroAihApac}</TableCell>
                       <TableCell>{formatCompetencia(item.competencia)}</TableCell>
                       <TableCell>{formatDate(item.dataInicioAtendimento)}</TableCell>

@@ -37,9 +37,6 @@ export default function ABIsPage() {
         <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
           <div className="space-y-2">
             <h1 className="text-3xl font-bold tracking-tight text-slate-900">Gerenciamento de ABIs</h1>
-            <p className="text-muted-foreground text-sm">
-              Monitore e gerencie os processos de Ressarcimento ao SUS (ABI) da sua operadora.
-            </p>
           </div>
           <Button
             variant="outline"
@@ -50,14 +47,6 @@ export default function ABIsPage() {
             <RefreshCcw className="h-4 w-4" />
             {loading ? "Atualizando..." : "Atualizar tabela"}
           </Button>
-        </div>
-
-        {/* Mini Dash de Status (KPIs) */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-          <KpiCard title="Total de ABIs" value={data.total} icon={<Layers size={20}/>} color="text-blue-600" />
-          <KpiCard title="Em Aberto" value="--" icon={<AlertCircle size={20}/>} color="text-amber-600" />
-          <KpiCard title="Processadas" value="--" icon={<CheckCircle2 size={20}/>} color="text-teal-600" />
-          <KpiCard title="Tempo Médio" value="--" icon={<Clock size={20}/>} color="text-indigo-600" />
         </div>
 
         <div className="space-y-4">

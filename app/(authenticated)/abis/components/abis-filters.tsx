@@ -28,23 +28,6 @@ export default function AbisFilters({ searchTerm, onSearch, statusFilter, onStat
       </div>
 
       <div className="flex flex-wrap items-center gap-3">
-        <div className="flex items-center gap-2">
-          <span className="text-xs font-semibold text-slate-400 uppercase tracking-tight">Status:</span>
-          <Select value={statusFilter} onValueChange={onStatusChange}>
-            <SelectTrigger className="w-[160px] bg-white border-slate-200 h-10 shadow-sm">
-              <SelectValue placeholder="Filtrar Status" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="todos text-slate-600">Todos os Status</SelectItem>
-              <SelectItem value="aberto">🟢 Aberto</SelectItem>
-              <SelectItem value="em-andamento">🔵 Em Andamento</SelectItem>
-              <SelectItem value="fechado">⚪ Fechado</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
-
-        <div className="h-8 w-[1px] bg-slate-200 mx-2 hidden md:block" />
-
         <Link href="/abis/nova">
           <Button className="h-10 px-5 shadow-sm hover:shadow-md transition-all">
             <Plus className="mr-2 h-4 w-4" />
