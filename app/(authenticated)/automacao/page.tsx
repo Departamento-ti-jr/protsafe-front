@@ -148,7 +148,6 @@ export default function AutomacaoPage() {
             ) : uploadResult ? (
               (() => {
                 const payload: any = uploadResult?.body ?? uploadResult
-                console.log("Upload Result Payload:", payload)
                 return (
                   <div className="space-y-3">
                     {"inseridos" in payload && "rejeitados" in payload ? (

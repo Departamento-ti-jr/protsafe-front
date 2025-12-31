@@ -44,9 +44,7 @@ export function CardFormularioImputacao({
   setOutrosDocumentosComplementares,
   outrosDocumentosComplementares,
   setHasUserChangedMotivos
-}: any) {
-
-  console.log(text)
+}: any) { 
   return (
     <Card>
       <CardHeader>

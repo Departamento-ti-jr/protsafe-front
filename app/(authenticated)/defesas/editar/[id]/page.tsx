@@ -187,7 +187,6 @@ export default function EditarDefesaPage({ params }: { params: Promise<{ id: str
       });
 
       const result = await AnsDocumentosService.enviarDocumentosParaAns(id_atendimento);
-      console.log("Resultado do envio para ANS:", result);
       toast({
         title: "Sucesso!",
         description: result?.message || "Documentos enviados com sucesso à ANS.",

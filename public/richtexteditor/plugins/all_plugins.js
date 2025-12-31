@@ -553,7 +553,6 @@ function RTE_Plugin_InsertCode() {
 		});
 
 		editor.toolbarFactoryMap["insertcode"] = function (cmd) {
-			//console.log(cmd);
 			var span = editor.createToolbarButton(cmd);
 			span.style.backgroundColor = ''
 			return span;

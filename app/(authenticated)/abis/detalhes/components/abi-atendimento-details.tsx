@@ -1,13 +1,15 @@
 "use client"
 
-import { useMemo } from "react"
+import { useEffect, useMemo, useState } from "react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Textarea } from "@/components/ui/textarea"
 import { ArrowLeft } from "lucide-react"
 import type { Atendimento } from "@/lib/services/atendimentos.service"
+import { AtendimentosService } from "@/lib/services/atendimentos.service"
 import ProcedimentosTable from "./procedimentos-table"
 import { useProcedimentosRelacionados } from "../hooks/use-procedimentos-relacionados"
+import { useToast } from "@/components/ui/use-toast"
 
 interface ABIAtendimentoDetailsProps {
   atendimento: Atendimento
@@ -41,12 +43,27 @@ export function ABIAtendimentoDetails({
   onBack,
   onViewProcedimento,
 }: ABIAtendimentoDetailsProps) {
-  const { procedimentos, loading } = useProcedimentosRelacionados(atendimento)
+  const { procedimentos, loading, refetch } = useProcedimentosRelacionados(atendimento)
+  const { toast } = useToast()
+  const [observacao, setObservacao] = useState(atendimento.observacao ?? "")
+  const [documentos, setDocumentos] = useState(atendimento.documentos ?? "")
+  const [numProtocolo, setNumProtocolo] = useState(atendimento.numProtocolo ?? "")
+  const [isSaving, setIsSaving] = useState(false)
 
   const headerTitle = useMemo(
     () => `Atendimento ${atendimento.id ?? atendimento.id ?? ""}`,
     [atendimento.id, atendimento.id]
   )
+
+  useEffect(() => {
+    refetch()
+  }, [atendimento, refetch])
+
+  useEffect(() => {
+    setObservacao(atendimento.observacao ?? "")
+    setDocumentos(atendimento.documentos ?? "")
+    setNumProtocolo(atendimento.numProtocolo ?? "")
+  }, [atendimento])
 
   const atendimentoInfo = useMemo(
     () => [
@@ -147,19 +164,69 @@ export function ABIAtendimentoDetails({
           <div className="grid grid-cols-3 gap-4">
             <div>
               <label className="text-xs text-gray-600 mb-1 block">Observações</label>
-              <Textarea placeholder="Se necessário, informe uma observação aqui..." className="text-xs min-h-[60px]" />
+              <Textarea
+                placeholder="Se necessário, informe uma observação aqui..."
+                className="text-xs min-h-[60px]"
+                value={observacao}
+                onChange={(e) => setObservacao(e.target.value)}
+              />
             </div>
             <div>
               <label className="text-xs text-gray-600 mb-1 block">Documentos</label>
               <Textarea
                 placeholder="Anote aqui os documentos que estão faltando ou se estão completos..."
                 className="text-xs min-h-[60px]"
+                value={documentos}
+                onChange={(e) => setDocumentos(e.target.value)}
               />
             </div>
             <div>
               <label className="text-xs text-gray-600 mb-1 block">N° Protocolo</label>
-              <Textarea placeholder="N° Protocolo da defesa..." className="text-xs min-h-[60px]" />
+              <Textarea
+                placeholder="N° Protocolo da defesa..."
+                className="text-xs min-h-[60px]"
+                value={numProtocolo}
+                onChange={(e) => setNumProtocolo(e.target.value)}
+              />
             </div>
+          </div>
+          <div className="flex justify-end">
+            <Button
+              onClick={async () => {
+                if (!atendimento?.id) return
+                setIsSaving(true)
+                try {
+                  const response = await AtendimentosService.updateCamposComplementares(
+                    atendimento.id,
+                    {
+                      observacao: observacao || undefined,
+                      documentos: documentos || undefined,
+                      numProtocolo: numProtocolo || undefined,
+                    }
+                  )
+                  setObservacao(response.observacao ?? observacao)
+                  setDocumentos(response.documentos ?? documentos)
+                  setNumProtocolo(response.numProtocolo ?? numProtocolo)
+                  toast({
+                    title: "Campos salvos",
+                    description: "Informações para controle atualizadas com sucesso.",
+                  })
+                } catch (error: any) {
+                  toast({
+                    title: "Erro ao salvar",
+                    description:
+                      error?.message ??
+                      "Não foi possível salvar as informações para controle. Tente novamente.",
+                    variant: "destructive",
+                  })
+                } finally {
+                  setIsSaving(false)
+                }
+              }}
+              disabled={isSaving}
+            >
+              {isSaving ? "Salvando..." : "Salvar"}
+            </Button>
           </div>
         </CardContent>
       </Card>

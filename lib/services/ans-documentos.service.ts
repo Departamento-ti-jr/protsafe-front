@@ -34,7 +34,6 @@ export class AnsDocumentosService {
     file: File,
     payload: UploadAnsDocumentoPayload,
   ): Promise<UploadAnsDocumentoResponse> {
-    console.log("Uploading document with payload:", payload);
     const formData = new FormData();
     formData.append("file", file); // nome do campo PRECISA ser "file"
     formData.append("id_atendimento", String(payload.id_atendimento));

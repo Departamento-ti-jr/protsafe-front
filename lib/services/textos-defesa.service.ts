@@ -61,9 +61,7 @@ export class TextosDefesaService {
 
   static async getById(id: string): Promise<TextoDefesa> {
     try {
-      console.log(`Buscando texto de defesa com ID: ${id}`)
       const result = await httpClient.get<TextoDefesa>(`${this.endpoint}/${id}`)
-      console.log("Resultado da busca:", result)
       return result
     } catch (error) {
       console.error(`Erro ao buscar texto de defesa ${id}:`, error)
@@ -73,9 +71,7 @@ export class TextosDefesaService {
 
   static async create(data: CreateTextoDefesaData): Promise<TextoDefesa> {
     try {
-      console.log("Criando texto de defesa:", data)
       const result = await httpClient.post<TextoDefesa>(this.endpoint, data)
-      console.log("Texto de defesa criado:", result)
       return result
     } catch (error) {
       console.error("Erro ao criar texto de defesa:", error)
@@ -95,9 +91,7 @@ export class TextosDefesaService {
 
   static async delete(id: string): Promise<void> {
     try {
-      console.log(`Deletando texto de defesa ${id}`)
       await httpClient.delete<void>(`${this.endpoint}/${id}`)
-      console.log("Texto de defesa deletado com sucesso")
     } catch (error) {
       console.error(`Erro ao deletar texto de defesa ${id}:`, error)
       throw new Error("Falha ao deletar texto de defesa")

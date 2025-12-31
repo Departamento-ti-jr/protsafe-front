@@ -28,12 +28,9 @@ export function useDocumentosAns(
   const { refetch: refetchDocumentos } = useQuery({
     queryKey: ["documentos-ans", atendimentoId],
     enabled: false,
-    queryFn: async () => {
-      console.log("Carregando documentos salvos para atendimento:", atendimentoId)
+    queryFn: async () => {  
       if (!atendimentoId) throw new Error("Atendimento não encontrado.")
-      console.log("atendimentoId:", atendimentoId)
       const { protsafe } = await AnsDocumentosService.getDocumentosByAtendimento(atendimentoId)
-      console.log("Documentos salvos carregados:", protsafe)
       const mapped = protsafe.map((doc: any) => ({
         id: doc.id,
         name: doc.nome ?? doc.nomeAnexo,
@@ -67,8 +64,6 @@ export function useDocumentosAns(
       const id_protocolo = 0
       const tipo_documento = tipoDocumentoId
 
-      console.log("Iniciando upload de documentos para atendimento:", id_atendimento)
-
       const uploadedDocs: UploadedDocument[] = await Promise.all(
         files.map(async (fileData) => {
           const file = fileData.file
@@ -76,8 +71,6 @@ export function useDocumentosAns(
           if (!file.type?.toLowerCase().includes("pdf")) {
             throw new Error("Apenas arquivos PDF são permitidos.")
           }
-
-          console.log("Iniciando upload do arquivo:", file)
 
           const { url, caminho, created } = await AnsDocumentosService.uploadDocument(file, {
             id_atendimento,

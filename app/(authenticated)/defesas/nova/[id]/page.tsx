@@ -94,7 +94,6 @@ export default function NovaDefesaPage({ params }: { params: Promise<{ id: strin
       if (err?.status === 404 || err?.body?.statusCode === 404) {
         setError("Atendimento (ABI) não encontrado.")
       } else {
-        console.log(err);
         setError("Erro ao carregar atendimento. Tente novamente.")
       }
 
@@ -171,8 +170,7 @@ export default function NovaDefesaPage({ params }: { params: Promise<{ id: strin
       }
 
       const payload = mapDefesaToPayload(atendimento.id)
-      console.log("Payload para salvar defesa:", payload)
-
+      
       // 1️⃣ Cria a defesa no banco
       const response = await DefesasService.create(payload)
       const defesaId = response?.data?.id || response?.id

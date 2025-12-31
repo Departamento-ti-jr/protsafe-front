@@ -21,6 +21,9 @@ export interface Atendimento {
   competencia?: string
   municipio?: string
   tipo?: string
+  tipoProcedimento?: string
+  codigoProcedimento?: string | number
+  quantidadeProcedimento?: number
   numeroAihApac?: string
   dataInicioAtendimento?: string
   dataFimAtendimento?: string
@@ -32,6 +35,11 @@ export interface Atendimento {
   quantidadeProcesso?: number
   // Relações
   abi?: Abi
+
+  // Campos complementares
+  observacao?: string
+  documentos?: string
+  numProtocolo?: string
 
   defesa?: Defesa
   semDefesa?: boolean
@@ -69,6 +77,18 @@ export class AtendimentosService {
       }
     }
 
+    static async getProcedumentosByAtendimentoId(
+      id: number
+    ): Promise<Atendimento[]> {
+      try {
+        let url = `${this.endpoint}/${id}/procedimentos`
+        return await httpClient.get<Atendimento[]>(url)
+      } catch (error) {
+        console.error(`Erro ao buscar ABI com id ${id}:`, error)
+        throw new Error("Falha ao carregar os detalhes da ABI")
+      }
+    }
+
   /**
    * Busca paginada de atendimentos com filtros opcionais
    */
@@ -94,6 +114,19 @@ export class AtendimentosService {
     } catch (error) {
       console.error("Erro ao buscar atendimentos:", error)
       throw new Error("Falha ao carregar atendimentos")
+    }
+  }
+
+  static async updateCamposComplementares(
+    id: string | number,
+    body: { numProtocolo?: string; observacao?: string; documentos?: string }
+  ): Promise<Atendimento> {
+    try {
+      const url = `${this.endpoint}/${id}/campos-complementares`
+      return await httpClient.put<Atendimento>(url, body)
+    } catch (error) {
+      console.error(`Erro ao atualizar campos complementares do atendimento ${id}:`, error)
+      throw new Error("Falha ao salvar campos complementares do atendimento")
     }
   }
 }
