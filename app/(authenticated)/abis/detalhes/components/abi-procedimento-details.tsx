@@ -70,30 +70,6 @@ export function ABIProcedimentoDetails({ procedimento, onBack }: ABIProcedimento
         </CardContent>
       </Card>
 
-      <Card className="mb-4">
-        <CardHeader className="pb-3">
-          <CardTitle className="text-sm font-medium">Informações para Controle</CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="grid grid-cols-1 gap-4">
-            <div>
-              <label className="text-xs text-gray-600 mb-1 block">Observações do Procedimento</label>
-              <Textarea
-                placeholder="Se necessário, informe uma observação sobre este procedimento..."
-                className="text-xs min-h-[80px]"
-              />
-            </div>
-            <div>
-              <label className="text-xs text-gray-600 mb-1 block">Documentos Relacionados</label>
-              <Textarea
-                placeholder="Anote aqui os documentos relacionados a este procedimento..."
-                className="text-xs min-h-[80px]"
-              />
-            </div>
-          </div>
-        </CardContent>
-      </Card>
-
       <div className="flex justify-end space-x-2">
         <Button variant="outline" size="sm" className="text-xs bg-transparent">
           <Save className="w-3 h-3 mr-1" />
