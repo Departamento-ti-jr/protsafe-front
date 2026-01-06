@@ -37,7 +37,6 @@ export default function AutomacaoPage() {
       const res = await ComposicaoDadosAnsService.uploadCsv(file)
       setUploadResult(res)
     } catch (err) {
-      console.error(err)
       const httpError = err as any
       if (httpError?.status === 400 && httpError.body) {
         setUploadResult(httpError.body)
@@ -148,15 +147,19 @@ export default function AutomacaoPage() {
             ) : uploadResult ? (
               (() => {
                 const payload: any = uploadResult?.body ?? uploadResult
+                const erros = Array.isArray(payload?.erros) ? payload.erros : []
+                const hasObjectErrors = erros.some(
+                  (err: any) => err && typeof err === "object" && ("linha" in err || "mensagens" in err || "dados" in err)
+                )
                 return (
                   <div className="space-y-3">
                     {"inseridos" in payload && "rejeitados" in payload ? (
                       <>
                         <p className="text-sm">Inseridos: <b>{payload.inseridos}</b></p>
                         <p className="text-sm">Rejeitados: <b>{payload.rejeitados}</b></p>
-                        {Array.isArray(payload.erros) && payload.erros.length > 0 && (
+                        {erros.length > 0 && (
                           <div className="border rounded p-3 max-h-72 overflow-auto text-xs space-y-2 bg-slate-50">
-                            {payload.erros.map((err: any, idx: number) => (
+                            {erros.map((err: any, idx: number) => (
                               <div key={idx} className="border-b pb-2 last:border-0 last:pb-0">
                                 <p className="font-semibold">Linha: {err.linha}</p>
                                 <p className="text-red-600">{Array.isArray(err.mensagens) ? err.mensagens.join("; ") : err.mensagens}</p>
@@ -173,12 +176,32 @@ export default function AutomacaoPage() {
                     ) : (
                       <div className="space-y-2">
                         {payload.mensagem && <p className="text-sm text-red-600 font-semibold">{payload.mensagem}</p>}
-                        {Array.isArray(payload.erros) && payload.erros.length > 0 && (
-                          <ul className="list-disc pl-5 text-sm text-red-600 space-y-1">
-                            {payload.erros.map((msg: any, idx: number) => (
-                              <li key={idx}>{msg}</li>
-                            ))}
-                          </ul>
+                        {erros.length > 0 && (
+                          hasObjectErrors ? (
+                            <div className="border rounded p-3 max-h-72 overflow-auto text-xs space-y-2 bg-slate-50">
+                              {erros.map((err: any, idx: number) => (
+                                <div key={idx} className="border-b pb-2 last:border-0 last:pb-0">
+                                  {err.linha && <p className="font-semibold">Linha: {err.linha}</p>}
+                                  {err.mensagens && (
+                                    <p className="text-red-600">
+                                      {Array.isArray(err.mensagens) ? err.mensagens.join("; ") : err.mensagens}
+                                    </p>
+                                  )}
+                                  {err.dados && (
+                                    <pre className="bg-white border rounded p-2 mt-1 overflow-x-auto">
+                                      {JSON.stringify(err.dados, null, 2)}
+                                    </pre>
+                                  )}
+                                </div>
+                              ))}
+                            </div>
+                          ) : (
+                            <ul className="list-disc pl-5 text-sm text-red-600 space-y-1">
+                              {erros.map((msg: any, idx: number) => (
+                                <li key={idx}>{msg}</li>
+                              ))}
+                            </ul>
+                          )
                         )}
                         {!payload.mensagem && !payload.erros && (
                           <p className="text-sm text-red-600">Não foi possível ler o retorno da API.</p>
