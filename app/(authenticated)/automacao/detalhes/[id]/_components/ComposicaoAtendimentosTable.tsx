@@ -82,6 +82,7 @@ export function ComposicaoAtendimentosTable({
                     aria-label="Selecionar todos"
                   />
                 </TableHead>
+                <TableHead className="w-[80px] font-bold py-4">Id</TableHead>
                 <TableHead className="w-[80px] font-bold py-4">Ordem</TableHead>
                 <TableHead className="font-bold">Pedido / AIH</TableHead>
                 <TableHead className="font-bold">Alegações</TableHead>
@@ -106,6 +107,9 @@ export function ComposicaoAtendimentosTable({
                         onCheckedChange={() => onToggle(String(item.id))}
                         aria-label={`Selecionar registro ${item.id}`}
                       />
+                    </TableCell>
+                    <TableCell className="font-mono text-xs font-medium text-slate-500 uppercase italic">
+                      {item.id}
                     </TableCell>
                     <TableCell className="font-mono text-xs font-medium text-slate-500 uppercase italic">
                       #{item.ordem}
