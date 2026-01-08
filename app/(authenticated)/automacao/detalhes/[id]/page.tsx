@@ -72,6 +72,7 @@ export default function AutomacaoDetalhesPage({ params }: { params: Promise<{ id
   }, [id, page, pageSize, filterAih, filterStatus, filterOrder])
 
   useSocketEvent<{ id: number; statusEnvio: number }>("evt-atend-change-status", (data) => {
+    console.log("Recebido evt-atend-change-status via socket:", data)
     setRegistros((prev) => {
       const nextData = prev.data.map((item) =>
         Number(item.id) === Number(data.id) ? { ...item, statusEnvio: data.statusEnvio } : item
@@ -143,6 +144,14 @@ export default function AutomacaoDetalhesPage({ params }: { params: Promise<{ id
 
   return (
     <div className="min-h-screen bg-slate-50/50">
+      {processing && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-white/70 backdrop-blur-sm">
+          <div className="flex items-center gap-3 rounded-lg border border-slate-200 bg-white px-4 py-3 shadow-sm">
+            <Loader2 className="h-5 w-5 animate-spin text-slate-600" />
+            <p className="text-sm font-medium text-slate-700">Enviando registros...</p>
+          </div>
+        </div>
+      )}
       <div className="max-w-[1600px] mx-auto p-4 md:p-8 space-y-8 animate-in fade-in duration-500">
         
         <ComposicaoAbiHeader 
