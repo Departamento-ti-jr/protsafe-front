@@ -7,11 +7,6 @@ export function ComposicaoAbiDetailsCard({ numeroAbi, registroAns, totalRegistro
       <DetailItem icon={<Hash className="text-blue-500"/>} label="Número da ABI" value={numeroAbi} />
       <DetailItem icon={<Hash className="text-blue-500"/>} label="Registro ANS" value={registroAns} />
       <DetailItem icon={<Hash className="text-blue-500"/>} label="Total de Registros" value={totalRegistros} />
-      <DetailItem 
-        icon={<Hash className="text-amber-500"/>} 
-        label="Status Geral" 
-        value={<Badge className="bg-teal-50 text-teal-700 border-teal-100 hover:bg-teal-50">Processando</Badge>} 
-      />
     </div>
   )
 }
