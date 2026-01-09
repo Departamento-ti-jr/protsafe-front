@@ -6,7 +6,7 @@ interface AuthMeResponse {
 
 export async function checkUserPermissions(token: string): Promise<{ hasPermission: boolean; error?: string }> {
   try {
-    const response = await fetch("https://protsafe-api.jrusso.com.br/auth/me", {
+    const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/auth/me`, {
       method: "GET",
       headers: {
         Authorization: `Bearer ${token}`,
