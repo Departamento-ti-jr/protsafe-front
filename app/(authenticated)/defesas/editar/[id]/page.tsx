@@ -115,6 +115,7 @@ export default function EditarDefesaPage({ params }: { params: Promise<{ id: str
       setDefesa(data)
 
       setTempestividade(data.tempestividade || "")
+      setTipoDoc(data.tipoPeticao || "RECURSO")
       setCalculationMemory(data.memoriaCalculo || "")
       setSupportingDocument(data.supportingDocument || "")
       setValorRetificacao(data.valorRetificacao || "")
