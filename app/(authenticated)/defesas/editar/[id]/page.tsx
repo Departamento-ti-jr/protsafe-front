@@ -253,7 +253,7 @@ export default function EditarDefesaPage({ params }: { params: Promise<{ id: str
       documentosComprobatoriosIds: selectedComprobatorios,
       tempestividade: tempestividade || undefined,
       memoriaCalculo: calculationMemory || undefined,
-      outrosDocumentosComplementares: informarOutrosDocumentos ? (othersSupportingDocument || undefined) : undefined,
+      outrosDocumentosComplementares: informarOutrosDocumentos ? (othersSupportingDocument || "") : "",
       opcaoOrdem,
       valorRetificacao: valorRetificacao || undefined,
     }
