@@ -19,6 +19,7 @@ export interface Defesa {
   /** novo backend pode retornar memoriaCalculo */
   memoriaCalculo?: string
   tempestividade?: string
+  outrosDocumentosComplementares?: string
   supportingDocuments?: {
     _id: string
     tipo: string

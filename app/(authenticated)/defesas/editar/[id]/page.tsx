@@ -111,7 +111,7 @@ export default function EditarDefesaPage({ params }: { params: Promise<{ id: str
         setError("Defesa não encontrada.")
         return null
       }
-
+    
       setDefesa(data)
 
       setTempestividade(data.tempestividade || "")
@@ -121,8 +121,8 @@ export default function EditarDefesaPage({ params }: { params: Promise<{ id: str
       setValorRetificacao(data.valorRetificacao || "")
       setSelectedMotivos(data.motivoIds || [])
       setSelectedComprobatorios(data.supportingDocuments?.map((d: any) => d.id) || [])
-      setInformarOutrosDocumentos(String(data?.othersSupportingDocument) ? true : false);
-      setOthersSupportingDocument(String(data?.othersSupportingDocument));
+      setInformarOutrosDocumentos(data?.outrosDocumentosComplementares ? true : false);
+      setOthersSupportingDocument(String(data?.outrosDocumentosComplementares || "" ));
       setSelectedComprobatorios(data.documentosComprobatoriosIds || [])
 
       setText(data.textoDefesa || "")
