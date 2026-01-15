@@ -35,9 +35,9 @@ export function ModernSidebar({ className }: ModernSidebarProps) {
     { name: "ABIs", href: "/abis", icon: FileSpreadsheet },
     { name: "Automação", href: "/automacao", icon: Bot },
     { name: "Defesas", href: "/defesas", icon: Shield },
-    { name: "Recolhimentos", href: "/recolhimentos", icon: Receipt },
-    { name: "Logs", href: "/logs", icon: History },
-    { name: "Política de Privacidade", href: "/politica-privacidade", icon: FileTerminal },
+    // { name: "Recolhimentos", href: "/recolhimentos", icon: Receipt },
+    // { name: "Logs", href: "/logs", icon: History },
+    // { name: "Política de Privacidade", href: "/politica-privacidade", icon: FileTerminal },
   ].map((item) => ({
     ...item,
     disabled: disabledRoutes.includes(item.href),
@@ -117,12 +117,12 @@ export function ModernSidebar({ className }: ModernSidebarProps) {
             <nav className="space-y-1">{navItems.slice(3, 8).map(renderNavLink)}</nav>
           </div>
 
-          <div>
+          {/* <div>
             <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-3 px-3">
               SISTEMA
             </p>
             <nav className="space-y-1">{navItems.slice(8).map(renderNavLink)}</nav>
-          </div>
+          </div> */}
         </div>
       </div>
 

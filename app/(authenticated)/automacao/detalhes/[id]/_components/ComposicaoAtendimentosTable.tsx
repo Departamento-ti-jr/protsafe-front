@@ -88,8 +88,9 @@ export function ComposicaoAtendimentosTable({
                 <TableHead className="font-bold">Alegações</TableHead>
                 <TableHead className="font-bold">Vigência</TableHead>
                 <TableHead className="font-bold">Tipo</TableHead>
-                <TableHead className="font-bold text-center">Docs Requerida/Recebida</TableHead>
-                <TableHead className="font-bold text-center">Status</TableHead>
+                <TableHead className="font-bold">Competência</TableHead>
+                <TableHead className="font-bold text-center">Docs Req/Rec</TableHead>
+                <TableHead className="font-bold">Status</TableHead>
                 <TableHead className="text-right pr-6 font-bold">Ações</TableHead>
               </TableRow>
             </TableHeader>
@@ -143,6 +144,11 @@ export function ComposicaoAtendimentosTable({
                       <Badge variant="outline" className="text-[10px] uppercase font-bold border-slate-200 bg-white shadow-sm">
                         {item.tipoDefesa || "Padrão"}
                       </Badge>
+                    </TableCell>
+                    <TableCell>
+                        <div className="flex flex-col">
+                          {item.competencia ? item.competencia.replace(/^(\d{2})(\d{4})$/, "$1/$2") : ""}
+                        </div>
                     </TableCell>
                     <TableCell className="text-center">
                        <span className={`text-xs font-bold ${item.qtdDocumentos > 0 ? 'text-indigo-600' : 'text-slate-300'}`}>

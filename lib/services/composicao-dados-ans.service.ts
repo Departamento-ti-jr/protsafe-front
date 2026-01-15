@@ -44,6 +44,7 @@ export interface ComposicaoDadosAbiRegistro {
   dataInicial: string | null
   dataFinal: string | null
   tipoDefesa: string | null
+  competencia: string | null
   s3PathDocPrincipal: string | null
   s3PathDocAdicional: any
   hash: string
