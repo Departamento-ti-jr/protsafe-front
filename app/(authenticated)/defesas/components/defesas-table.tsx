@@ -51,7 +51,7 @@ export default function DefesasTable({ data, loading = false }: { data: Defesa[]
             const atendimentoCodigo = atendimento?.numeroAihApac ?? atendimento?.numeroAih ?? "—"
             const defenceId = defesa.id ?? defesa._id
 
-            const formattedDate = formatDateTime(defesa.createdAt)
+            const formattedDate = formatDateTime(defesa.criadoEm)
             const [datePart, timePart] = formattedDate.split(', ')
 
             return (
