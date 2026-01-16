@@ -18,6 +18,7 @@ export default function ABIsPage() {
     pagination,
     handleSearch,
     handleStatusChange,
+    handleNumeroAbiChange,
     handlePageChange,
     handlePageSizeChange,
     refetch,
@@ -55,6 +56,8 @@ export default function ABIsPage() {
             <AbisFilters
               searchTerm={filters.search}
               onSearch={handleSearch}
+              numeroAbi={filters.numeroAbi}
+              onNumeroAbiChange={handleNumeroAbiChange}
               statusFilter={filters.status}
               onStatusChange={handleStatusChange}
             />

@@ -6,6 +6,7 @@ import type { PaginatedResponse } from "@/components/ui/pagination-controls"
 interface FiltersState {
   search: string
   status: string
+  numeroAbi: string
 }
 
 interface PaginationState {
@@ -29,6 +30,7 @@ export function useAbisList(initialPageSize = 20) {
   const [filters, setFilters] = useState<FiltersState>({
     search: "",
     status: "todos",
+    numeroAbi: "",
   })
 
   const [pagination, setPagination] = useState<PaginationState>({
@@ -40,6 +42,7 @@ export function useAbisList(initialPageSize = 20) {
     () => ({
       search: filters.search.trim(),
       status: filters.status,
+      numeroAbi: filters.numeroAbi.trim(),
     }),
     [filters]
   )
@@ -51,6 +54,7 @@ export function useAbisList(initialPageSize = 20) {
         page: pagination.page,
         limit: pagination.pageSize,
         search: normalizedFilters.search || undefined,
+        numeroABI: normalizedFilters.numeroAbi || undefined,
         status:
           normalizedFilters.status !== "todos"
             ? normalizedFilters.status
@@ -64,7 +68,13 @@ export function useAbisList(initialPageSize = 20) {
     } finally {
       setLoading(false)
     }
-  }, [pagination.page, pagination.pageSize, normalizedFilters.search, normalizedFilters.status])
+  }, [
+    pagination.page,
+    pagination.pageSize,
+    normalizedFilters.search,
+    normalizedFilters.status,
+    normalizedFilters.numeroAbi,
+  ])
 
   useEffect(() => {
     loadAbis()
@@ -77,6 +87,11 @@ export function useAbisList(initialPageSize = 20) {
 
   const handleStatusChange = useCallback((value: string) => {
     setFilters((prev) => ({ ...prev, status: value }))
+    setPagination((prev) => ({ ...prev, page: 1 }))
+  }, [])
+
+  const handleNumeroAbiChange = useCallback((value: string) => {
+    setFilters((prev) => ({ ...prev, numeroAbi: value }))
     setPagination((prev) => ({ ...prev, page: 1 }))
   }, [])
 
@@ -96,6 +111,7 @@ export function useAbisList(initialPageSize = 20) {
     pagination,
     handleSearch,
     handleStatusChange,
+    handleNumeroAbiChange,
     handlePageChange,
     handlePageSizeChange,
     refetch: loadAbis,
