@@ -4,9 +4,11 @@ import { AbisService } from "@/lib/services/abis.service"
 import type { PaginatedResponse } from "@/components/ui/pagination-controls"
 
 interface FiltersState {
-  search: string
   status: string
+  id: string
   numeroAbi: string
+  numeroProcesso: string
+  operadora: string
 }
 
 interface PaginationState {
@@ -28,9 +30,11 @@ export function useAbisList(initialPageSize = 20) {
   const [error, setError] = useState<string | null>(null)
 
   const [filters, setFilters] = useState<FiltersState>({
-    search: "",
     status: "todos",
+    id: "",
     numeroAbi: "",
+    numeroProcesso: "",
+    operadora: "",
   })
 
   const [pagination, setPagination] = useState<PaginationState>({
@@ -40,9 +44,11 @@ export function useAbisList(initialPageSize = 20) {
 
   const normalizedFilters = useMemo(
     () => ({
-      search: filters.search.trim(),
       status: filters.status,
+      id: filters.id.trim(),
       numeroAbi: filters.numeroAbi.trim(),
+      numeroProcesso: filters.numeroProcesso.trim(),
+      operadora: filters.operadora.trim(),
     }),
     [filters]
   )
@@ -53,8 +59,10 @@ export function useAbisList(initialPageSize = 20) {
       const response = await AbisService.getAll({
         page: pagination.page,
         limit: pagination.pageSize,
-        search: normalizedFilters.search || undefined,
-        numeroABI: normalizedFilters.numeroAbi || undefined,
+        id: normalizedFilters.id || undefined,
+        numeroAbi: normalizedFilters.numeroAbi || undefined,
+        numeroProcesso: normalizedFilters.numeroProcesso || undefined,
+        operadora: normalizedFilters.operadora || undefined,
         status:
           normalizedFilters.status !== "todos"
             ? normalizedFilters.status
@@ -71,17 +79,19 @@ export function useAbisList(initialPageSize = 20) {
   }, [
     pagination.page,
     pagination.pageSize,
-    normalizedFilters.search,
+    normalizedFilters.id,
     normalizedFilters.status,
     normalizedFilters.numeroAbi,
+    normalizedFilters.numeroProcesso,
+    normalizedFilters.operadora,
   ])
 
   useEffect(() => {
     loadAbis()
   }, [loadAbis])
 
-  const handleSearch = useCallback((value: string) => {
-    setFilters((prev) => ({ ...prev, search: value }))
+  const handleIdChange = useCallback((value: string) => {
+    setFilters((prev) => ({ ...prev, id: value }))
     setPagination((prev) => ({ ...prev, page: 1 }))
   }, [])
 
@@ -92,6 +102,16 @@ export function useAbisList(initialPageSize = 20) {
 
   const handleNumeroAbiChange = useCallback((value: string) => {
     setFilters((prev) => ({ ...prev, numeroAbi: value }))
+    setPagination((prev) => ({ ...prev, page: 1 }))
+  }, [])
+
+  const handleNumeroProcessoChange = useCallback((value: string) => {
+    setFilters((prev) => ({ ...prev, numeroProcesso: value }))
+    setPagination((prev) => ({ ...prev, page: 1 }))
+  }, [])
+
+  const handleOperadoraChange = useCallback((value: string) => {
+    setFilters((prev) => ({ ...prev, operadora: value }))
     setPagination((prev) => ({ ...prev, page: 1 }))
   }, [])
 
@@ -109,9 +129,11 @@ export function useAbisList(initialPageSize = 20) {
     error,
     filters,
     pagination,
-    handleSearch,
+    handleIdChange,
     handleStatusChange,
     handleNumeroAbiChange,
+    handleNumeroProcessoChange,
+    handleOperadoraChange,
     handlePageChange,
     handlePageSizeChange,
     refetch: loadAbis,
