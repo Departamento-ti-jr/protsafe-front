@@ -31,10 +31,20 @@ export default function DefesasPage() {
     startLoading();
     setLoading(true);
     try {
+      const trimmedSearch = searchTerm.trim()
+      const numericSearch = trimmedSearch !== "" && /^\d+$/.test(trimmedSearch)
+      const searchFilters = {
+        numeroAbi:
+          numericSearch && trimmedSearch.length <= 4 ? trimmedSearch : undefined,
+        numeroAtendimento:
+          numericSearch && trimmedSearch.length > 4 ? trimmedSearch : undefined,
+        operadora:
+          !numericSearch && trimmedSearch !== "" ? trimmedSearch : undefined,
+      }
       const response = await DefesasService.getAllWithAtendimento({
         page: currentPage,
         limit: pageSize,
-        search: searchTerm,
+        ...searchFilters,
       })
       setPaginatedData(response)
       setError(null)
