@@ -100,6 +100,17 @@ export default function RegistroDetalhePage({ params }: { params: Promise<{ id: 
 
   const docPrincipal = registro.s3PathDocPrincipal
   const anexosAdicionais = Array.isArray(registro.s3PathDocAdicional) ? registro.s3PathDocAdicional : []
+  const getFileNameFromUrl = (url?: string) => {
+    if (!url) return ""
+    try {
+      const parsed = new URL(url)
+      const last = parsed.pathname.split("/").pop() || ""
+      return decodeURIComponent(last)
+    } catch {
+      const last = url.split("/").pop() || url
+      return decodeURIComponent(last)
+    }
+  }
 
   const handleSaveProtocolo = async () => {
     if (!protocolo.trim()) {
@@ -249,7 +260,9 @@ export default function RegistroDetalhePage({ params }: { params: Promise<{ id: 
                     <div key={idx} className="flex items-center justify-between p-3 rounded-lg border border-slate-100 hover:border-slate-200 transition-colors">
                       <div className="flex items-center gap-3">
                         <FileCheck className="h-4 w-4 text-slate-400" />
-                        <span className="text-sm text-slate-600 truncate max-w-[200px] md:max-w-md">{anexo.url}</span>
+                        <span className="text-sm text-slate-600 truncate max-w-[200px] md:max-w-md">
+                          {getFileNameFromUrl(anexo.url)}
+                        </span>
                       </div>
                       <div className="flex items-center gap-1">
                         <Button variant="ghost" size="sm" asChild>
