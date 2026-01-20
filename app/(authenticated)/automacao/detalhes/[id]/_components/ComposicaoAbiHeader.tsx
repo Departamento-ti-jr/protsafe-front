@@ -6,9 +6,10 @@ import { Badge } from "@/components/ui/badge"
 interface Props {
   numeroAbi?: number | string
   registroAns?: string
+  operadoraNome?: string
 }
 
-export function ComposicaoAbiHeader({ numeroAbi, registroAns }: Props) {
+export function ComposicaoAbiHeader({ numeroAbi, registroAns, operadoraNome }: Props) {
   return (
     <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between border-b border-slate-200 pb-6">
       <div className="flex items-center gap-4">
@@ -22,8 +23,8 @@ export function ComposicaoAbiHeader({ numeroAbi, registroAns }: Props) {
             ABI <span className="text-primary">{numeroAbi ?? "---"}</span>
           </h1>
           <div className="flex items-center gap-2 mt-1">
-            <span className="text-xs font-bold uppercase tracking-widest text-slate-400">Registro ANS</span>
-            <Badge variant="outline" className="font-mono text-slate-600">{registroAns ?? "---"}</Badge>
+            <span className="text-xs font-bold uppercase tracking-widest text-slate-400">Operadora</span>
+            <Badge variant="outline" className="font-mono text-slate-600">{operadoraNome ?? "---"}</Badge>
           </div>
         </div>
       </div>

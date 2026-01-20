@@ -67,8 +67,14 @@ export default function AutomacaoTable({ data, loading = false }: { data: Compos
               </TableCell>
               
               <TableCell>
-                <Badge className="bg-emerald-50 text-emerald-700 border-emerald-100 hover:bg-emerald-50 px-3 shadow-sm">
-                  Ativo
+                <Badge
+                  className={
+                    abi.status == "CONCLUIDO"
+                      ? "bg-emerald-50 text-emerald-700 border-emerald-100 hover:bg-emerald-50 px-3 shadow-sm"
+                      : "bg-amber-50 text-amber-700 border-amber-100 hover:bg-amber-50 px-3 shadow-sm"
+                  }
+                >
+                  {abi.status == "CONCLUIDO" ? "Concluído" : "Aberto"}
                 </Badge>
               </TableCell>
               
