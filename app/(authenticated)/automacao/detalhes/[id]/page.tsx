@@ -156,13 +156,15 @@ export default function AutomacaoDetalhesPage({ params }: { params: Promise<{ id
         
         <ComposicaoAbiHeader 
           numeroAbi={registros.data[0]?.numeroAbi} 
-          registroAns={registros.data[0]?.registroAns} 
+          registroAns={registros.data[0]?.registroAns}
+          operadoraNome={registros.data[0]?.razaoSocial ?? registros.data[0]?.operadoraNome}
         />
 
         <div className="grid grid-cols-1 gap-8">
           <ComposicaoAbiDetailsCard 
             numeroAbi={registros.data[0]?.numeroAbi} 
             registroAns={registros.data[0]?.registroAns} 
+            operadoraNome={registros.data[0]?.razaoSocial ?? registros.data[0]?.operadoraNome}
             totalRegistros={registros.total} 
           />
 
