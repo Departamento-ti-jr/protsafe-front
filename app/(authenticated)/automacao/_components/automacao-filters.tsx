@@ -56,9 +56,8 @@ export default function AbisFilters({ searchTerm, onSearch, statusFilter, onStat
           </SelectTrigger>
           <SelectContent className="bg-popover text-popover-foreground border border-border">
             <SelectItem value="todos">Todos</SelectItem>
-            <SelectItem value="aberto">Aberto</SelectItem>
-            <SelectItem value="fechado">Fechado</SelectItem>
-            <SelectItem value="em-andamento">Em Andamento</SelectItem>
+            <SelectItem value="CONCLUIDO">Concluído</SelectItem>
+            <SelectItem value="NAO_CONCLUIDO">Aberto</SelectItem>
           </SelectContent>
         </Select>
 
