@@ -100,6 +100,16 @@ export default function RegistroDetalhePage({ params }: { params: Promise<{ id: 
 
   const docPrincipal = registro.s3PathDocPrincipal
   const anexosAdicionais = Array.isArray(registro.s3PathDocAdicional) ? registro.s3PathDocAdicional : []
+  const hashCounts = anexosAdicionais.reduce<Record<string, number>>((acc, anexo: any) => {
+    const hash = typeof anexo?.hash === "string" ? anexo.hash.trim() : ""
+    if (!hash) return acc
+    acc[hash] = (acc[hash] || 0) + 1
+    return acc
+  }, {})
+  const isDuplicateHash = (anexo: any) => {
+    const hash = typeof anexo?.hash === "string" ? anexo.hash.trim() : ""
+    return !!hash && (hashCounts[hash] || 0) > 1
+  }
   const getFileNameFromUrl = (url?: string) => {
     if (!url) return ""
     try {
@@ -263,6 +273,11 @@ export default function RegistroDetalhePage({ params }: { params: Promise<{ id: 
                         <span className="text-sm text-slate-600 truncate max-w-[200px] md:max-w-md">
                           {getFileNameFromUrl(anexo.url)}
                         </span>
+                        {isDuplicateHash(anexo) && (
+                          <Badge variant="warning" className="text-[10px] font-semibold">
+                            Duplicado
+                          </Badge>
+                        )}
                       </div>
                       <div className="flex items-center gap-1">
                         <Button variant="ghost" size="sm" asChild>
