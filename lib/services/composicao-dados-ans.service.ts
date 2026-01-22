@@ -53,7 +53,7 @@ export interface ComposicaoDadosAbiRegistro {
   protocoloId?: string | null
   abiId: number
   workerError?: string | null
-  operadoraNome?: string
+  operadoraNome?: string 
   razaoSocial?: string
 }
 
