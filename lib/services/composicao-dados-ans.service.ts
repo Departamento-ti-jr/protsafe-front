@@ -50,7 +50,8 @@ export interface ComposicaoDadosAbiRegistro {
   hash: string
   statusEnvio: number | null
   protocoloId?: string | null
-  abiId: number
+  abiId: number,
+  workerError?: string | null
 }
 
 export interface ComposicaoDadosRegistroDetalhe extends ComposicaoDadosAbiRegistro {
