@@ -3,6 +3,7 @@
 import { useMemo } from "react"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
+import { Input } from "@/components/ui/input"
 import { PaginationControls } from "@/components/ui/pagination-controls"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
@@ -18,6 +19,7 @@ export default function LogsPage() {
     error,
     filters,
     handleLevelChange,
+    handleIdChange,
     handlePageChange,
     handlePageSizeChange,
     refetch,
@@ -52,6 +54,15 @@ export default function LogsPage() {
 
       <div className="flex flex-col md:flex-row gap-4 items-start md:items-center justify-between">
         <div className="flex flex-col sm:flex-row gap-3 w-full md:w-auto">
+          <div className="w-full sm:w-48">
+            <Input
+              value={filters.id}
+              onChange={(e) => handleIdChange(e.target.value)}
+              placeholder="Filtrar por ID"
+              className="bg-white"
+              disabled={loading}
+            />
+          </div>
           <div className="w-full sm:w-56">
             <Select value={filters.level} onValueChange={handleLevelChange} disabled={loading}>
               <SelectTrigger className="bg-white">

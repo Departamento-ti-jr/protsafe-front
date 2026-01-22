@@ -12,6 +12,7 @@ interface LogsData {
 
 interface FiltersState {
   level: string
+  id: string
 }
 
 interface PaginationState {
@@ -34,6 +35,7 @@ export function useLogsList(initialPageSize = 20) {
 
   const [filters, setFilters] = useState<FiltersState>({
     level: "INFO",
+    id: "",
   })
 
   const [pagination, setPagination] = useState<PaginationState>({
@@ -44,6 +46,7 @@ export function useLogsList(initialPageSize = 20) {
   const normalizedFilters = useMemo(
     () => ({
       level: filters.level.trim(),
+      id: filters.id.trim(),
     }),
     [filters]
   )
@@ -55,6 +58,7 @@ export function useLogsList(initialPageSize = 20) {
         page: pagination.page,
         limit: pagination.pageSize,
         level: normalizedFilters.level !== "todos" ? normalizedFilters.level : undefined,
+        id: normalizedFilters.id || undefined,
       })
 
       const total = response.total ?? response.logs.length
@@ -75,7 +79,7 @@ export function useLogsList(initialPageSize = 20) {
     } finally {
       setLoading(false)
     }
-  }, [pagination.page, pagination.pageSize, normalizedFilters.level])
+  }, [pagination.page, pagination.pageSize, normalizedFilters.level, normalizedFilters.id])
 
   useEffect(() => {
     loadLogs()
@@ -83,6 +87,11 @@ export function useLogsList(initialPageSize = 20) {
 
   const handleLevelChange = useCallback((value: string) => {
     setFilters((prev) => ({ ...prev, level: value }))
+    setPagination((prev) => ({ ...prev, page: 1 }))
+  }, [])
+
+  const handleIdChange = useCallback((value: string) => {
+    setFilters((prev) => ({ ...prev, id: value }))
     setPagination((prev) => ({ ...prev, page: 1 }))
   }, [])
 
@@ -101,6 +110,7 @@ export function useLogsList(initialPageSize = 20) {
     filters,
     pagination,
     handleLevelChange,
+    handleIdChange,
     handlePageChange,
     handlePageSizeChange,
     refetch: loadLogs,

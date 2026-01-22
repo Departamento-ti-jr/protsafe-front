@@ -21,6 +21,7 @@ export interface LogsResponse {
 
 export interface GetLogsParams {
   level?: string
+  id?: string
   page?: number
   limit?: number
 }
@@ -33,6 +34,7 @@ export class LogsService {
       const searchParams = new URLSearchParams()
 
       if (params.level) searchParams.append("level", params.level)
+      if (params.id) searchParams.append("id", params.id)
       if (params.page) searchParams.append("page", String(params.page))
       if (params.limit) searchParams.append("limit", String(params.limit))
 
@@ -44,6 +46,20 @@ export class LogsService {
     } catch (error) {
       console.error("Erro ao buscar logs:", error)
       throw new Error("Falha ao carregar logs")
+    }
+  }
+
+  static async getById(id: string): Promise<AppLog> {
+    try {
+      const response = await this.getAll({ id })
+      const log = response.logs?.[0]
+      if (!log) {
+        throw new Error("Log não encontrado")
+      }
+      return log
+    } catch (error) {
+      console.error(`Erro ao buscar log ${id}:`, error)
+      throw new Error("Falha ao carregar log")
     }
   }
 }
