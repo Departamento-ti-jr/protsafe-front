@@ -30,11 +30,7 @@ export async function ModernHeader() {
       {/* Left Section - Search */}
       <div className="flex items-center gap-4 flex-1 max-w-md">
         <div className="relative w-full">
-          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-slate-400" />
-          <Input
-            placeholder="Buscar no sistema..."
-            className="pl-10 border-slate-200 focus:border-[#09989d] focus:ring-[#09989d] bg-slate-50"
-          />
+          
         </div>
       </div>
 

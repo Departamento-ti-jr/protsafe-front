@@ -11,7 +11,6 @@ export default function DashboardPage() {
       {/* Header */}
       <div className="mb-8">
         <h1 className="text-2xl font-bold text-slate-800 mb-2">Dashboard</h1>
-        <p className="text-slate-600">Bem-vindo ao sistema ReSUS</p>
       </div>
 
       {/* Colorful Stats Cards */}

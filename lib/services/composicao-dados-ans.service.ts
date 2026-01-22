@@ -12,6 +12,7 @@ export interface ComposicaoDadosAbi {
   createdAt: string
   updatedAt: string
   razaoSocial?: string
+  status?: string
 }
 
 export interface ComposicaoDadosAbiRegistro {
@@ -50,8 +51,10 @@ export interface ComposicaoDadosAbiRegistro {
   hash: string
   statusEnvio: number | null
   protocoloId?: string | null
-  abiId: number,
+  abiId: number
   workerError?: string | null
+  operadoraNome?: string
+  razaoSocial?: string
 }
 
 export interface ComposicaoDadosRegistroDetalhe extends ComposicaoDadosAbiRegistro {
