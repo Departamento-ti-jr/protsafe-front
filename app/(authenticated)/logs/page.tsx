@@ -131,7 +131,14 @@ export default function LogsPage() {
                     <TableCell className="text-gray-600">
                       <Badge variant={resolveLevelVariant(log.level)}>{log.level || "-"}</Badge>
                     </TableCell>
-                    <TableCell className="text-gray-600">{description}</TableCell>
+                    <TableCell className="text-gray-600">
+                      <div className="flex flex-col gap-1">
+                        <span>{description}</span>
+                        <span className="text-xs text-gray-500">
+                          {log.userName ? `Usuário: ${log.userName}` : "Usuário: -"}
+                        </span>
+                      </div>
+                    </TableCell>
                     <TableCell className="text-right">
                       <Link href={`/logs/${log.id}`}>
                         <Button variant="ghost" size="icon">

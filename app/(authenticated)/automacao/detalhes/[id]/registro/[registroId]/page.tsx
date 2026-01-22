@@ -140,6 +140,24 @@ export default function RegistroDetalhePage({ params }: { params: Promise<{ id: 
     }
   }
 
+  const statusEnvio = typeof registro.statusEnvio === "number" ? registro.statusEnvio : null
+  const statusLabel =
+    statusEnvio === 0
+      ? "Aguardando"
+      : statusEnvio === 1
+        ? "Enviado"
+        : statusEnvio === 2
+          ? "Concluído"
+          : "Status Desconhecido"
+  const statusClass =
+    statusEnvio === 2
+      ? "bg-emerald-50 text-emerald-700 border-emerald-100"
+      : statusEnvio === 1
+        ? "bg-blue-50 text-blue-700 border-blue-100"
+        : statusEnvio === 0
+          ? "bg-amber-50 text-amber-700 border-amber-100"
+          : "bg-slate-50 text-slate-600 border-slate-200"
+
   return (
     <div className="mx-auto p-4 md:p-8 space-y-8 animate-in fade-in duration-500">
       
@@ -162,8 +180,8 @@ export default function RegistroDetalhePage({ params }: { params: Promise<{ id: 
             </h1>
           </div>
         </div>
-        <Badge variant="secondary" className="w-fit px-3 py-1 text-sm font-medium bg-blue-50 text-blue-700 border-blue-100">
-          Status: Em Análise
+        <Badge variant="secondary" className={`w-fit px-3 py-1 text-sm font-medium ${statusClass}`}>
+          Status: {statusLabel}
         </Badge>
       </div>
 
