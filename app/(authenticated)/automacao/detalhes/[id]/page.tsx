@@ -1,6 +1,6 @@
 "use client"
 
-import React, { useEffect, useState } from "react"
+import React, { useCallback, useEffect, useState } from "react"
 import { PaginationControls, type PaginatedResponse } from "@/components/ui/pagination-controls"
 import { ComposicaoDadosAnsService, type ComposicaoDadosAbiRegistro } from "@/lib/services/composicao-dados-ans.service"
 import { ComposicaoAbiHeader } from "./_components/ComposicaoAbiHeader"
@@ -37,39 +37,42 @@ export default function AutomacaoDetalhesPage({ params }: { params: Promise<{ id
   const [filterAih, setFilterAih] = useState("")
   const [filterStatus, setFilterStatus] = useState("todos")
   const [filterOrder, setFilterOrder] = useState("default")
+  const [filterTipoDefesa, setFilterTipoDefesa] = useState("todos")
   const { toast } = useToast()
   const [syncLocked, setSyncLocked] = useState(false)
 
-  useEffect(() => {
-    const load = async () => {
-      setLoading(true)
-      try {
-        const response = await ComposicaoDadosAnsService.getRegistrosByAbiId(id, {
-          page,
-          pageSize,
-          numeroAihApac: filterAih || undefined,
-          status: filterStatus !== "todos" ? filterStatus : undefined,
-          order: filterOrder !== "default" ? filterOrder : undefined,
-        })
-        setRegistros({
-          data: response.data,
-          total: response.total,
-          page: response.page,
-          pageSize: response.pageSize,
-          totalPages: response.totalPages,
-        })
-        setAguardandoSyn((response as any).aguardandoSyn ?? false)
-        setSyncLocked(false) // libera caso backend informe aguardandoSyn=false após refresh
-        setError(null)
-        setSelectedIds([])
-      } catch (err) {
-        setError("Erro ao carregar registros da ABI.")
-      } finally {
-        setLoading(false)
-      }
+  const load = useCallback(async () => {
+    setLoading(true)
+    try {
+      const response = await ComposicaoDadosAnsService.getRegistrosByAbiId(id, {
+        page,
+        pageSize,
+        numeroAihApac: filterAih || undefined,
+        status: filterStatus !== "todos" ? filterStatus : undefined,
+        order: filterOrder !== "default" ? filterOrder : undefined,
+        tipo: filterTipoDefesa !== "todos" ? (filterTipoDefesa as "IMPUGNACAO" | "RECURSO") : undefined,
+      })
+      setRegistros({
+        data: response.data,
+        total: response.total,
+        page: response.page,
+        pageSize: response.pageSize,
+        totalPages: response.totalPages,
+      })
+      setAguardandoSyn((response as any).aguardandoSyn ?? false)
+      setSyncLocked(false) // libera caso backend informe aguardandoSyn=false após refresh
+      setError(null)
+      setSelectedIds([])
+    } catch (err) {
+      setError("Erro ao carregar registros da ABI.")
+    } finally {
+      setLoading(false)
     }
+  }, [id, page, pageSize, filterAih, filterStatus, filterOrder, filterTipoDefesa])
+
+  useEffect(() => {
     load()
-  }, [id, page, pageSize, filterAih, filterStatus, filterOrder])
+  }, [load])
 
   useSocketEvent<{ id: number; statusEnvio: number }>("evt-atend-change-status", (data) => {
     console.log("Recebido evt-atend-change-status via socket:", data)
@@ -199,6 +202,22 @@ export default function AutomacaoDetalhesPage({ params }: { params: Promise<{ id
                       <SelectItem value="0">Aguardando</SelectItem>
                       <SelectItem value="1">Enviado</SelectItem>
                       <SelectItem value="2">Concluído</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="w-full md:w-56">
+                  <p className="text-xs font-semibold text-slate-500 mb-1">Tipo de defesa</p>
+                  <Select
+                    value={filterTipoDefesa}
+                    onValueChange={(v) => { setFilterTipoDefesa(v); setPage(1) }}
+                  >
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="todos">Todos</SelectItem>
+                      <SelectItem value="IMPUGNACAO">Impugnação</SelectItem>
+                      <SelectItem value="RECURSO">Recurso</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
