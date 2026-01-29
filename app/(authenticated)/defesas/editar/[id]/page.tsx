@@ -334,8 +334,7 @@ export default function EditarDefesaPage({ params }: { params: Promise<{ id: str
             }}
             anexedDocuments={anexedDocuments}
           />
-          <CardDocumentosAns />
-
+          
           <div className="flex justify-end gap-4">
             <Button disabled={isLoading} variant="outline" className="rounded-xl bg-transparent" onClick={() => setIsAnexarModalOpen(true)}>
               <Upload className="mr-2 h-4 w-4" /> {isLoading ? "Enviando..." : "ANEXAR DOCUMENTO"}

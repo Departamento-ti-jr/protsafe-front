@@ -324,8 +324,6 @@ export default function NovaDefesaPage({ params }: { params: Promise<{ id: strin
             anexedDocuments={anexedDocuments}
           />
 
-          <CardDocumentosAns />
-
           <DefesaAcoes
             disableButtonSendAns={true}
             anexedDocuments={anexedDocuments}

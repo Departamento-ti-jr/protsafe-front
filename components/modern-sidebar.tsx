@@ -36,7 +36,7 @@ export function ModernSidebar({ className }: ModernSidebarProps) {
     { name: "Automação", href: "/automacao", icon: Bot },
     { name: "Defesas", href: "/defesas", icon: Shield },
     // { name: "Recolhimentos", href: "/recolhimentos", icon: Receipt },
-    // { name: "Logs", href: "/logs", icon: History },
+    { name: "Logs", href: "/logs", icon: History },
     // { name: "Política de Privacidade", href: "/politica-privacidade", icon: FileTerminal },
   ].map((item) => ({
     ...item,

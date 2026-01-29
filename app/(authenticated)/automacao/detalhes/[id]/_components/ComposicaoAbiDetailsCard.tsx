@@ -1,11 +1,19 @@
-import { Badge } from "@/components/ui/badge"
-import { ClipboardList, Hash, Layers, Activity } from "lucide-react"
+import { Hash } from "lucide-react"
 
-export function ComposicaoAbiDetailsCard({ numeroAbi, registroAns, totalRegistros }: Props) {
+interface Props {
+  numeroAbi?: number | string
+  registroAns?: string
+  totalRegistros?: number
+  operadoraNome?: string
+}
+
+export function ComposicaoAbiDetailsCard({
+  numeroAbi,
+  totalRegistros
+}: Props) {
   return (
     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
       <DetailItem icon={<Hash className="text-blue-500"/>} label="Número da ABI" value={numeroAbi} />
-      <DetailItem icon={<Hash className="text-blue-500"/>} label="Registro ANS" value={registroAns} />
       <DetailItem icon={<Hash className="text-blue-500"/>} label="Total de Registros" value={totalRegistros} />
     </div>
   )

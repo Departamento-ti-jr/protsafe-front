@@ -51,7 +51,7 @@ export default function DefesasTable({ data, loading = false }: { data: Defesa[]
             const atendimentoCodigo = atendimento?.numeroAihApac ?? atendimento?.numeroAih ?? "—"
             const defenceId = defesa.id ?? defesa._id
 
-            const formattedDate = formatDateTime(defesa.createdAt)
+            const formattedDate = formatDateTime(defesa.criadoEm)
             const [datePart, timePart] = formattedDate.split(', ')
 
             return (
@@ -88,10 +88,6 @@ export default function DefesasTable({ data, loading = false }: { data: Defesa[]
                   <div className="flex flex-col gap-1.5">
                     <span className="text-sm font-mono text-slate-600 bg-slate-50 border border-slate-100 px-2 py-0.5 rounded w-fit">
                         {atendimentoCodigo}
-                    </span>
-                    <span className="text-[10px] uppercase font-bold text-slate-400 tracking-wider flex items-center gap-1">
-                      <span className="w-1 h-1 rounded-full bg-slate-300" />
-                      Ordem: {defesa.opcaoOrdem || "—"}
                     </span>
                   </div>
                 </TableCell>
