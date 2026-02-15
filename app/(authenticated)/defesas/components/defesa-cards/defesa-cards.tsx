@@ -77,7 +77,7 @@ export function CardFormularioImputacao({
         <div className="space-y-4 p-4 bg-gray-50 rounded-lg border border-gray-200">
           <div id="rich-text" className="space-y-2">
             <Label className="text-sm">Detalhamento do Motivo</Label>
-            <RichTextEditor value={text} onChange={setText} />
+            <RichTextEditor value={text} onChange={setText} allowImage />
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
