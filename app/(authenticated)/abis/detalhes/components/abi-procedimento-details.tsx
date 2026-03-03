@@ -69,17 +69,6 @@ export function ABIProcedimentoDetails({ procedimento, onBack }: ABIProcedimento
           </div>
         </CardContent>
       </Card>
-
-      <div className="flex justify-end space-x-2">
-        <Button variant="outline" size="sm" className="text-xs bg-transparent">
-          <Save className="w-3 h-3 mr-1" />
-          Salvar
-        </Button>
-        <Button size="sm" className="text-xs">
-          <Save className="w-3 h-3 mr-1" />
-          Salvar
-        </Button>
-      </div>
     </div>
   )
 }

@@ -8,8 +8,6 @@ import { ArrowLeft, UploadCloud } from "lucide-react"
 import Link from "next/link"
 import { useDropzone } from "react-dropzone"
 import { Badge } from "@/components/ui/badge"
-import { Label } from "@/components/ui/label"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { AbisService } from "@/lib/services/abis.service"
 
 export default function NovaABIPage() {
@@ -17,11 +15,15 @@ export default function NovaABIPage() {
   const [uploading, setUploading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [success, setSuccess] = useState<string | null>(null)
-  const [tipoDoc, setTipoDoc] = useState<"IMPUGNACAO" | "RECURSO" | "">("IMPUGNACAO")
   const router = useRouter()
 
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
-    accept: { "text/csv": [".csv"], "application/vnd.ms-excel": [".csv"] },
+    accept: {
+      "text/csv": [".csv"],
+      "application/vnd.ms-excel": [".csv"],
+      "application/xml": [".xml"],
+      "text/xml": [".xml"],
+    },
     multiple: false,
     onDrop: (accepted) => {
       setFiles(accepted)
@@ -32,11 +34,7 @@ export default function NovaABIPage() {
 
   const handleSubmit = async () => {
     if (files.length === 0) {
-      setError("Selecione um arquivo .csv para enviar.")
-      return
-    }
-    if (!tipoDoc) {
-      setError("Selecione o tipo de documento (IMPUGNAÇÃO ou RECURSO).")
+      setError("Selecione um arquivo .csv ou .xml para enviar.")
       return
     }
 
@@ -48,13 +46,28 @@ export default function NovaABIPage() {
       const upsert = true
       const batchSize = 1000
 
-      const res = await AbisService.uploadCsv(files[0], { tipoDoc, upsert, batchSize })
-      setSuccess(`Importado: total=${res.total}, inseridos=${res.inserted}, upserts=${res.upserted}, matched=${res.matched}`)
+      const res = await AbisService.uploadCsv(files[0], { upsert, batchSize })
+      const summary = [
+        res?.total != null ? `total=${res.total}` : null,
+        res?.inserted != null ? `inseridos=${res.inserted}` : null,
+        res?.upserted != null ? `upserts=${res.upserted}` : null,
+        res?.matched != null ? `matched=${res.matched}` : null,
+      ].filter(Boolean)
+
+      setSuccess(summary.length > 0 ? `Importado: ${summary.join(", ")}` : "Arquivo importado com sucesso.")
       setFiles([])
-      setTipoDoc("IMPUGNACAO")
       setTimeout(() => router.push("/abis"), 1200)
     } catch (e: any) {
-      setError(e?.message || "Erro ao enviar CSV da ABI.")
+      const bodyMessage =
+        e?.body && typeof e.body === "object" && e.body.message
+          ? String(e.body.message)
+          : null
+
+      if (e?.status === 409 && bodyMessage) {
+        setError(bodyMessage)
+      } else {
+        setError(bodyMessage || e?.message || "Erro ao enviar arquivo da ABI.")
+      }
     } finally {
       setUploading(false)
     }
@@ -69,25 +82,11 @@ export default function NovaABIPage() {
         <h1 className="text-3xl font-bold tracking-tight">Nova ABI</h1>
       </div>
 
-      <p className="text-sm text-muted-foreground">Importe o arquivo <b>.csv</b> da ABI e escolha o tipo de documento.</p>
+      <p className="text-sm text-muted-foreground">Importe o arquivo <b>.csv</b> ou <b>.xml</b> da ABI.</p>
 
       <Card>
-        <CardHeader><CardTitle>Upload de ABI (CSV)</CardTitle></CardHeader>
+        <CardHeader><CardTitle>Upload de ABI (CSV/XML)</CardTitle></CardHeader>
         <CardContent className="space-y-6">
-          {/* Seletor do tipoDoc */}
-          <div className="space-y-2">
-            <Label>Tipo de Documento</Label>
-            <Select value={tipoDoc} onValueChange={(v) => setTipoDoc(v as any)}>
-              <SelectTrigger className="w-full">
-                <SelectValue placeholder="Selecione o tipo de documento" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="IMPUGNACAO">IMPUGNAÇÃO</SelectItem>
-                <SelectItem value="RECURSO">RECURSO</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-
           {/* Dropzone */}
           <div
             {...getRootProps()}
@@ -98,7 +97,7 @@ export default function NovaABIPage() {
             <input {...getInputProps()} />
             <UploadCloud className="w-8 h-8 text-primary mb-2" />
             <p className="text-muted-foreground">
-              <span className="font-semibold text-foreground">Adicione</span> ou arraste o .csv aqui.
+              <span className="font-semibold text-foreground">Adicione</span> ou arraste o .csv/.xml aqui.
             </p>
           </div>
 
