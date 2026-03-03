@@ -12,6 +12,7 @@ export interface ComposicaoDadosAbi {
   createdAt: string
   updatedAt: string
   razaoSocial?: string
+  status?: string
 }
 
 export interface ComposicaoDadosAbiRegistro {
@@ -51,6 +52,9 @@ export interface ComposicaoDadosAbiRegistro {
   statusEnvio: number | null
   protocoloId?: string | null
   abiId: number
+  workerError?: string | null
+  operadoraNome?: string 
+  razaoSocial?: string
 }
 
 export interface ComposicaoDadosRegistroDetalhe extends ComposicaoDadosAbiRegistro {
@@ -96,7 +100,14 @@ export class ComposicaoDadosAnsService {
 
   static async getRegistrosByAbiId(
     abiId: string,
-    params: { page?: number; pageSize?: number; numeroAihApac?: string; status?: string; order?: string } = {}
+    params: {
+      page?: number
+      pageSize?: number
+      numeroAihApac?: string
+      status?: string
+      order?: string
+      tipo?: "IMPUGNACAO" | "RECURSO"
+    } = {}
   ): Promise<PaginatedResponse<ComposicaoDadosAbiRegistro>> {
     try {
       const searchParams = new URLSearchParams()
@@ -106,6 +117,7 @@ export class ComposicaoDadosAnsService {
       if (params.numeroAihApac) searchParams.append("numeroAihApac", params.numeroAihApac)
       if (params.status) searchParams.append("status", params.status)
       if (params.order) searchParams.append("order", params.order)
+      if (params.tipo) searchParams.append("tipo", params.tipo)
 
       const query = searchParams.toString()
       const url = query

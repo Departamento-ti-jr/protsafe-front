@@ -129,9 +129,12 @@ export interface GetAbisParams {
   id?: string
   cnpj?: string
   codigoBeneficiario?: number | string
+  numeroAbi?: string
   numeroABI?: string
   /** @deprecated use numeroABI */
   abi?: number | string
+  numeroProcesso?: string
+  operadora?: string
   /** não suportado no backend atual (ignorado) */
   search?: string
   /** não suportado no backend atual (ignorado) */
@@ -154,8 +157,11 @@ export class AbisService {
         searchParams.append("codigoBeneficiario", String(params.codigoBeneficiario))
       }
 
-      const numeroABI = params.numeroABI ?? (params.abi != null ? String(params.abi) : undefined)
-      if (numeroABI) searchParams.append("numeroABI", numeroABI)
+      const numeroAbi =
+        params.numeroAbi ?? params.numeroABI ?? (params.abi != null ? String(params.abi) : undefined)
+      if (numeroAbi) searchParams.append("numeroAbi", numeroAbi)
+      if (params.numeroProcesso) searchParams.append("numeroProcesso", params.numeroProcesso)
+      if (params.operadora) searchParams.append("operadora", params.operadora)
 
       const url = searchParams.toString() ? `${this.endpoint}?${searchParams.toString()}` : this.endpoint
 

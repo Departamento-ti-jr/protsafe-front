@@ -16,8 +16,11 @@ export default function ABIsPage() {
     error,
     filters,
     pagination,
-    handleSearch,
+    handleIdChange,
     handleStatusChange,
+    handleNumeroAbiChange,
+    handleNumeroProcessoChange,
+    handleOperadoraChange,
     handlePageChange,
     handlePageSizeChange,
     refetch,
@@ -53,8 +56,14 @@ export default function ABIsPage() {
           {/* Barra de Ferramentas (Filtros) */}
           <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
             <AbisFilters
-              searchTerm={filters.search}
-              onSearch={handleSearch}
+              id={filters.id}
+              onIdChange={handleIdChange}
+              numeroAbi={filters.numeroAbi}
+              onNumeroAbiChange={handleNumeroAbiChange}
+              numeroProcesso={filters.numeroProcesso}
+              onNumeroProcessoChange={handleNumeroProcessoChange}
+              operadora={filters.operadora}
+              onOperadoraChange={handleOperadoraChange}
               statusFilter={filters.status}
               onStatusChange={handleStatusChange}
             />

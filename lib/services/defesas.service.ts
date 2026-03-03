@@ -100,12 +100,20 @@ export class DefesasService {
     }
   }
 
-  static async getAllWithAtendimento(params: { page?: number; limit?: number } = {}): Promise<PaginatedResponse<Defesa>> {
+  static async getAllWithAtendimento(params: {
+    page?: number
+    limit?: number
+    numeroAbi?: string
+    operadora?: string
+    numeroAtendimento?: string
+  } = {}): Promise<PaginatedResponse<Defesa>> {
     try {
       const searchParams = new URLSearchParams();
       if (params.page)  searchParams.append("page", params.page.toString());
       if (params.limit) searchParams.append("limit", params.limit.toString());
-
+      if (params.numeroAbi) searchParams.append("numeroAbi", params.numeroAbi);
+      if (params.operadora) searchParams.append("operadora", params.operadora);
+      if (params.numeroAtendimento) searchParams.append("numeroAtendimento", params.numeroAtendimento);
       const url = `${this.endpoint}/all?${searchParams.toString()}`;
       return await httpClient.get<PaginatedResponse<Defesa>>(url);
     } catch (error) {
