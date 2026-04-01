@@ -1,19 +1,23 @@
-export function formatDateToDDMMYYYY(date: Date | string | null | undefined): string {
+export function formatDateToDDMMYYYY(date: string | Date | null | undefined): string {
   try {
     if (!date) return "";
 
-    const parsedDate = date instanceof Date ? date : new Date(date);
+    let parsedDate: Date;
 
-    // Verifica se a data é inválida
-    if (isNaN(parsedDate.getTime())) {
-      return "";
+    if (typeof date === "string") {
+      const [year, month, day] = date.split("-").map(Number);
+      parsedDate = new Date(year, month - 1, day);
+    } else {
+      parsedDate = date;
     }
 
-    const day = String(parsedDate.getDate()).padStart(2, "0");
-    const month = String(parsedDate.getMonth() + 1).padStart(2, "0");
-    const year = parsedDate.getFullYear();
+    if (isNaN(parsedDate.getTime())) return "";
 
-    return `${day}/${month}/${year}`;
+    const d = String(parsedDate.getDate()).padStart(2, "0");
+    const m = String(parsedDate.getMonth() + 1).padStart(2, "0");
+    const y = parsedDate.getFullYear();
+
+    return `${d}/${m}/${y}`;
   } catch {
     return "";
   }
