@@ -2,24 +2,11 @@ import { handleSignOut } from "@/app/actions/auth"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { AlertTriangle } from "lucide-react"
-import Image from "next/image"
 
 export default function SemPermissaoPage() {
   return (
     <div className="flex min-h-screen flex-col items-center justify-center bg-gray-50 p-4">
       <div className="w-full max-w-md">
-        <div className="mb-8 text-center">
-          <div className="flex justify-center mb-4">
-            <Image
-              src="/images/LogoReSUS.6fc1138b.png"
-              alt="ReSUS Logo"
-              width={200}
-              height={60}
-              className="object-contain"
-            />
-          </div>
-        </div>
-
         <Card className="shadow-lg border border-red-200">
           <CardHeader className="text-center">
             <div className="flex justify-center mb-4">

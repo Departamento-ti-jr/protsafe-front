@@ -1,11 +1,13 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Table, TableHeader, TableRow, TableHead, TableBody, TableCell } from "@/components/ui/table"
 import { Button } from "@/components/ui/button"
-import { Eye, Download, Loader2 } from "lucide-react"
+import { Eye, Download, Loader2, AlertTriangle } from "lucide-react"
 import type { ComposicaoDadosAbiRegistro } from "@/lib/services/composicao-dados-ans.service"
 import Link from "next/link"
 import { Badge } from "@/components/ui/badge"
 import { Checkbox } from "@/components/ui/checkbox"
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog"
+import { useState } from "react"
 
 interface Props {
   registros: ComposicaoDadosAbiRegistro[]
@@ -38,6 +40,29 @@ export function ComposicaoAtendimentosTable({
 }: Props) {
   const currentIds = registros.map((r) => String(r.id))
   const allSelected = currentIds.length > 0 && currentIds.every((id) => selectedIds.includes(id))
+  const [errorModalOpen, setErrorModalOpen] = useState(false)
+  const [errorPayload, setErrorPayload] = useState<string>("")
+
+  const formatWorkerError = (payload: unknown) => {
+    if (payload == null) return ""
+    if (typeof payload === "string") {
+      try {
+        const parsed = JSON.parse(payload)
+        return JSON.stringify(parsed, null, 2)
+      } catch {
+        return payload
+      }
+    }
+    if (typeof payload === "object") {
+      return JSON.stringify(payload, null, 2)
+    }
+    return JSON.stringify({ value: payload }, null, 2)
+  }
+
+  const handleOpenWorkerError = (payload: unknown) => {
+    setErrorPayload(formatWorkerError(payload))
+    setErrorModalOpen(true)
+  }
 
   return (
     <Card className="border-slate-200 shadow-sm overflow-hidden bg-white">
@@ -165,23 +190,35 @@ export function ComposicaoAtendimentosTable({
                         <Button
                           variant="ghost"
                           size="icon"
-                          className="h-8 w-8 text-slate-400 hover:text-blue-600 hover:bg-blue-50"
+                          className="text-primary h-8 w-8 text-slate-400 hover:text-blue-600 hover:bg-blue-50"
                           asChild={!!item.s3PathDocPrincipal}
                           disabled={!item.s3PathDocPrincipal}
                         >
                           <a href={item.s3PathDocPrincipal ?? "#"} target="_blank" rel="noopener noreferrer">
-                            <Download className="h-4 w-4" />
+                            <Download className={`h-4 w-4 ${item.s3PathDocPrincipal ? 'text-primary' : ''}`} />
                           </a>
                         </Button>
                         <Link href={`/automacao/detalhes/${abiId}/registro/${item.id}`}>
                           <Button 
                             variant="ghost" 
                             size="icon" 
-                            className="h-8 w-8 text-slate-400 hover:text-primary hover:bg-primary/5"
+                            className="h-8 w-8 text-slate-400 text-primary hover:text-primary hover:bg-primary/5"
                           >
                             <Eye className="h-4 w-4" />
                           </Button>
                         </Link>
+                        
+                          <Button 
+                            variant="ghost" 
+                            size="icon" 
+                            disabled={item.workerError == null}
+                            onClick={() => handleOpenWorkerError(item.workerError)}
+                            className="h-8 w-8 text-slate-400 hover:text-primary hover:bg-primary/5"
+                            title={item.workerError ? "Ver erro do processamento" : "Sem erro"}
+                          >
+                            <AlertTriangle className={`h-4 w-4 ${item.workerError ? 'text-yellow-600' : ''} `} />
+                          </Button>
+
                       </div>
                     </TableCell>
                   </TableRow>
@@ -191,6 +228,17 @@ export function ComposicaoAtendimentosTable({
           </Table>
         </div>
       </CardContent>
+      <Dialog open={errorModalOpen} onOpenChange={setErrorModalOpen}>
+        <DialogContent className="max-w-2xl">
+          <DialogHeader>
+            <DialogTitle>Detalhes do erro</DialogTitle>
+            <DialogDescription>Payload retornado pelo worker.</DialogDescription>
+          </DialogHeader>
+          <pre className="max-h-[60vh] overflow-auto rounded-md bg-slate-950 p-4 text-xs text-slate-100">
+            {errorPayload || "Sem detalhes."}
+          </pre>
+        </DialogContent>
+      </Dialog>
     </Card>
   )
 }

@@ -6,6 +6,6 @@ export const disabledRoutes = [
   // "/textos-defesa",
   // "/documentos-comprobatorios",
   "/recolhimentos",
-  "/logs",
+  // "/logs",
   "/politica-privacidade",
 ]
