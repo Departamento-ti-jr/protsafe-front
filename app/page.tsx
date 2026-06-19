@@ -7,7 +7,6 @@ import Image from "next/image"
 
 export default async function Home() {
   const { isAuthenticated } = await getLogtoContext(logtoConfig)
-
   if (isAuthenticated) {
     redirect("/dashboard")
   }
