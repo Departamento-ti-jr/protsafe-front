@@ -200,6 +200,25 @@ export class ComposicaoDadosAnsService {
     }
   }
 
+  static async deleteAtendimento(id: string | number): Promise<void> {
+    try {
+      const url = `/composicao-dados-ans/${id}`
+      await httpClient.delete(url)
+    } catch (error) {      
+      console.error(`Erro ao deletar atendimento ${id}:`, error)
+      throw new Error("Falha ao deletar atendimento")
+    }
+  }
+
+  static async deleteBulkAtendimentos(ids: Array<string | number>): Promise<void> {
+    try {
+      await httpClient.post(`/composicao-dados-ans/bulk-delete`, { ids }, "json", this.apiKeyHeader)
+    } catch (error) {
+      console.error("Erro ao deletar atendimentos em massa:", error)
+      throw new Error("Falha ao deletar atendimentos")
+    }
+  }
+
   static async uploadCsv(file: File) {
     try {
       const form = new FormData()

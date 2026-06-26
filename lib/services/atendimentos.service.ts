@@ -129,4 +129,14 @@ export class AtendimentosService {
       throw new Error("Falha ao salvar campos complementares do atendimento")
     }
   }
+
+  static async deleteAtendimento(id: string | number): Promise<void> {
+    try {
+      const url = `${this.endpoint}/${id}`
+      await httpClient.delete(url)
+    } catch (error) {
+      console.error(`Erro ao deletar atendimento ${id}:`, error)
+      throw new Error("Falha ao deletar atendimento")
+    }
+  }
 }

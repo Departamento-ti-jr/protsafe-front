@@ -12,7 +12,6 @@ export default async function AuthenticatedLayout({
   children: React.ReactNode
 }) {
   const { isAuthenticated } = await getLogtoContext(logtoConfig)
-
   if (!isAuthenticated) {
     redirect("/")
   }
@@ -23,7 +22,6 @@ export default async function AuthenticatedLayout({
 
     if (token) {
       const { hasPermission } = await checkUserPermissions(token)
-
       if (!hasPermission) {
         redirect("/sem-permissao")
       }

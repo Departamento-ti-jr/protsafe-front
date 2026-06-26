@@ -4,16 +4,16 @@ import { NextResponse } from "next/server"
 
 export async function GET() {
   try {
-    const { isAuthenticated } = await getLogtoContext(logtoConfig)
+    const { isAuthenticated, claims } = await getLogtoContext(logtoConfig)
 
     if (isAuthenticated) {
       const token = await getAccessToken(logtoConfig)
-      return NextResponse.json({ token, isAuthenticated: true })
+      return NextResponse.json({ token, isAuthenticated: true, claims })
     }
 
-    return NextResponse.json({ token: null, isAuthenticated: false })
+    return NextResponse.json({ token: null, isAuthenticated: false, claims: null })
   } catch (error) {
     console.error("Erro ao obter token:", error)
-    return NextResponse.json({ token: null, isAuthenticated: false }, { status: 500 })
+    return NextResponse.json({ token: null, isAuthenticated: false, claims: null }, { status: 500 })
   }
 }

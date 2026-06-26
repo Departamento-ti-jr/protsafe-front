@@ -1,13 +1,14 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Table, TableHeader, TableRow, TableHead, TableBody, TableCell } from "@/components/ui/table"
 import { Button } from "@/components/ui/button"
-import { Eye, Download, Loader2, AlertTriangle } from "lucide-react"
+import { Eye, Download, Loader2, AlertTriangle, Trash } from "lucide-react"
 import type { ComposicaoDadosAbiRegistro } from "@/lib/services/composicao-dados-ans.service"
 import Link from "next/link"
 import { Badge } from "@/components/ui/badge"
 import { Checkbox } from "@/components/ui/checkbox"
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { useState } from "react"
+import { DeleteButton } from "./DeleteButton"
 
 interface Props {
   registros: ComposicaoDadosAbiRegistro[]
@@ -22,6 +23,10 @@ interface Props {
   onToggleAll: (ids: string[]) => void
   onProcessSelected: () => void
   onSyncDocuments: () => void
+  onDeleteAtendimento: (id: string ) => void
+  onDeleteBulkAtendimentos?: (ids: string[]) => void
+  deleting?: boolean
+  isAdmin?: boolean
 }
 
 export function ComposicaoAtendimentosTable({
@@ -37,6 +42,10 @@ export function ComposicaoAtendimentosTable({
   onToggleAll,
   onProcessSelected,
   onSyncDocuments,
+  onDeleteAtendimento,
+  onDeleteBulkAtendimentos,
+  deleting,
+  isAdmin,
 }: Props) {
   const currentIds = registros.map((r) => String(r.id))
   const allSelected = currentIds.length > 0 && currentIds.every((id) => selectedIds.includes(id))
@@ -79,6 +88,16 @@ export function ComposicaoAtendimentosTable({
           )}
         </div>
         <div className="flex items-center gap-2">
+          {isAdmin && (
+            <DeleteButton
+              variant="button"
+              count={selectedIds.length}
+              onConfirm={() => onDeleteBulkAtendimentos?.(selectedIds)}
+              disabled={selectedIds.length === 0}
+              loading={deleting}
+            />
+          )}
+
           <Button
             variant="outline"
             onClick={onSyncDocuments}
@@ -86,6 +105,7 @@ export function ComposicaoAtendimentosTable({
           >
             {syncing ? "Carregando..." : "Sincronizar Documento"}
           </Button>
+
           <Button
             variant="default"
             onClick={onProcessSelected}
@@ -207,7 +227,13 @@ export function ComposicaoAtendimentosTable({
                             <Eye className="h-4 w-4" />
                           </Button>
                         </Link>
-                        
+                          {isAdmin && (
+                            <DeleteButton
+                              variant="icon"
+                              onConfirm={() => onDeleteAtendimento(item.id)}
+                            />
+                          )}
+
                           <Button 
                             variant="ghost" 
                             size="icon" 
