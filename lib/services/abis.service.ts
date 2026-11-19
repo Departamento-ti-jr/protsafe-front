@@ -247,5 +247,14 @@ export class AbisService {
   return await httpClient.post(url, form);
 }
 
+  static async reportAbi(abiId: string): Promise<{ url: string; totalBeneficiarios: number; semDocumento: number }> {
+    try {
+      const url = `${this.endpoint}/${abiId}/relatorio-documentos`
+      return await httpClient.get<{ url: string; totalBeneficiarios: number; semDocumento: number }>(url)
+    } catch (error) {
+      console.error(`Erro ao gerar relatório de documentos da ABI ${abiId}:`, error)
+      throw new Error("Falha ao gerar relatório de documentos")
+    }
+  }
 
 }

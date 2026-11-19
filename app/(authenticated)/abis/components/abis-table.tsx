@@ -4,9 +4,9 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Button } from "@/components/ui/button"
 import { Eye } from "lucide-react"
 import Link from "next/link"
-import { Badge } from "@/components/ui/badge"
 import type { Abi } from "@/lib/services/abis.service"
 import { formatDateTimeToDDMMYYYYHHMMSS } from "@/lib/date-helpers"
+import { BotaoRelatorioDocumentos } from "./button-report"
 
 export default function AbisTable({ data, loading = false }: { data: Abi[], loading?: boolean }) {
   return (
@@ -17,15 +17,14 @@ export default function AbisTable({ data, loading = false }: { data: Abi[], load
           <TableHead className="font-bold text-slate-600">Processo Administrativo</TableHead>
           <TableHead className="font-bold text-slate-600">Operadora</TableHead>
           <TableHead className="font-bold text-slate-600">Data de Criação</TableHead>
-          {/* <TableHead className="font-bold text-slate-600">Status</TableHead> */}
           <TableHead className="text-right pr-6 font-bold text-slate-600">Ações</TableHead>
         </TableRow>
       </TableHeader>
       <TableBody>
         {loading && data.length === 0 ? (
-          <TableRow><TableCell colSpan={6} className="text-center py-20 text-slate-400">Carregando ABIs...</TableCell></TableRow>
+          <TableRow><TableCell colSpan={5} className="text-center py-20 text-slate-400">Carregando ABIs...</TableCell></TableRow>
         ) : data.length === 0 ? (
-          <TableRow><TableCell colSpan={6} className="text-center py-20 text-slate-400 font-medium italic text-lg">Nenhuma ABI encontrada.</TableCell></TableRow>
+          <TableRow><TableCell colSpan={5} className="text-center py-20 text-slate-400 font-medium italic text-lg">Nenhuma ABI encontrada.</TableCell></TableRow>
         ) : (
           data.map((abi) => (
             <TableRow key={abi.id} className="group hover:bg-slate-50/50 transition-colors">
@@ -52,22 +51,21 @@ export default function AbisTable({ data, loading = false }: { data: Abi[], load
                   {formatDateTimeToDDMMYYYYHHMMSS(abi.createdAt)}
                 </div>
               </TableCell>
-              {/* <TableCell>
-                <Badge className="bg-emerald-50 text-emerald-700 border-emerald-100 hover:bg-emerald-50 px-3">
-                  Ativo
-                </Badge>
-              </TableCell> */}
-              <TableCell className="text-right pr-6">
-                <Link href={`/abis/detalhes/${abi.id}`}>
-                  <Button 
-                    variant="ghost" 
-                    size="sm" 
-                    className="h-8 px-3 text-slate-400 hover:text-primary hover:bg-primary/10 flex items-center gap-2 ml-auto"
-                  >
-                    <span className="text-xs font-semibold">Detalhes</span>
-                    <Eye className="h-4 w-4" />
-                  </Button>
-                </Link>
+              <TableCell className="pr-6">
+                <div className="flex items-center justify-end gap-1">
+                  <BotaoRelatorioDocumentos abiId={abi.id} />
+
+                  <Link href={`/abis/detalhes/${abi.id}`}>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="h-8 px-3 text-slate-400 hover:text-primary hover:bg-primary/10 flex items-center gap-2"
+                    >
+                      <span className="text-xs font-semibold">Detalhes</span>
+                      <Eye className="h-4 w-4" />
+                    </Button>
+                  </Link>
+                </div>
               </TableCell>
             </TableRow>
           ))

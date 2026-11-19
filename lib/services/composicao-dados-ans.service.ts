@@ -48,6 +48,7 @@ export interface ComposicaoDadosAbiRegistro {
   competencia: string | null
   s3PathDocPrincipal: string | null
   s3PathDocAdicional: any
+  active: boolean
   hash: string
   statusEnvio: number | null
   protocoloId?: string | null
@@ -55,6 +56,14 @@ export interface ComposicaoDadosAbiRegistro {
   workerError?: string | null
   operadoraNome?: string 
   razaoSocial?: string
+}
+
+export interface DocumentoAnexo {
+  id: number
+  url: string | null
+  fileName: string | null
+  hash: string | null
+  ativo: boolean
 }
 
 export interface ComposicaoDadosRegistroDetalhe extends ComposicaoDadosAbiRegistro {
@@ -66,7 +75,9 @@ export interface ComposicaoDadosRegistroDetalhe extends ComposicaoDadosAbiRegist
   dataInclusaoBeneficiario: string | null
   dataFimCarencia: string | null
   dataFimCpt: string | null
+  documentos: DocumentoAnexo[] 
 }
+
 
 export interface GetComposicaoDadosAbisParams {
   page?: number
@@ -216,6 +227,19 @@ export class ComposicaoDadosAnsService {
     } catch (error) {
       console.error("Erro ao deletar atendimentos em massa:", error)
       throw new Error("Falha ao deletar atendimentos")
+    }
+  }
+
+  static async activeAndDesactiveDocument(registroId: string, anexoId: string, active: boolean) {
+    try {
+      return await httpClient.patch(
+        `/composicao-dados-ans/${registroId}/ativar-desativar-anexo/${anexoId}`,
+        { ativo: active },
+        this.apiKeyHeader
+      )
+    } catch (error) {
+      console.error(`Erro ao ${active ? "ativar" : "desativar"} documento:`, error)
+      throw new Error("Falha ao atualizar status do documento")
     }
   }
 

@@ -5,7 +5,7 @@ import Link from "next/link"
 import { 
   ArrowLeft, Download, Upload, FileText, Calendar, 
   Hash, ShieldCheck, DollarSign, FileCheck, Paperclip, 
-  ChevronRight, Loader2, Trash2
+  ChevronRight, Loader2, Trash2, ToggleLeft, ToggleRight 
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
@@ -28,6 +28,7 @@ export default function RegistroDetalhePage({ params }: { params: Promise<{ id: 
   const [protocolo, setProtocolo] = useState<string>("")
   const [protocoloEditable, setProtocoloEditable] = useState<boolean>(false)
   const [savingProtocolo, setSavingProtocolo] = useState<boolean>(false)
+  const [activeAnexoId, setActiveAnexoId] = useState<boolean>(true)
 
   useEffect(() => {
     const load = async () => {
@@ -70,6 +71,31 @@ export default function RegistroDetalhePage({ params }: { params: Promise<{ id: 
     }
   }
 
+  const handleDesactiveOrActive = async (anexoId: string, active: boolean) => {
+    try {
+      setRemovingId(anexoId)
+      setRemoveError(null)
+      await ComposicaoDadosAnsService.activeAndDesactiveDocument(registroId, anexoId, active)
+
+      // atualiza só o anexo alterado, sem refetch da página inteira
+      setRegistro((prev) =>
+        prev
+          ? {
+              ...prev,
+              documentos: (prev.documentos ?? []).map((doc: any) =>
+                doc.id === anexoId ? { ...doc, ativo: active } : doc,
+              ),
+            }
+          : prev,
+      )
+    } catch (err) {
+      console.error(err)
+      setRemoveError("Erro ao desativar/ativar anexo.")
+    } finally {
+      setRemovingId(null)
+    }
+  }
+
   const handleRemove = async (anexoId: string) => {
     try {
       setRemovingId(anexoId)
@@ -85,6 +111,7 @@ export default function RegistroDetalhePage({ params }: { params: Promise<{ id: 
     }
   }
 
+
   if (loading) return (
     <div className="flex h-[80vh] w-full items-center justify-center">
       <Loader2 className="h-8 w-8 animate-spin text-primary/60" />
@@ -99,7 +126,8 @@ export default function RegistroDetalhePage({ params }: { params: Promise<{ id: 
   )
 
   const docPrincipal = registro.s3PathDocPrincipal
-  const anexosAdicionais = Array.isArray(registro.s3PathDocAdicional) ? registro.s3PathDocAdicional : []
+  const anexosAdicionais = Array.isArray(registro.documentos) ? registro.documentos : []
+  console.log("Anexos adicionais:", anexosAdicionais)
   const hashCounts = anexosAdicionais.reduce<Record<string, number>>((acc, anexo: any) => {
     const hash = typeof anexo?.hash === "string" ? anexo.hash.trim() : ""
     if (!hash) return acc
@@ -300,6 +328,15 @@ export default function RegistroDetalhePage({ params }: { params: Promise<{ id: 
                       <div className="flex items-center gap-1">
                         <Button variant="ghost" size="sm" asChild>
                           <a href={anexo.url} target="_blank" rel="noopener noreferrer"><Download className="h-4 w-4" /></a>
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => handleDesactiveOrActive(anexo.id, !anexo.ativo)}
+                          disabled={removingId === anexo.id}
+                          title={`${anexo.ativo ? "Desativar" : "Ativar"} anexo`}
+                        >
+                          {anexo.ativo ? <ToggleRight className="text-green-500"/> : <ToggleLeft className="text-red-500"/>}
                         </Button>
                         <Button
                           variant="ghost"
